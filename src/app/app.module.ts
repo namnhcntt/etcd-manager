@@ -1,12 +1,11 @@
-import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
+import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { LocationStrategy, HashLocationStrategy } from '@angular/common';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 
-import { StyleClassModule } from 'primeng/styleclass';
 import { AccordionModule } from 'primeng/accordion';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { AvatarModule } from 'primeng/avatar';
@@ -23,9 +22,9 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { ChipModule } from 'primeng/chip';
 import { ChipsModule } from 'primeng/chips';
 import { CodeHighlighterModule } from 'primeng/codehighlighter';
+import { ColorPickerModule } from 'primeng/colorpicker';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
-import { ColorPickerModule } from 'primeng/colorpicker';
 import { ContextMenuModule } from 'primeng/contextmenu';
 import { DataViewModule } from 'primeng/dataview';
 import { DialogModule } from 'primeng/dialog';
@@ -36,8 +35,8 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { GalleriaModule } from 'primeng/galleria';
 import { ImageModule } from 'primeng/image';
 import { InplaceModule } from 'primeng/inplace';
-import { InputNumberModule } from 'primeng/inputnumber';
 import { InputMaskModule } from 'primeng/inputmask';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
@@ -47,8 +46,8 @@ import { ListboxModule } from 'primeng/listbox';
 import { MegaMenuModule } from 'primeng/megamenu';
 import { MenuModule } from 'primeng/menu';
 import { MenubarModule } from 'primeng/menubar';
-import { MessagesModule } from 'primeng/messages';
 import { MessageModule } from 'primeng/message';
+import { MessagesModule } from 'primeng/messages';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { OrderListModule } from 'primeng/orderlist';
 import { OrganizationChartModule } from 'primeng/organizationchart';
@@ -72,8 +71,9 @@ import { SliderModule } from 'primeng/slider';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { SplitterModule } from 'primeng/splitter';
 import { StepsModule } from 'primeng/steps';
-import { TabMenuModule } from 'primeng/tabmenu';
+import { StyleClassModule } from 'primeng/styleclass';
 import { TableModule } from 'primeng/table';
+import { TabMenuModule } from 'primeng/tabmenu';
 import { TabViewModule } from 'primeng/tabview';
 import { TagModule } from 'primeng/tag';
 import { TerminalModule } from 'primeng/terminal';
@@ -89,44 +89,53 @@ import { TreeTableModule } from 'primeng/treetable';
 import { VirtualScrollerModule } from 'primeng/virtualscroller';
 import { BlockViewer } from './components/blockviewer/blockviewer.component';
 
-import { AppCodeModule } from './components/app-code/app.code.component';
 import { AppComponent } from './app.component';
-import { AppMainComponent } from './app.main.component';
-import { AppTopBarComponent } from './app.topbar.component';
-import { AppFooterComponent } from './app.footer.component';
 import { AppConfigComponent } from './app.config.component';
+import { AppFooterComponent } from './app.footer.component';
+import { AppMainComponent } from './app.main.component';
 import { AppMenuComponent } from './app.menu.component';
 import { AppMenuitemComponent } from './app.menuitem.component';
+import { AppTopBarComponent } from './app.topbar.component';
+import { AppCodeModule } from './components/app-code/app.code.component';
 
-import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { FormLayoutComponent } from './components/formlayout/formlayout.component';
-import { FloatLabelComponent } from './components/floatlabel/floatlabel.component';
-import { InvalidStateComponent } from './components/invalidstate/invalidstate.component';
-import { InputComponent } from './components/input/input.component';
-import { ButtonComponent } from './components/button/button.component';
-import { TableComponent } from './components/table/table.component';
-import { ListComponent } from './components/list/list.component';
-import { TreeComponent } from './components/tree/tree.component';
-import { PanelsComponent } from './components/panels/panels.component';
-import { OverlaysComponent } from './components/overlays/overlays.component';
-import { MediaComponent } from './components/media/media.component';
-import { MenusComponent } from './components/menus/menus.component';
-import { MessagesComponent } from './components/messages/messages.component';
-import { MiscComponent } from './components/misc/misc.component';
-import { EmptyComponent } from './components/empty/empty.component';
-import { ChartsComponent } from './components/charts/charts.component';
-import { FileComponent } from './components/file/file.component';
-import { DocumentationComponent } from './components/documentation/documentation.component';
-import { CrudComponent } from './components/crud/crud.component';
-import { TimelineComponent } from './components/timeline/timeline.component';
-import { IconsComponent } from './components/icons/icons.component';
 import { BlocksComponent } from './components/blocks/blocks.component';
-import { PaymentComponent } from './components/menus/payment.component';
+import { ButtonComponent } from './components/button/button.component';
+import { ChartsComponent } from './components/charts/charts.component';
+import { CrudComponent } from './components/crud/crud.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { DocumentationComponent } from './components/documentation/documentation.component';
+import { EmptyComponent } from './components/empty/empty.component';
+import { FileComponent } from './components/file/file.component';
+import { FloatLabelComponent } from './components/floatlabel/floatlabel.component';
+import { FormLayoutComponent } from './components/formlayout/formlayout.component';
+import { IconsComponent } from './components/icons/icons.component';
+import { InputComponent } from './components/input/input.component';
+import { InvalidStateComponent } from './components/invalidstate/invalidstate.component';
+import { LandingComponent } from './components/landing/landing.component';
+import { ListComponent } from './components/list/list.component';
+import { MediaComponent } from './components/media/media.component';
 import { ConfirmationComponent } from './components/menus/confirmation.component';
+import { MenusComponent } from './components/menus/menus.component';
+import { PaymentComponent } from './components/menus/payment.component';
 import { PersonalComponent } from './components/menus/personal.component';
 import { SeatComponent } from './components/menus/seat.component';
-import { LandingComponent } from './components/landing/landing.component';
+import { MessagesComponent } from './components/messages/messages.component';
+import { MiscComponent } from './components/misc/misc.component';
+import { OverlaysComponent } from './components/overlays/overlays.component';
+import { PanelsComponent } from './components/panels/panels.component';
+import { TableComponent } from './components/table/table.component';
+import { TimelineComponent } from './components/timeline/timeline.component';
+import { TreeComponent } from './components/tree/tree.component';
 
+import { AccessComponent } from './components/access/access.component';
+import { ErrorComponent } from './components/error/error.component';
+import { LoginComponent } from './components/login/login.component';
+import { NotfoundComponent } from './components/notfound/notfound.component';
+import { ConnectionManagerComponent } from './pages/connection-manager/connection-manager.component';
+import { HomeComponent } from './pages/home/home.component';
+import { UserManagerComponent } from './pages/user-manager/user-manager.component';
+import { ConfigService } from './service/app.config.service';
+import { MenuService } from './service/app.menu.service';
 import { CountryService } from './service/countryservice';
 import { CustomerService } from './service/customerservice';
 import { EventService } from './service/eventservice';
@@ -134,20 +143,13 @@ import { IconService } from './service/iconservice';
 import { NodeService } from './service/nodeservice';
 import { PhotoService } from './service/photoservice';
 import { ProductService } from './service/productservice';
-import { MenuService } from './service/app.menu.service';
-import { ConfigService } from './service/app.config.service';
-import { LoginComponent } from './components/login/login.component';
-import { ErrorComponent } from './components/error/error.component';
-import { NotfoundComponent } from './components/notfound/notfound.component';
-import { AccessComponent } from './components/access/access.component';
-import { HomeComponent } from './pages/home/home.component';
-import { ConnectionManagerComponent } from './pages/connection-manager/connection-manager.component';
-import { UserManagerComponent } from './pages/user-manager/user-manager.component';
+import { ConfirmationService } from 'primeng/api';
 
 @NgModule({
     imports: [
         BrowserModule,
         FormsModule,
+        ReactiveFormsModule,
         AppRoutingModule,
         HttpClientModule,
         BrowserAnimationsModule,
@@ -279,12 +281,12 @@ import { UserManagerComponent } from './pages/user-manager/user-manager.componen
 
         HomeComponent,
         ConnectionManagerComponent,
-        UserManagerComponent
+        UserManagerComponent,
     ],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },
         CountryService, CustomerService, EventService, IconService, NodeService,
-        PhotoService, ProductService, MenuService, ConfigService
+        PhotoService, ProductService, MenuService, ConfigService, ConfirmationService
     ],
     bootstrap: [AppComponent]
 })

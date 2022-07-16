@@ -18,6 +18,7 @@ specifiers:
   '@types/node': ^12.11.1
   chart.js: ^3.3.2
   codelyzer: ^6.0.0
+  guid-ts: ^1.1.2
   jasmine-core: ~3.10.0
   jasmine-spec-reporter: ~5.0.0
   karma: ~6.3.0
@@ -50,6 +51,7 @@ dependencies:
   '@angular/platform-browser-dynamic': 14.0.6_5qq33cwqpmskqkofsmdwscvapm
   '@angular/router': 14.0.6_x7bxrt5gerelbc6qgr3iwopgve
   chart.js: 3.8.0
+  guid-ts: 1.1.2
   primeflex: 3.2.1
   primeicons: 5.0.0
   primeng: 13.4.1_wc5hzhoigq2hrwvvdf2q5ejnc4
@@ -4300,6 +4302,10 @@ packages:
   /graceful-fs/4.2.10:
     resolution: {integrity: sha512-9ByhssR2fPVsNZj478qUUbKfmL0+t5BDVyjShtyZZLiK7ZDAArFFfopyOTj0M05wE2tJPisA4iTnnXl2YoPvOA==}
     dev: true
+
+  /guid-ts/1.1.2:
+    resolution: {integrity: sha512-8LKkTis9udlKO23g+wEEmQxrpaq4cj41IQuAjy+NXyrPKSBLXssTVaBXVs+u8jv1nkjUl9fExgrYoqh3Rsd8Bg==}
+    dev: false
 
   /handle-thing/2.0.1:
     resolution: {integrity: sha512-9Qn4yBxelxoh2Ow62nP+Ka/kMnOXRi8BXnRaUwezLNhqelnN49xKz4F/dPP8OYLxLxq6JDtZb2i9XznUQbNPTg==}

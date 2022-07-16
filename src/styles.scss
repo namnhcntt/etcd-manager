@@ -9,3 +9,13 @@
 @import "assets/sass/layout/_variables";
 @import "assets/sass/layout/_layout";
 @import "assets/sass/overrides/_overrides";
+
+
+.form-footer {
+    text-align: center;
+
+    button {
+        margin-left: 20px;
+        margin-top: 20px;
+    }
+}

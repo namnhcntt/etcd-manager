@@ -4,15 +4,19 @@
             <h5>Toolbar</h5>
             <p-toolbar>
                 <div class="p-toolbar-group-left flex flex-wrap">
-                    <button pButton type="button" label="New" icon="pi pi-plus" class="mr-2"></button>
-                    <button pButton type="button" label="Open" icon="pi pi-folder-open"
+                    <button aria-label="button" pButton type="button" label="New" icon="pi pi-plus"
+                        class="mr-2"></button>
+                    <button aria-label="button" pButton type="button" label="Open" icon="pi pi-folder-open"
                         class="p-button-secondary mr-2"></button>
 
                     <i aria-hidden="true" class="pi pi-bars p-toolbar-separator"></i>
 
-                    <button pButton type="button" icon="pi pi-check" class="p-button-success mr-2"></button>
-                    <button pButton type="button" icon="pi pi-trash" class="p-button-warning mr-2"></button>
-                    <button pButton type="button" icon="pi pi-print" class="p-button-danger"></button>
+                    <button aria-label="button" pButton type="button" icon="pi pi-check"
+                        class="p-button-success mr-2"></button>
+                    <button aria-label="button" pButton type="button" icon="pi pi-trash"
+                        class="p-button-warning mr-2"></button>
+                    <button aria-label="button" pButton type="button" icon="pi pi-print"
+                        class="p-button-danger"></button>
                 </div>
 
                 <div class="p-toolbar-group-right">
@@ -123,7 +127,7 @@
             <div class="flex align-items-center justify-content-between mb-0">
                 <h5>Card</h5>
                 <p-menu #menu [popup]="true" [model]="cardMenu"></p-menu>
-                <button pButton type="button" icon="pi pi-plus" class="p-button-text"
+                <button aria-label="button" pButton type="button" icon="pi pi-plus" class="p-button-text"
                     (click)="menu.toggle($event)"></button>
             </div>
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et

@@ -9,8 +9,8 @@
     </a>
 
     <div class="layout-topbar-menu" [ngClass]="{'layout-topbar-menu-mobile-active':appMain.topMenuActive}">
-        <p-dropdown [(ngModel)]="selectedConnection" [optionValue]="connections" optionLabel="name" optionValue="name"
-            placeholder="Select connection...">
+        <p-dropdown [(ngModel)]="selectedConnection" [filter]="true" [options]="connections" optionLabel="name"
+            optionValue="name" placeholder="Select connection...">
         </p-dropdown>
         <a [routerLink]="'/'" class="p-link layout-topbar-button">
             <i aria-hidden="true" class="pi pi-home"></i>
@@ -26,3 +26,4 @@
         </a>
     </div>
 </div>
+<p-confirmPopup></p-confirmPopup>

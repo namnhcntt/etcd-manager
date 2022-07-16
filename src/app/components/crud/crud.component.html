@@ -5,10 +5,10 @@
             <p-toolbar styleClass="mb-4">
                 <ng-template pTemplate="left">
                     <div class="my-2">
-                        <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2"
-                            (click)="openNew()"></button>
-                        <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger"
-                            (click)="deleteSelectedProducts()"
+                        <button aria-label="button" pButton pRipple label="New" icon="pi pi-plus"
+                            class="p-button-success mr-2" (click)="openNew()"></button>
+                        <button aria-label="button" pButton pRipple label="Delete" icon="pi pi-trash"
+                            class="p-button-danger" (click)="deleteSelectedProducts()"
                             [disabled]="!selectedProducts || !selectedProducts.length"></button>
                     </div>
                 </ng-template>
@@ -16,7 +16,7 @@
                 <ng-template pTemplate="right">
                     <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import"
                         chooseLabel="Import" class="mr-2 inline-block"></p-fileUpload>
-                    <button pButton pRipple label="Export" icon="pi pi-upload" class="p-button-help"
+                    <button aria-label="button" pButton pRipple label="Export" icon="pi pi-upload" class="p-button-help"
                         (click)="dt.exportCSV()"></button>
                 </ng-template>
             </p-toolbar>
@@ -38,23 +38,24 @@
                 </ng-template>
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="width: 3rem">
+                        <th scope="col" style="width: 3rem">
                             <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                         </th>
-                        <th pSortableColumn="code">Code <p-sortIcon field="code"></p-sortIcon>
+                        <th scope="col" pSortableColumn="code">Code <p-sortIcon field="code"></p-sortIcon>
                         </th>
-                        <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon>
+                        <th scope="col" pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon>
                         </th>
-                        <th>Image</th>
-                        <th pSortableColumn="price">Price <p-sortIcon field="price"></p-sortIcon>
+                        <th scope="col">Image</th>
+                        <th scope="col" pSortableColumn="price">Price <p-sortIcon field="price"></p-sortIcon>
                         </th>
-                        <th pSortableColumn="category">Category <p-sortIcon field="category"></p-sortIcon>
+                        <th scope="col" pSortableColumn="category">Category <p-sortIcon field="category"></p-sortIcon>
                         </th>
-                        <th pSortableColumn="rating">Reviews <p-sortIcon field="rating"></p-sortIcon>
+                        <th scope="col" pSortableColumn="rating">Reviews <p-sortIcon field="rating"></p-sortIcon>
                         </th>
-                        <th pSortableColumn="inventoryStatus">Status <p-sortIcon field="inventoryStatus"></p-sortIcon>
+                        <th scope="col" pSortableColumn="inventoryStatus">Status <p-sortIcon field="inventoryStatus">
+                            </p-sortIcon>
                         </th>
-                        <th></th>
+                        <th scope="col"></th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-product>
@@ -90,11 +91,11 @@
                         </td>
                         <td>
                             <div class="flex">
-                                <button pButton pRipple icon="pi pi-pencil"
+                                <button aria-label="button" pButton pRipple icon="pi pi-pencil"
                                     class="p-button-rounded p-button-success mr-2"
                                     (click)="editProduct(product)"></button>
-                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning"
-                                    (click)="deleteProduct(product)"></button>
+                                <button aria-label="button" pButton pRipple icon="pi pi-trash"
+                                    class="p-button-rounded p-button-warning" (click)="deleteProduct(product)"></button>
                             </div>
                         </td>
                     </tr>
@@ -173,9 +174,9 @@
             </ng-template>
 
             <ng-template pTemplate="footer">
-                <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text"
+                <button aria-label="button" pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text"
                     (click)="hideDialog()"></button>
-                <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text"
+                <button aria-label="button" pButton pRipple label="Save" icon="pi pi-check" class="p-button-text"
                     (click)="saveProduct()"></button>
             </ng-template>
         </p-dialog>
@@ -186,9 +187,9 @@
                 <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
             </div>
             <ng-template pTemplate="footer">
-                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                <button aria-label="button" pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
                     (click)="deleteProductDialog = false"></button>
-                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes"
+                <button aria-label="button" pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes"
                     (click)="confirmDelete()"></button>
             </ng-template>
         </p-dialog>
@@ -199,9 +200,9 @@
                 <span>Are you sure you want to delete selected products?</span>
             </div>
             <ng-template pTemplate="footer">
-                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                <button aria-label="button" pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
                     (click)="deleteProductsDialog = false"></button>
-                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes"
+                <button aria-label="button" pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes"
                     (click)="confirmDeleteSelected()"></button>
             </ng-template>
         </p-dialog>

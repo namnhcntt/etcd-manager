@@ -70,12 +70,12 @@
             <p-table [value]="products" [paginator]="true" [rows]="5" responsiveLayout="scroll">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th>Image</th>
-                        <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon>
+                        <th scope="col">Image</th>
+                        <th scope="col" pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon>
                         </th>
-                        <th pSortableColumn="price">Price <p-sortIcon field="price"></p-sortIcon>
+                        <th scope="col" pSortableColumn="price">Price <p-sortIcon field="price"></p-sortIcon>
                         </th>
-                        <th>View</th>
+                        <th scope="col">View</th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-product>
@@ -87,7 +87,7 @@
                         <td style="width: 35%; min-width: 7rem;">{{product.name}}</td>
                         <td style="width: 35%; min-width: 8rem;">{{product.price | currency:'USD'}}</td>
                         <td style="width: 15%;">
-                            <button pButton pRipple type="button" icon="pi pi-search"
+                            <button aria-label="button" pButton pRipple type="button" icon="pi pi-search"
                                 class="p-button p-component p-button-text p-button-icon-only"></button>
                         </td>
                     </tr>
@@ -98,7 +98,7 @@
             <div class="flex justify-content-between align-items-center mb-5">
                 <h5>Best Selling Products</h5>
                 <div>
-                    <button pButton type="button" icon="pi pi-ellipsis-v"
+                    <button aria-label="button" pButton type="button" icon="pi pi-ellipsis-v"
                         class="p-button-rounded p-button-text p-button-plain" (click)="menu.toggle($event)"></button>
                     <p-menu #menu [popup]="true" [model]="items"></p-menu>
                 </div>
@@ -196,7 +196,7 @@
             <div class="flex align-items-center justify-content-between mb-4">
                 <h5>Notifications</h5>
                 <div>
-                    <button pButton type="button" icon="pi pi-ellipsis-v"
+                    <button aria-label="button" pButton type="button" icon="pi pi-ellipsis-v"
                         class="p-button-rounded p-button-text p-button-plain" (click)="menu.toggle($event)"></button>
                     <p-menu #menu [popup]="true" [model]="items"></p-menu>
                 </div>

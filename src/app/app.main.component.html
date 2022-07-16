@@ -22,8 +22,8 @@
 </div>
 
 <ng-container *ngIf="dipslaySidebar['/connection-manager']">
-    <p-sidebar [(visible)]="dipslaySidebar['/connection-manager']" styleClass="p-sidebar-lg" position="right">
-        <app-connection-manager></app-connection-manager>
+    <p-sidebar [(visible)]="dipslaySidebar['/connection-manager']" styleClass="p-sidebar-lg" position="right" #sidebar>
+        <app-connection-manager (closeForm)="dipslaySidebar['/connection-manager'] = false"></app-connection-manager>
     </p-sidebar>
 </ng-container>
 

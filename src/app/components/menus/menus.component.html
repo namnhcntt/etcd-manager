@@ -55,8 +55,8 @@
             <h5>Overlay Menu</h5>
 
             <p-menu #menu [popup]="true" [model]="menuItems"></p-menu>
-            <button type="button" pButton icon="pi pi-chevron-down" label="Options" (click)="menu.toggle($event)"
-                style="width:auto"></button>
+            <button aria-label="button" type="button" pButton icon="pi pi-chevron-down" label="Options"
+                (click)="menu.toggle($event)" style="width:auto"></button>
         </div>
 
         <div class="card card-w-title" #anchor>
