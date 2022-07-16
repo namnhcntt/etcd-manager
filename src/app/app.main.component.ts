@@ -52,7 +52,12 @@ export class AppMainComponent implements AfterViewInit, OnDestroy, OnInit {
     config: AppConfig;
 
     subscription: Subscription;
-    
+    dipslaySidebar1 = false;
+    dipslaySidebar = {
+        '/connection-manager': false,
+        '/user-manager': false
+    }
+
     constructor(public renderer: Renderer2, public app: AppComponent, public configService: ConfigService) { }
 
     ngOnInit() {
@@ -76,7 +81,7 @@ export class AppMainComponent implements AfterViewInit, OnDestroy, OnInit {
                 if (!this.menuClick && this.isOverlay()) {
                     this.menuInactiveDesktop = true;
                 }
-                if (!this.menuClick){
+                if (!this.menuClick) {
                     this.overlayMenuActive = false;
                 }
             }
@@ -96,7 +101,7 @@ export class AppMainComponent implements AfterViewInit, OnDestroy, OnInit {
 
         if (this.isDesktop()) {
             if (this.app.menuMode === 'overlay') {
-                if(this.menuActiveMobile === true) {
+                if (this.menuActiveMobile === true) {
                     this.overlayMenuActive = true;
                 }
 
@@ -161,7 +166,7 @@ export class AppMainComponent implements AfterViewInit, OnDestroy, OnInit {
         return window.innerWidth > 992;
     }
 
-    isMobile(){
+    isMobile() {
         return window.innerWidth < 1024;
     }
 
@@ -178,5 +183,14 @@ export class AppMainComponent implements AfterViewInit, OnDestroy, OnInit {
         if (this.subscription) {
             this.subscription.unsubscribe();
         }
+    }
+
+    onClickPageTopbar(url) {
+        this.hiddenAllSidebar();
+        this.dipslaySidebar[url] = true;
+    }
+
+    hiddenAllSidebar() {
+        Object.keys(this.dipslaySidebar).forEach(key => this.dipslaySidebar[key] = false);
     }
 }

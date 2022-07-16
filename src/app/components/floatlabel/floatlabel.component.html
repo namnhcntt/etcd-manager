@@ -10,7 +10,7 @@
         <div class="field col-12 md:col-4">
             <span class="p-float-label">
                 <p-autoComplete inputId="autocomplete" [(ngModel)]="value2" [suggestions]="filteredCountries"
-                (completeMethod)="searchCountry($event)" field="name"></p-autoComplete>
+                    (completeMethod)="searchCountry($event)" field="name"></p-autoComplete>
                 <label for="autocomplete">AutoComplete</label>
             </span>
         </div>
@@ -41,23 +41,25 @@
         <div class="field col-12 md:col-4">
             <div class="p-inputgroup">
                 <span class="p-inputgroup-addon">
-                    <i class="pi pi-user"></i>
+                    <i aria-hidden="true" class="pi pi-user"></i>
                 </span>
                 <span class="p-float-label">
-                    <input type="text" inputId="inputgroup" pInputText [(ngModel)]="value7"> 
+                    <input type="text" inputId="inputgroup" pInputText [(ngModel)]="value7">
                     <label for="inputgroup">InputGroup</label>
                 </span>
             </div>
         </div>
         <div class="field col-12 md:col-4">
             <span class="p-float-label">
-                <p-dropdown inputId="dropdown" [autoDisplayFirst]="false" [options]="cities" [(ngModel)]="value8" optionLabel="name"></p-dropdown>
+                <p-dropdown inputId="dropdown" [autoDisplayFirst]="false" [options]="cities" [(ngModel)]="value8"
+                    optionLabel="name"></p-dropdown>
                 <label for="dropdown">Dropdown</label>
             </span>
         </div>
         <div class="field col-12 md:col-4">
             <span class="p-float-label">
-                <p-multiSelect inputId="multiselect" [options]="cities" [(ngModel)]="value9" optionLabel="name" [filter]="false"></p-multiSelect>
+                <p-multiSelect inputId="multiselect" [options]="cities" [(ngModel)]="value9" optionLabel="name"
+                    [filter]="false"></p-multiSelect>
                 <label for="multiselect">MultiSelect</label>
             </span>
         </div>

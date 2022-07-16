@@ -25,14 +25,17 @@
             </div>
 
             <h5>Positioned Badge</h5>
-            <i class="pi pi-bell mr-4 p-text-secondary" pBadge style="font-size: 2rem" value="2"></i>
-            <i class="pi pi-calendar mr-4 p-text-secondary" pBadge style="font-size: 2rem" [value]="'10+'" severity="danger"></i>
-            <i class="pi pi-envelope p-text-secondary" pBadge style="font-size: 2rem" severity="danger"></i>
+            <i aria-hidden="true" class="pi pi-bell mr-4 p-text-secondary" pBadge style="font-size: 2rem" value="2"></i>
+            <i aria-hidden="true" class="pi pi-calendar mr-4 p-text-secondary" pBadge style="font-size: 2rem"
+                [value]="'10+'" severity="danger"></i>
+            <i aria-hidden="true" class="pi pi-envelope p-text-secondary" pBadge style="font-size: 2rem"
+                severity="danger"></i>
 
 
             <h5>Inline Button Badge</h5>
             <p-button label="Emails" badge="8" styleClass="mr-2"></p-button>
-            <p-button label="Messages" icon="pi pi-users" styleClass="p-button-warning" badge="8" badgeClass="p-badge-danger"></p-button>
+            <p-button label="Messages" icon="pi pi-users" styleClass="p-button-warning" badge="8"
+                badgeClass="p-badge-danger"></p-button>
 
             <h5>Sizes</h5>
             <div>
@@ -50,14 +53,17 @@
                 <p-avatar image="assets/demo/images/avatar/asiyajavayant.png" size="large" shape="circle"></p-avatar>
                 <p-avatar image="assets/demo/images/avatar/onyamalimba.png" size="large" shape="circle"></p-avatar>
                 <p-avatar image="assets/demo/images/avatar/ionibowcher.png" size="large" shape="circle"></p-avatar>
-                <p-avatar image="assets/demo/images/avatar/xuxuefeng.png" size="large"shape="circle"></p-avatar>
-                <p-avatar label="+2" shape="circle" size="large" [style]="{'background-color':'#9c27b0', 'color': '#ffffff'}"></p-avatar>
+                <p-avatar image="assets/demo/images/avatar/xuxuefeng.png" size="large" shape="circle"></p-avatar>
+                <p-avatar label="+2" shape="circle" size="large"
+                    [style]="{'background-color':'#9c27b0', 'color': '#ffffff'}"></p-avatar>
             </p-avatarGroup>
 
             <h5>Label - Circle</h5>
             <p-avatar label="P" styleClass="mr-2" size="xlarge" shape="circle"></p-avatar>
-            <p-avatar label="V" styleClass="mr-2" size="large" [style]="{'background-color':'#2196F3', 'color': '#ffffff'}" shape="circle"></p-avatar>
-            <p-avatar label="U" styleClass="mr-2" [style]="{'background-color': '#9c27b0', 'color': '#ffffff'}" shape="circle"></p-avatar>
+            <p-avatar label="V" styleClass="mr-2" size="large"
+                [style]="{'background-color':'#2196F3', 'color': '#ffffff'}" shape="circle"></p-avatar>
+            <p-avatar label="U" styleClass="mr-2" [style]="{'background-color': '#9c27b0', 'color': '#ffffff'}"
+                shape="circle"></p-avatar>
 
             <h5>Icon - Badge</h5>
             <p-avatar icon="pi pi-user" pBadge value="4" severity="success" styleClass="mr-2" size="xlarge"></p-avatar>
@@ -67,19 +73,25 @@
             <h4>ScrollTop</h4>
             <p-scrollPanel [style]="{width: '250px', height: '200px'}">
                 <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
+                    et dolore magna aliqua.
                     Vitae et leo duis ut diam.
                     Ultricies mi quis hendrerit dolor magna eget est lorem. Amet consectetur adipiscing elit ut.
                     Nam libero justo laoreet sit amet. Pharetra massa massa ultricies mi quis hendrerit dolor magna.
-                    Est ultricies integer quis auctor elit sed vulputate. Consequat ac felis donec et. Tellus orci ac auctor augue mauris.
-                    Semper feugiat nibh sed pulvinar proin gravida hendrerit lectus a. Tincidunt arcu non sodales neque sodales.
-                    Metus aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Sodales ut etiam sit amet nisl purus.
+                    Est ultricies integer quis auctor elit sed vulputate. Consequat ac felis donec et. Tellus orci ac
+                    auctor augue mauris.
+                    Semper feugiat nibh sed pulvinar proin gravida hendrerit lectus a. Tincidunt arcu non sodales neque
+                    sodales.
+                    Metus aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Sodales ut etiam sit amet
+                    nisl purus.
                     Cursus sit amet dictum sit amet. Tristique senectus et netus et malesuada fames ac turpis egestas.
                     Et tortor consequat id porta nibh venenatis cras sed. Diam maecenas ultricies mi eget mauris.
-                    Eget egestas purus viverra accumsan in nisl nisi. Suscipit adipiscing bibendum est ultricies integer.
+                    Eget egestas purus viverra accumsan in nisl nisi. Suscipit adipiscing bibendum est ultricies
+                    integer.
                     Mattis aliquam faucibus purus in massa tempor nec.
                 </p>
-                <p-scrollTop target="parent" styleClass="custom-scrolltop" [threshold]="100" icon="pi pi-arrow-up"></p-scrollTop>
+                <p-scrollTop target="parent" styleClass="custom-scrolltop" [threshold]="100" icon="pi pi-arrow-up">
+                </p-scrollTop>
             </p-scrollPanel>
         </div>
     </div>
@@ -129,17 +141,22 @@
             <h5>Image</h5>
             <div class="flex align-items-center flex-column sm:flex-row">
                 <p-chip label="Amy Elsner" image="assets/demo/images/avatar/amyelsner.png" styleClass="m-1"></p-chip>
-                <p-chip label="Asiya Javayant" image="assets/demo/images/avatar/asiyajavayant.png" styleClass="m-1"></p-chip>
-                <p-chip label="Onyama Limba" image="assets/demo/images/avatar/onyamalimba.png" styleClass="m-1"></p-chip>
-                <p-chip label="Xuxue Feng" image="assets/demo/images/avatar/xuxuefeng.png" styleClass="m-1" [removable]="true"></p-chip>
+                <p-chip label="Asiya Javayant" image="assets/demo/images/avatar/asiyajavayant.png" styleClass="m-1">
+                </p-chip>
+                <p-chip label="Onyama Limba" image="assets/demo/images/avatar/onyamalimba.png" styleClass="m-1">
+                </p-chip>
+                <p-chip label="Xuxue Feng" image="assets/demo/images/avatar/xuxuefeng.png" styleClass="m-1"
+                    [removable]="true"></p-chip>
             </div>
 
             <h5>Styling</h5>
             <div class="flex align-items-center flex-column sm:flex-row">
                 <p-chip label="Action" styleClass="m-1 custom-chip"></p-chip>
                 <p-chip label="Comedy" styleClass="m-1 custom-chip"></p-chip>
-                <p-chip label="Onyama Limba" image="assets/demo/images/avatar/onyamalimba.png" styleClass="m-1 custom-chip"></p-chip>
-                <p-chip label="Xuxue Feng" image="assets/demo/images/avatar/xuxuefeng.png" [removable]="true" styleClass="m-1 custom-chip"></p-chip>
+                <p-chip label="Onyama Limba" image="assets/demo/images/avatar/onyamalimba.png"
+                    styleClass="m-1 custom-chip"></p-chip>
+                <p-chip label="Xuxue Feng" image="assets/demo/images/avatar/xuxuefeng.png" [removable]="true"
+                    styleClass="m-1 custom-chip"></p-chip>
             </div>
         </div>
 

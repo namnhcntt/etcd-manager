@@ -4,25 +4,24 @@
         <span>Etcd Manager</span>
     </a>
 
-    <!-- <a class="p-link layout-menu-button layout-topbar-button" href="#" (click)="appMain.toggleMenu($event)">
-        <i class="pi pi-bars"></i>
-    </a> -->
-
     <a class="p-link layout-topbar-menu-button layout-topbar-button" href="#" (click)="appMain.toggleTopMenu($event)">
-        <i class="pi pi-ellipsis-v"></i>
+        <i aria-hidden="true" class="pi pi-ellipsis-v"></i>
     </a>
 
     <div class="layout-topbar-menu" [ngClass]="{'layout-topbar-menu-mobile-active':appMain.topMenuActive}">
+        <p-dropdown [(ngModel)]="selectedConnection" [optionValue]="connections" optionLabel="name" optionValue="name"
+            placeholder="Select connection...">
+        </p-dropdown>
         <a [routerLink]="'/'" class="p-link layout-topbar-button">
-            <i class="pi pi-home"></i>
+            <i aria-hidden="true" class="pi pi-home"></i>
             <span>Home</span>
         </a>
-        <a [routerLink]="'/connection-manager'" class="p-link layout-topbar-button">
-            <i class="pi pi-cog"></i>
+        <a (click)="onClickPage.emit('/connection-manager')" class="p-link layout-topbar-button">
+            <i aria-hidden="true" class="pi pi-cog"></i>
             <span>Connection manager</span>
         </a>
-        <a [routerLink]="'/user-manager'" class="p-link layout-topbar-button">
-            <i class="pi pi-user"></i>
+        <a (click)="onClickPage.emit('/user-manager')" class="p-link layout-topbar-button">
+            <i aria-hidden="true" class="pi pi-user"></i>
             <span>User manager</span>
         </a>
     </div>

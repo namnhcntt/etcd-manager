@@ -6,7 +6,7 @@
                 <ng-template pTemplate="end">
                     <span class="p-input-icon-right">
                         <input type="text" pInputText placeholder="Search">
-                        <i class="pi pi-search"></i>
+                        <i aria-hidden="true" class="pi pi-search"></i>
                     </span>
                 </ng-template>
             </p-menubar>
@@ -55,7 +55,8 @@
             <h5>Overlay Menu</h5>
 
             <p-menu #menu [popup]="true" [model]="menuItems"></p-menu>
-            <button type="button" pButton icon="pi pi-chevron-down" label="Options" (click)="menu.toggle($event)" style="width:auto"></button>
+            <button type="button" pButton icon="pi pi-chevron-down" label="Options" (click)="menu.toggle($event)"
+                style="width:auto"></button>
         </div>
 
         <div class="card card-w-title" #anchor>
