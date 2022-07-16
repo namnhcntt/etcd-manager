@@ -6,7 +6,7 @@ import { PrimeNGConfig } from 'primeng/api';
 })
 export class AppComponent {
 
-    menuMode = 'static';
+    menuMode = 'overlay';
 
     constructor(private primengConfig: PrimeNGConfig) { }
 
