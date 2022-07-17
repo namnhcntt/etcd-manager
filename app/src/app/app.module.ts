@@ -143,7 +143,7 @@ import { IconService } from './service/iconservice';
 import { NodeService } from './service/nodeservice';
 import { PhotoService } from './service/photoservice';
 import { ProductService } from './service/productservice';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 @NgModule({
     imports: [
@@ -286,7 +286,8 @@ import { ConfirmationService } from 'primeng/api';
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },
         CountryService, CustomerService, EventService, IconService, NodeService,
-        PhotoService, ProductService, MenuService, ConfigService, ConfirmationService
+        PhotoService, ProductService, MenuService, ConfigService, ConfirmationService,
+        MessageService
     ],
     bootstrap: [AppComponent]
 })

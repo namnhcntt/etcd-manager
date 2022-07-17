@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Guid } from 'guid-ts';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { Sidebar } from 'primeng/sidebar';
 import { AppEventService } from 'src/app/service/app-event.service';
 import { ConnectionService } from 'src/app/service/connection.service';
@@ -17,13 +17,15 @@ export class ConnectionManagerComponent implements OnInit {
     connections = [];
     formState: 'list' | 'new' | 'edit' = 'list';
     form: FormGroup;
+    msgs = [];
 
     @Output() closeForm: EventEmitter<void> = new EventEmitter<void>();
 
     constructor(
         private _connectionService: ConnectionService,
         private _confirmationService: ConfirmationService,
-        private _appEventService: AppEventService
+        private _appEventService: AppEventService,
+        private _messageService: MessageService
     ) {
         this.form = new FormGroup({
             id: new FormControl(),
@@ -31,6 +33,7 @@ export class ConnectionManagerComponent implements OnInit {
             server: new FormControl('10.0.68.171:2379', { nonNullable: true, validators: [Validators.required] }),
             username: new FormControl('root', { nonNullable: true, validators: [Validators.required] }),
             password: new FormControl('123456a@', { nonNullable: true, validators: [Validators.minLength(8)], updateOn: 'blur' }),
+            insecure: new FormControl(true)
         });
     }
 
@@ -72,7 +75,15 @@ export class ConnectionManagerComponent implements OnInit {
     }
 
     checkConnection() {
-
+        this._connectionService.checkConnection(this.form.value).then(rs => {
+            console.log('result', rs);
+            this.msgs.length = 0;
+            this.msgs.push({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Connection is valid'
+            });
+        });
     }
 
     editConnection(item: any) {

@@ -18,8 +18,8 @@ public class ConnectionController : ControllerBase
     }
 
     [HttpGet("CheckConnection")]
-    public bool CheckConnection(string server, string userName, string password)
+    public async Task<IActionResult> CheckConnection(string server, int port, string userName, string password, bool insecure = false)
     {
-        return this._connectionService.TestConnection(server, userName, password);
+        return Ok(await this._connectionService.TestConnection(server, port, userName, password, insecure));
     }
 }

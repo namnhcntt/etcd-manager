@@ -1,5 +1,8 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Guid } from 'guid-ts';
+import { firstValueFrom } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
     providedIn: 'root'
@@ -7,6 +10,20 @@ import { Guid } from 'guid-ts';
 export class ConnectionService {
 
     readonly STORAGE_KEY = 'etcdmanager_data';
+    readonly ENDPOINT_CHECK_CONNECTION = 'connection/checkconnection';
+    constructor(
+        private _httpClient: HttpClient
+    ) {
+
+    }
+
+    checkConnection(connection: any): Promise<string> {
+        const arr = connection.server.split(':');
+        const host = arr[0];
+        const port = arr.length > 1 ? arr[1] : 2379;
+        const url = `${environment.apiEndpoint}/${this.ENDPOINT_CHECK_CONNECTION}?server=${host}&port=${port}&username=${connection.username}&password=${connection.password}&insecure=${connection.insecure}`;
+        return firstValueFrom(this._httpClient.get<string>(url));
+    }
 
     update(connection: any): string {
         const ds = this.getDataSource();
@@ -18,6 +35,7 @@ export class ConnectionService {
             existItem.server = connection.server;
             existItem.username = connection.username;
             existItem.password = connection.password;
+            existItem.insecure = connection.insecure;
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(ds));
         } else {
             return 'item does not exist';

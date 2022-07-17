@@ -14,6 +14,7 @@
 
 <ng-template #formLayout>
     <h5>New connection</h5>
+    <p-messages [(value)]="msgs"></p-messages>
     <form class="p-fluid" [formGroup]="form">
         <h6>Connection name:</h6>
         <span class="p-float-label">
@@ -61,6 +62,8 @@
             <small id="password-help" class="p-error" *ngIf="form.get('password')?.errors?.['required']">Password is
                 required.</small>
         </ng-container>
+        <h6>Insecure:</h6>
+        <p-inputSwitch formControlName="insecure"></p-inputSwitch>
     </form>
     <div class="form-footer">
         <button arial-label="button" pButton type="button" label="Check connection" icon="pi pi-check"
