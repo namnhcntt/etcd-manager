@@ -52,7 +52,6 @@ export class AppMainComponent implements AfterViewInit, OnDestroy, OnInit {
     config: AppConfig;
 
     subscription: Subscription;
-    dipslaySidebar1 = false;
     dipslaySidebar = {
         '/connection-manager': false,
         '/user-manager': false
@@ -150,7 +149,7 @@ export class AppMainComponent implements AfterViewInit, OnDestroy, OnInit {
         this.menuClick = true;
     }
 
-    onConfigClick(event) {
+    onConfigClick(event: any) {
         this.configClick = true;
     }
 

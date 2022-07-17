@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Guid } from 'guid-ts';
 import { firstValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { ResponseModel } from '../models/response.model';
 
 @Injectable({
     providedIn: 'root'
@@ -17,12 +18,9 @@ export class ConnectionService {
 
     }
 
-    checkConnection(connection: any): Promise<string> {
-        const arr = connection.server.split(':');
-        const host = arr[0];
-        const port = arr.length > 1 ? arr[1] : 2379;
-        const url = `${environment.apiEndpoint}/${this.ENDPOINT_CHECK_CONNECTION}?server=${host}&port=${port}&username=${connection.username}&password=${connection.password}&insecure=${connection.insecure}`;
-        return firstValueFrom(this._httpClient.get<string>(url));
+    checkConnection(connection: any): Promise<ResponseModel> {
+        const url = `${environment.apiEndpoint}/${this.ENDPOINT_CHECK_CONNECTION}`;
+        return firstValueFrom(this._httpClient.post<ResponseModel>(url, connection));
     }
 
     update(connection: any): string {
@@ -55,12 +53,24 @@ export class ConnectionService {
     }
 
     validate(ds: any[], connection: any): string {
-        if (ds.some(x => x.name == connection.name)) {
+        if (ds.some(x => x.name == connection.name && x.id != connection.id && x.enableAuthenticated == connection.enableAuthenticated)) {
             return 'connection name already exists';
         }
-        const existItem = ds.find(x => x.server == connection.server && x.username == connection.username && x.password == connection.password);
-        if (existItem) {
-            return 'connection with server, username and password already exists with name "' + existItem.name + "\"";
+        if (connection.enableAuthenticated) {
+            const existItem = ds.find(x =>
+                x.server == connection.server
+                && x.username == connection.username
+                && x.password == connection.password
+                && x.enableAuthenticated == connection.enableAuthenticated
+                && x.id != connection.id);
+            if (existItem) {
+                return 'connection with server, username and password already exists with name "' + existItem.name + "\"";
+            }
+        } else {
+            const existItem = ds.find(x => x.server == connection.server && x.enableAuthenticated == false);
+            if (existItem) {
+                return 'connection with server, username and password already exists with name "' + existItem.name + "\"";
+            }
         }
         return '';
     }

@@ -1,3 +1,4 @@
+using EtcdManager.API.Models;
 using EtcdManager.API.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,9 +18,9 @@ public class ConnectionController : ControllerBase
         this._connectionService = connectionService;
     }
 
-    [HttpGet("CheckConnection")]
-    public async Task<IActionResult> CheckConnection(string server, int port, string userName, string password, bool insecure = false)
+    [HttpPost("CheckConnection")]
+    public async Task<IActionResult> CheckConnection([FromBody] ConnectionModel connectionModel)
     {
-        return Ok(await this._connectionService.TestConnection(server, port, userName, password, insecure));
+        return Ok(await this._connectionService.TestConnection(connectionModel));
     }
 }

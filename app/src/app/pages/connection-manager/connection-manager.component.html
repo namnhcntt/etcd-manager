@@ -13,7 +13,7 @@
 </div>
 
 <ng-template #formLayout>
-    <h5>New connection</h5>
+    <h5><span *ngIf="formState == 'new'">New</span><span *ngIf="formState == 'edit'">Edit</span> connection</h5>
     <p-messages [(value)]="msgs"></p-messages>
     <form class="p-fluid" [formGroup]="form">
         <h6>Connection name:</h6>
@@ -29,7 +29,7 @@
         </ng-container>
         <h6>Server:</h6>
         <span class="p-float-label">
-            <input pInputText formControlName="server" type="text" [ngClass]="{
+            <input pInputText formControlName="server" type="text" placeholder="14.225.3.52:2379" [ngClass]="{
                 'ng-invalid': form.get('server')?.invalid && (form.get('server')?.dirty || form.get('server')?.touched),
                 'ng-dirty': form.get('server')?.invalid && (form.get('server')?.dirty || form.get('server')?.touched)
             }" />
@@ -38,29 +38,36 @@
             <small id="server-help" class="p-error" *ngIf="form.get('server')?.errors?.['required']">Server is
                 required.</small>
         </ng-container>
-        <h6>Username:</h6>
-        <span class="p-float-label">
-            <input pInputText formControlName="username" type="text" [ngClass]="{
-                'ng-invalid': form.get('username')?.invalid && (form.get('username')?.dirty || form.get('username')?.touched),
-                'ng-dirty': form.get('username')?.invalid && (form.get('username')?.dirty || form.get('username')?.touched)
-            }" />
-        </span>
-        <ng-container
-            *ngIf="form.get('username')?.invalid && (form.get('username')?.dirty || form.get('username')?.touched)">
-            <small id="username-help" class="p-error" *ngIf="form.get('username')?.errors?.['required']">Username is
-                required.</small>
+        <h6>Enable Authenticated:</h6>
+        <p-inputSwitch formControlName="enableAuthenticated" (onChange)="handleChangeEnableAuthenticated($event)">
+        </p-inputSwitch>
+        <ng-container *ngIf="!form.get('username')?.disabled">
+            <h6>Username:</h6>
+            <span class="p-float-label">
+                <input pInputText formControlName="username" type="text" placeholder="root" [ngClass]="{
+                    'ng-invalid': form.get('username')?.invalid && (form.get('username')?.dirty || form.get('username')?.touched),
+                    'ng-dirty': form.get('username')?.invalid && (form.get('username')?.dirty || form.get('username')?.touched)
+                }" />
+            </span>
+            <ng-container
+                *ngIf="form.get('username')?.invalid && (form.get('username')?.dirty || form.get('username')?.touched)">
+                <small id="username-help" class="p-error" *ngIf="form.get('username')?.errors?.['required']">Username is
+                    required.</small>
+            </ng-container>
         </ng-container>
-        <h6>Password:</h6>
-        <span class="p-float-label">
-            <input pInputText formControlName="password" type="password" [ngClass]="{
+        <ng-container *ngIf="!form.get('password')?.disabled">
+            <h6>Password:</h6>
+            <span class="p-float-label">
+                <input pInputText formControlName="password" type="password" placeholder="your password..." [ngClass]="{
                 'ng-invalid': form.get('password')?.invalid && (form.get('password')?.dirty || form.get('password')?.touched),
                 'ng-dirty': form.get('password')?.invalid && (form.get('password')?.dirty || form.get('password')?.touched)
             }" />
-        </span>
-        <ng-container
-            *ngIf="form.get('password')?.invalid && (form.get('password')?.dirty || form.get('password')?.touched)">
-            <small id="password-help" class="p-error" *ngIf="form.get('password')?.errors?.['required']">Password is
-                required.</small>
+            </span>
+            <ng-container
+                *ngIf="form.get('password')?.invalid && (form.get('password')?.dirty || form.get('password')?.touched)">
+                <small id="password-help" class="p-error" *ngIf="form.get('password')?.errors?.['required']">Password is
+                    required.</small>
+            </ng-container>
         </ng-container>
         <h6>Insecure:</h6>
         <p-inputSwitch formControlName="insecure"></p-inputSwitch>

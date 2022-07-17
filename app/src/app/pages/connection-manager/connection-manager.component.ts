@@ -30,9 +30,10 @@ export class ConnectionManagerComponent implements OnInit {
         this.form = new FormGroup({
             id: new FormControl(),
             name: new FormControl(`connection ${Guid.newGuid().toString()}`, { nonNullable: true, validators: [Validators.required] }),
-            server: new FormControl('10.0.68.171:2379', { nonNullable: true, validators: [Validators.required] }),
-            username: new FormControl('root', { nonNullable: true, validators: [Validators.required] }),
-            password: new FormControl('123456a@', { nonNullable: true, validators: [Validators.minLength(8)], updateOn: 'blur' }),
+            server: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+            enableAuthenticated: new FormControl(true),
+            username: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+            password: new FormControl('', { nonNullable: true, validators: [Validators.minLength(8)], updateOn: 'blur' }),
             insecure: new FormControl(true)
         });
     }
@@ -77,12 +78,20 @@ export class ConnectionManagerComponent implements OnInit {
     checkConnection() {
         this._connectionService.checkConnection(this.form.value).then(rs => {
             console.log('result', rs);
-            this.msgs.length = 0;
-            this.msgs.push({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'Connection is valid'
-            });
+            this.msgs = [];
+            if (rs.success) {
+                this.msgs.push({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: rs.data
+                });
+            } else {
+                this.msgs.push({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: rs.message
+                });
+            }
         });
     }
 
@@ -106,5 +115,15 @@ export class ConnectionManagerComponent implements OnInit {
     onSelectConnection(connection: any) {
         this._appEventService.selectConnection(connection);
         this.closeForm.emit();
+    }
+
+    handleChangeEnableAuthenticated(evt) {
+        if (evt.checked) {
+            this.form.get('username').enable();
+            this.form.get('password').enable();
+        } else {
+            this.form.get('username').disable();
+            this.form.get('password').disable();
+        }
     }
 }
