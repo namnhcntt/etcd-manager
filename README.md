@@ -9,8 +9,11 @@
 * Primeng 13
 * Sakai theme free: https://www.primefaces.org/sakai-ng/
 # Development
-Prerequisites:
-
+Prerequisites: Install pmp first:
+```code
+npm i -g pnpm
+```
+then:
 ```code
 pnpm install
 pnpm run start
