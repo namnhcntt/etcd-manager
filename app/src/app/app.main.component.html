@@ -8,9 +8,6 @@
                                 'layout-mobile-sidebar-active':menuActiveMobile,
                                 'p-ripple-disabled': !config.ripple, 'p-input-filled': config.inputStyle === 'filled'}">
     <app-topbar (onClickPage)="onClickPageTopbar($event)"></app-topbar>
-    <div class="layout-sidebar">
-        <app-menu></app-menu>
-    </div>
     <div class="layout-main-container">
         <div class="layout-main">
             <router-outlet></router-outlet>
@@ -32,3 +29,4 @@
         <app-user-manager></app-user-manager>
     </p-sidebar>
 </ng-container>
+<p-toast position="top-right"></p-toast>

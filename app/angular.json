@@ -25,7 +25,17 @@
                         "inlineStyleLanguage": "scss",
                         "assets": [
                             "src/favicon.ico",
-                            "src/assets"
+                            "src/assets",
+                            {
+                                "glob": "**/*",
+                                "input": "./node_modules/monaco-editor/min",
+                                "output": "./assets/monaco"
+                            },
+                            {
+                                "glob": "**/*.js",
+                                "input": "./node_modules/@ngstack/code-editor/workers",
+                                "output": "./assets/workers"
+                            }
                         ],
                         "styles": [
                             "src/styles.scss"
@@ -34,7 +44,9 @@
                             "node_modules/prismjs/prism.js",
                             "node_modules/prismjs/components/prism-typescript.js"
                         ],
-                        "allowedCommonJsDependencies": ["chart.js"]
+                        "allowedCommonJsDependencies": [
+                            "chart.js"
+                        ]
                     },
                     "configurations": {
                         "production": {

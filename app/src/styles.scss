@@ -9,6 +9,7 @@
 @import "assets/sass/layout/_variables";
 @import "assets/sass/layout/_layout";
 @import "assets/sass/overrides/_overrides";
+@import "~prismjs/themes/prism-dark.css";
 
 
 .form-footer {
@@ -17,5 +18,19 @@
     button {
         margin-left: 20px;
         margin-top: 20px;
+    }
+}
+
+.layout-main {
+    width: 100%;
+}
+
+.dropdown-select-connection {
+    min-width: 500px;
+}
+
+.key-list-item {
+    i {
+        margin-right: 10px;
     }
 }

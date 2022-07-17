@@ -19,16 +19,17 @@
         "@angular/platform-browser": "~14.0.6",
         "@angular/platform-browser-dynamic": "~14.0.6",
         "@angular/router": "~14.0.6",
+        "@ngstack/code-editor": "^4.0.0",
         "chart.js": "^3.3.2",
+        "guid-ts": "^1.1.2",
+        "monaco-editor": "^0.33.0",
         "primeflex": "^3.1.0",
         "primeicons": "5.0.0",
         "primeng": "^13.1.0",
-        "prismjs": "1.9.0",
         "rxjs": "~7.4.0",
         "tslib": "^2.3.0",
         "web-animations-js": "^2.3.2",
-        "zone.js": "~0.11.4",
-        "guid-ts": "^1.1.2"
+        "zone.js": "~0.11.4"
     },
     "devDependencies": {
         "@angular-devkit/build-angular": "~14.0.6",
@@ -46,6 +47,7 @@
         "karma-coverage-istanbul-reporter": "~3.0.3",
         "karma-jasmine": "~4.0.0",
         "karma-jasmine-html-reporter": "~1.7.0",
+        "prismjs": "1.9.0",
         "protractor": "~7.0.0",
         "ts-node": "~8.3.0",
         "tslint": "~6.1.0",

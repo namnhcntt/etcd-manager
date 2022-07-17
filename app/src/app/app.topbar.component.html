@@ -7,11 +7,11 @@
     <a class="p-link layout-topbar-menu-button layout-topbar-button" href="#" (click)="appMain.toggleTopMenu($event)">
         <i aria-hidden="true" class="pi pi-ellipsis-v"></i>
     </a>
-
+    <p-dropdown styleClass="dropdown-select-connection" [(ngModel)]="selectedConnection" [filter]="true"
+        (onChange)="onSelectConnection($event)" [options]="connections" optionLabel="name" optionValue="id"
+        placeholder="Select connection...">
+    </p-dropdown>
     <div class="layout-topbar-menu" [ngClass]="{'layout-topbar-menu-mobile-active':appMain.topMenuActive}">
-        <p-dropdown [(ngModel)]="selectedConnection" [filter]="true" [options]="connections" optionLabel="name"
-            optionValue="name" placeholder="Select connection...">
-        </p-dropdown>
         <a [routerLink]="'/'" class="p-link layout-topbar-button">
             <i aria-hidden="true" class="pi pi-home"></i>
             <span>Home</span>

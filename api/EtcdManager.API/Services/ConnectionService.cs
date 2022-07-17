@@ -8,10 +8,12 @@ namespace EtcdManager.API.Services
     public interface IConnectionService
     {
         Task<ResponseModel<string>> TestConnection(ConnectionModel connectionModel);
+        Task<EtcdClientInstance> GetClient(ConnectionModel connectionModel);
     }
 
     public class ConnectionService : IConnectionService
     {
+        private Dictionary<Guid, EtcdClientInstance> _clients = new Dictionary<Guid, EtcdClientInstance>();
         private readonly ILogger<ConnectionService> _logger;
 
         public ConnectionService(
@@ -21,22 +23,27 @@ namespace EtcdManager.API.Services
             this._logger = logger;
         }
 
+        public async Task<EtcdClientInstance> GetClient(ConnectionModel connectionModel)
+        {
+            if (_clients.ContainsKey(connectionModel.Id))
+            {
+                return _clients[connectionModel.Id];
+            }
+            var client = new EtcdClient($"{connectionModel.Host}:{connectionModel.Port}");
+            var authRes = await client.AuthenticateAsync(new Etcdserverpb.AuthenticateRequest()
+            {
+                Name = connectionModel.UserName,
+                Password = connectionModel.Password
+            });
+            var newInstance = new EtcdClientInstance() { Instance = client, Token = authRes.Token };
+            _clients.Add(connectionModel.Id, newInstance);
+            return newInstance;
+        }
+
         public async Task<ResponseModel<string>> TestConnection(ConnectionModel connectionModel)
         {
-            var arrServerStr = connectionModel.Server.Split(':');
-            var host = arrServerStr[0];
-            var port = arrServerStr.Length > 1 ? arrServerStr[1] : "2379";
-            if (host.StartsWith("http://"))
-            {
-                host = host.Replace("http://", "https://");
-            }
-            else if (!host.StartsWith("https://"))
-            {
-                if (connectionModel.Insecure)
-                    host = "http://" + host;
-                else
-                    host = "https://" + host;
-            }
+            var host = connectionModel.Host;
+            var port = connectionModel.Port;
 
             try
             {

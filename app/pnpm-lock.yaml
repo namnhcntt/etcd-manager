@@ -13,6 +13,7 @@ specifiers:
   '@angular/platform-browser': ~14.0.6
   '@angular/platform-browser-dynamic': ~14.0.6
   '@angular/router': ~14.0.6
+  '@ngstack/code-editor': ^4.0.0
   '@types/jasmine': ~3.10.0
   '@types/jasminewd2': ~2.0.8
   '@types/node': ^12.11.1
@@ -27,6 +28,7 @@ specifiers:
   karma-coverage-istanbul-reporter: ~3.0.3
   karma-jasmine: ~4.0.0
   karma-jasmine-html-reporter: ~1.7.0
+  monaco-editor: ^0.33.0
   primeflex: ^3.1.0
   primeicons: 5.0.0
   primeng: ^13.1.0
@@ -50,12 +52,13 @@ dependencies:
   '@angular/platform-browser': 14.0.6_spn3at637jkuvsqjt7uncfwzje
   '@angular/platform-browser-dynamic': 14.0.6_5qq33cwqpmskqkofsmdwscvapm
   '@angular/router': 14.0.6_x7bxrt5gerelbc6qgr3iwopgve
+  '@ngstack/code-editor': 4.0.0_jgc7rjv6dmfsh4hhmn3evgouju
   chart.js: 3.8.0
   guid-ts: 1.1.2
+  monaco-editor: 0.33.0
   primeflex: 3.2.1
   primeicons: 5.0.0
   primeng: 13.4.1_wc5hzhoigq2hrwvvdf2q5ejnc4
-  prismjs: 1.9.0
   rxjs: 7.4.0
   tslib: 2.4.0
   web-animations-js: 2.3.2
@@ -77,6 +80,7 @@ devDependencies:
   karma-coverage-istanbul-reporter: 3.0.3
   karma-jasmine: 4.0.2_karma@6.3.20
   karma-jasmine-html-reporter: 1.7.0_c7wcpooxrfcj3ugs4cn4ze2mhu
+  prismjs: 1.9.0
   protractor: 7.0.0
   ts-node: 8.3.0_typescript@4.7.4
   tslint: 6.1.3_typescript@4.7.4
@@ -1847,6 +1851,17 @@ packages:
     resolution: {integrity: sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A==}
     dev: true
 
+  /@ngstack/code-editor/4.0.0_jgc7rjv6dmfsh4hhmn3evgouju:
+    resolution: {integrity: sha512-ppzIhiiZxKNGvUOBsjDWY8XOkcOvyvAg1NCbo5rpBiDZsPopTBkZaL/B1snaH8AR0UMcHL3iThsYWoomLENxIg==}
+    peerDependencies:
+      '@angular/common': '>=13.3.3'
+      '@angular/core': '>=13.3.3'
+    dependencies:
+      '@angular/common': 14.0.6_wvynqn5moc4acof2d4ypz7xkwa
+      '@angular/core': 14.0.6_rxjs@7.4.0+zone.js@0.11.6
+      tslib: 2.4.0
+    dev: false
+
   /@ngtools/webpack/14.0.6_giaol2cqnpelov2hqo3et4lvha:
     resolution: {integrity: sha512-mSmLqzRKxQgGiOhvJ8guvRLjXoTL17cVSWlL/Cz+Q3xc1bXa7537ZXBTQTEuZVU2ytdkniKc8l1HqXIx0pFNVQ==}
     engines: {node: ^14.15.0 || >=16.10.0, npm: ^6.11.0 || ^7.5.6 || >=8.0.0, yarn: '>= 1.13.0'}
@@ -2963,7 +2978,7 @@ packages:
       good-listener: 1.2.2
       select: 1.1.2
       tiny-emitter: 2.1.0
-    dev: false
+    dev: true
     optional: true
 
   /cliui/6.0.0:
@@ -3431,7 +3446,7 @@ packages:
 
   /delegate/3.2.0:
     resolution: {integrity: sha512-IofjkYBZaZivn0V8nnsMJGBr4jVLxHDheKSW88PyxS5QC4Vo9ZbZVvhzlSxY87fVq3STR6r+4cGepyHkcWOQSw==}
-    dev: false
+    dev: true
     optional: true
 
   /delegates/1.0.0:
@@ -4296,7 +4311,7 @@ packages:
     resolution: {integrity: sha512-goW1b+d9q/HIwbVYZzZ6SsTr4IgE+WA44A0GmPIQstuOrgsFcT7VEJ48nmr9GaRtNu0XTKacFLGnBPAM6Afouw==}
     dependencies:
       delegate: 3.2.0
-    dev: false
+    dev: true
     optional: true
 
   /graceful-fs/4.2.10:
@@ -5494,6 +5509,10 @@ packages:
     hasBin: true
     dev: true
 
+  /monaco-editor/0.33.0:
+    resolution: {integrity: sha512-VcRWPSLIUEgQJQIE0pVT8FcGBIgFoxz7jtqctE+IiCxWugD0DwgyQBcZBhdSrdMC84eumoqMZsGl2GTreOzwqw==}
+    dev: false
+
   /ms/2.0.0:
     resolution: {integrity: sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==}
     dev: true
@@ -6459,7 +6478,7 @@ packages:
     resolution: {integrity: sha512-mA4eEIsVUlu/HuKheCxk9VnLhm5je2LfKEtaRthjRZOZVoePfAcd4NaTNY1OMMvCMmZe/pfKcxUK44OhtDZwkQ==}
     optionalDependencies:
       clipboard: 1.7.1
-    dev: false
+    dev: true
 
   /proc-log/2.0.1:
     resolution: {integrity: sha512-Kcmo2FhfDTXdcbfDH76N7uBYHINxc/8GW7UAVuVP9I+Va3uHSerrnKV6dLooga/gh7GlgzuCCr/eoldnL1muGw==}
@@ -6931,7 +6950,7 @@ packages:
 
   /select/1.1.2:
     resolution: {integrity: sha512-OwpTSOfy6xSs1+pwcNrv0RBMOzI39Lp3qQKUTPVVPRjCdNa5JH/oPRiqsesIskK8TVgmRiHwO4KXlV2Li9dANA==}
-    dev: false
+    dev: true
     optional: true
 
   /selenium-webdriver/3.6.0:
@@ -7540,7 +7559,7 @@ packages:
 
   /tiny-emitter/2.1.0:
     resolution: {integrity: sha512-NB6Dk1A9xgQPMoGqC5CVXn123gWyte215ONT5Pp5a0yt4nlEoO1ZWeCwpncaekPHXO60i47ihFnZPiRPjRMq4Q==}
-    dev: false
+    dev: true
     optional: true
 
   /tmp/0.0.30:

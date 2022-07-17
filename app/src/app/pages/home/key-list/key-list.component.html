@@ -1,0 +1,20 @@
+<ng-container *ngIf="loaded">
+  <ng-container *ngIf="viewMode == 'list'">
+    <p-listbox [options]="listDataSource" [(ngModel)]="selectedKey" optionLabel="key" [filter]="true"
+      (onChange)="onChangeSelectedKey($event)">
+      <ng-template pTemplate="header">
+        Header Content
+      </ng-template>
+      <ng-template let-item pTemplate="item">
+        <div class="key-list-item">
+          <i aria-hidden="true" class="pi pi-file"></i>
+          <span>{{item.key}}</span>
+        </div>
+      </ng-template>
+    </p-listbox>
+  </ng-container>
+  <ng-container *ngIf="viewMode == 'tree'">
+
+  </ng-container>
+  <pre>{{listDataSource | json}}</pre>
+</ng-container>

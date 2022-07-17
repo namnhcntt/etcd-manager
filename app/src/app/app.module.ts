@@ -144,6 +144,14 @@ import { NodeService } from './service/nodeservice';
 import { PhotoService } from './service/photoservice';
 import { ProductService } from './service/productservice';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { KeyListComponent } from './pages/home/key-list/key-list.component';
+import { KeyDetailComponent } from './pages/home/key-detail/key-detail.component';
+import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-scss';
+import { PrismComponent } from './components/prism/prism.component';
+import { CodeEditorModule } from '@ngstack/code-editor';
 
 @NgModule({
     imports: [
@@ -235,6 +243,11 @@ import { ConfirmationService, MessageService } from 'primeng/api';
         VirtualScrollerModule,
         AppCodeModule,
         StyleClassModule,
+
+        CodeEditorModule.forRoot({
+            baseUrl: 'assets/monaco',
+            typingsWorkerUrl: 'assets/workers/typings-worker.js'
+        })
     ],
     declarations: [
         AppComponent,
@@ -282,6 +295,9 @@ import { ConfirmationService, MessageService } from 'primeng/api';
         HomeComponent,
         ConnectionManagerComponent,
         UserManagerComponent,
+        KeyListComponent,
+        KeyDetailComponent,
+        PrismComponent
     ],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },

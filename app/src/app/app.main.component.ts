@@ -1,9 +1,11 @@
-import { Component, AfterViewInit, OnDestroy, Renderer2, OnInit } from '@angular/core';
-import { trigger, state, style, transition, animate } from '@angular/animations';
-import { AppComponent } from './app.component';
-import { ConfigService } from './service/app.config.service';
-import { AppConfig } from './api/appconfig';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { AfterViewInit, Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { AppConfig } from './api/appconfig';
+import { AppComponent } from './app.component';
+import { AppCtxService } from './service/app-ctx.service';
+import { ConfigService } from './service/app.config.service';
+import { ComCtxService } from './service/com-ctx.service';
 
 @Component({
     selector: 'app-main',
@@ -19,7 +21,8 @@ import { Subscription } from 'rxjs';
             transition('visible => hidden', animate('400ms cubic-bezier(0.86, 0, 0.07, 1)')),
             transition('hidden => visible', animate('400ms cubic-bezier(0.86, 0, 0.07, 1)'))
         ])
-    ]
+    ],
+    providers: [ComCtxService]
 })
 export class AppMainComponent implements AfterViewInit, OnDestroy, OnInit {
 
@@ -57,7 +60,14 @@ export class AppMainComponent implements AfterViewInit, OnDestroy, OnInit {
         '/user-manager': false
     }
 
-    constructor(public renderer: Renderer2, public app: AppComponent, public configService: ConfigService) { }
+    constructor(
+        public renderer: Renderer2,
+        public app: AppComponent,
+        public configService: ConfigService,
+        private _appCtxService: AppCtxService,
+        private _comCtxService: ComCtxService) {
+        this._appCtxService.createRootCtx(this._comCtxService);
+    }
 
     ngOnInit() {
         this.config = this.configService.config;
