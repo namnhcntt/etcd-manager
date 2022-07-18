@@ -20,7 +20,9 @@
                     pTooltip="Switch view mode list and tree" tooltipPosition="top"></button>
             </ng-template>
             <ng-template let-item pTemplate="item">
-                <div class="key-list-item">
+                <!-- TODO: This (contextmenu) is not working -->
+                <div class="key-list-item"
+                    (contextmenu)="showContextMenuViewModeList(contextMenuViewModeListControl, $event, item)">
                     <i aria-hidden="true" class="pi pi-file"></i>
                     <span>{{item.key}}</span>
                 </div>
@@ -37,7 +39,7 @@
         [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
         [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true"
         [maximizable]="true" [autoZIndex]="true" #dialog>
-        <app-new-key #newKey [dialog]="dialog"></app-new-key>
+        <app-new-key #newKey [dialog]="dialog" (onSave)="onSaveNewKey($event)"></app-new-key>
         <ng-template pTemplate="footer">
             <button *ngFor="let button of newKey.buttons" pButton aria-label="button" [class]="button.styleClass"
                 [disabled]="button.disabled" type="button" [icon]="button.icon" (click)="button.command()"
@@ -45,3 +47,4 @@
         </ng-template>
     </p-dialog>
 </ng-container>
+<p-contextMenu #contextMenuViewModeListControl [model]="contextMenuViewModeList"></p-contextMenu>

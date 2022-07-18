@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MenuItem, MessageService } from 'primeng/api';
 import { Dialog } from 'primeng/dialog';
@@ -11,9 +11,9 @@ import { KeyValueService } from 'src/app/service/key-value.service';
     templateUrl: './new-key.component.html',
     styleUrls: ['./new-key.component.scss']
 })
-export class NewKeyComponent implements OnInit {
+export class NewKeyComponent implements OnInit, OnDestroy {
     @Input() dialog: Dialog;
-
+    @Output() onSave = new EventEmitter<any>();
     codeEditorConstant = CodeEditorConstant;
     form: FormGroup;
     processing = false;
@@ -30,23 +30,7 @@ export class NewKeyComponent implements OnInit {
 
         this.buttons = [
             {
-                label: 'Save', icon: 'pi pi-save', command: (event) => {
-                    if (this.form.valid) {
-                        this.processing = true;
-                        this._keyValueService.save(this.rootCtx.data.connection, this.form.value, true).then(rs => {
-                            if (rs.success) {
-                                this.dialog.close({} as Event);
-                                this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Create new key sucess!' });
-                            } else {
-                                this._messageService.add({ severity: 'error', summary: 'Error', detail: rs.message });
-                                this.processing = false;
-                            }
-                        }).catch(err => {
-                            this._messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
-                            this.processing = false;
-                        });
-                    }
-                },
+                label: 'Save', icon: 'pi pi-save', command: this.save.bind(this),
                 disabled: this.processing,
                 styleClass: 'p-ripple p-button-raised p-button-primary p-button-text'
             },
@@ -58,6 +42,10 @@ export class NewKeyComponent implements OnInit {
                 styleClass: 'p-ripple p-button-raised p-button-secondary p-button-text'
             }
         ]
+    }
+
+    ngOnDestroy(): void {
+        this.form.reset();
     }
 
     ngOnInit() {
@@ -73,5 +61,24 @@ export class NewKeyComponent implements OnInit {
         this.form.patchValue({
             value: evt
         });
+    }
+
+    save() {
+        if (this.form.valid) {
+            this.processing = true;
+            this._keyValueService.save(this.rootCtx.data.connection, this.form.value, true).then(rs => {
+                if (rs.success) {
+                    this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Create new key sucess!' });
+                    this.form.reset();
+                    this.onSave.emit(true);
+                } else {
+                    this._messageService.add({ severity: 'error', summary: 'Error', detail: rs.message });
+                    this.processing = false;
+                }
+            }).catch(err => {
+                this._messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
+                this.processing = false;
+            });
+        }
     }
 }

@@ -3,8 +3,29 @@
         <div class="p-toolbar-group-left">
             <div class="left-side">
                 <i aria-hidden="true" class="pi pi-file"></i>
-                <span class="key-detail-path" *ngIf="keyDetail">{{keyDetail.key}}</span>
+                <span class="key-detail-path" *ngIf="keyDetail && !editing">
+                    {{keyDetail.key}}
+                </span>
             </div>
+            <p-inplace #renameKeyInplace>
+                <ng-template pTemplate="content">
+                    <input placeholder="key name" type="text" pInputText [(ngModel)]="inplaceRenameValue">
+                </ng-template>
+            </p-inplace>
+            <button *ngIf="editing" pButton aria-label="button" type="button" icon="pi pi-save"
+                class="p-button-rounded p-button-text p-button-icon-only" (click)="saveRenameKey(renameKeyInplace)"
+                pTooltip="Save rename key" tooltipPosition="top"></button>
+            <button *ngIf="editing" pButton aria-label="button" type="button" icon="pi pi-times"
+                class="p-button-rounded p-button-text p-button-icon-only" (click)="cancelRenameKey(renameKeyInplace)"
+                pTooltip="Cancel rename key" tooltipPosition="top"></button>
+            <button *ngIf="keyDetail && !_keyValueService.isRootKey(keyDetail.key) && !editing" pButton
+                aria-label="button" type="button" icon="pi pi-pencil"
+                class="p-button-rounded p-button-text p-button-icon-only" (click)="renameKey(renameKeyInplace)"
+                pTooltip="Rename key" tooltipPosition="top"></button>
+            <button *ngIf="keyDetail && !_keyValueService.isRootKey(keyDetail.key)" pButton aria-label="button"
+                type="button" icon="pi pi-trash"
+                class="p-button-rounded p-button-text p-button-danger p-button-icon-only" (click)="deleteKey()"
+                pTooltip="Delete key" tooltipPosition="top"></button>
             <div class="more-info">
                 <span>Last Modifed By: NamNH</span>
             </div>

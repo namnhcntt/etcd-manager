@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 
-import { NewKeyComponent } from './new-key.component';
+import NewKeyComponent from './new-key.component';
 
 describe('NewKeyComponent', () => {
   let component: NewKeyComponent;
@@ -11,9 +11,9 @@ describe('NewKeyComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ NewKeyComponent ]
+      declarations: [NewKeyComponent]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

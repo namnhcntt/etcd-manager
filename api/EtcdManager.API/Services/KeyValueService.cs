@@ -7,6 +7,8 @@ namespace EtcdManager.API.Services
         Task<ResponseModel<List<string>>> GetAll(ConnectionModel connection);
         Task<ResponseModel<KeyModel>> Get(ConnectionModel connection, string key);
         Task<ResponseModel<bool>> Save(SaveKeyModel keyModel);
+        Task<ResponseModel<bool>> Delete(ConnectionModel connection, string key);
+        Task<ResponseModel<bool>> RenameKey(ConnectionModel connection, string oldKey, string newKey);
     }
 
     public class KeyValueService : IKeyValueService
@@ -69,6 +71,37 @@ namespace EtcdManager.API.Services
                     new Grpc.Core.Metadata.Entry("token",client.Token)
                 });
             return ResponseModel<bool>.ResponseWithData(true);
+        }
+
+        public async Task<ResponseModel<bool>> Delete(ConnectionModel connection, string key)
+        {
+            var client = await _connectionService.GetClient(connection);
+            await client.Instance.DeleteAsync(key, new Grpc.Core.Metadata() {
+                new Grpc.Core.Metadata.Entry("token",client.Token)
+            });
+            return ResponseModel<bool>.ResponseWithData(true);
+        }
+
+        public async Task<ResponseModel<bool>> RenameKey(ConnectionModel connection, string oldKey, string newKey)
+        {
+            try
+            {
+                var client = await _connectionService.GetClient(connection);
+                var oldKeyValue = await client.Instance.GetValAsync(oldKey, new Grpc.Core.Metadata() {
+                    new Grpc.Core.Metadata.Entry("token",client.Token)
+                });
+                await client.Instance.DeleteAsync(oldKey, new Grpc.Core.Metadata() {
+                    new Grpc.Core.Metadata.Entry("token",client.Token)
+                });
+                await client.Instance.PutAsync(newKey, oldKeyValue, new Grpc.Core.Metadata() {
+                    new Grpc.Core.Metadata.Entry("token",client.Token)
+                });
+                return ResponseModel<bool>.ResponseWithData(true);
+            }
+            catch (Exception ex)
+            {
+                return ResponseModel<bool>.ResponseWithError("ERR_UNKNOWN", System.Net.HttpStatusCode.InternalServerError, ex.Message);
+            }
         }
     }
 }

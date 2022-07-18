@@ -34,5 +34,17 @@ namespace EtcdManager.API.Controllers
         {
             return Ok(await this._keyValueService.Save(keyModel));
         }
+
+        [HttpPost("Delete")]
+        public async Task<IActionResult> Delete([FromBody] ConnectionModel connection, [FromQuery] string key)
+        {
+            return Ok(await this._keyValueService.Delete(connection, key));
+        }
+
+        [HttpPost("RenameKey")]
+        public async Task<IActionResult> RenameKey([FromBody] ConnectionModel connection, [FromQuery] string oldKey, [FromQuery] string newKey)
+        {
+            return Ok(await this._keyValueService.RenameKey(connection, oldKey, newKey));
+        }
     }
 }
