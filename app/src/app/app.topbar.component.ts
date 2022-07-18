@@ -24,7 +24,7 @@ export class AppTopBarComponent implements OnInit {
         this._appEventService.getSubscriptionConnection().subscribe((connection: any) => {
             if (!this.selfEvent) {
                 // select connection
-                this.selectedConnection = connection.name;
+                this.selectedConnection = connection.id;
             } else {
                 this.selfEvent = false;
             }
@@ -36,6 +36,10 @@ export class AppTopBarComponent implements OnInit {
     }
     ngOnInit(): void {
         this.loadDataSource();
+        // TODO: Fix tạm để test
+        setTimeout(() => {
+            this.onSelectConnection({ value: this.connections[0].id });
+        }, 100);
     }
 
     loadDataSource() {

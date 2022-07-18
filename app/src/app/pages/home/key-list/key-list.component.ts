@@ -52,4 +52,23 @@ export class KeyListComponent implements OnInit {
     this.rootCtx.dispatchEvent('changeSelectedKey', evt.value);
   }
 
+  refreshList() {
+    console.log('refresh list');
+  }
+
+  switchViewMode() {
+    console.log('switch view mode');
+  }
+
+  export() {
+    console.log('export');
+  }
+
+  import() {
+    console.log('import')
+  }
+
+  newKey() {
+    console.log('newkey')
+  }
 }

@@ -1,9 +1,23 @@
 <ng-container *ngIf="loaded">
   <ng-container *ngIf="viewMode == 'list'">
     <p-listbox [options]="listDataSource" [(ngModel)]="selectedKey" optionLabel="key" [filter]="true"
-      (onChange)="onChangeSelectedKey($event)">
+      (onChange)="onChangeSelectedKey($event)" [listStyle]="{'height':'calc(100vh - 330px)','overflow':'auto'}">
       <ng-template pTemplate="header">
-        Header Content
+        <button pButton aria-label="button" type="button" icon="pi pi-plus"
+          class="p-button-rounded p-button-text p-button-icon-only" (click)="newKey()" pTooltip="New key"
+          tooltipPosition="top"></button>
+        <button pButton aria-label="button" type="button" icon="pi pi-refresh"
+          class="p-button-rounded p-button-text p-button-icon-only" (click)="refreshList()" pTooltip="Refresh list"
+          tooltipPosition="top"></button>
+        <button pButton aria-label="button" type="button" icon="pi pi-download"
+          class="p-button-rounded p-button-text p-button-icon-only" (click)="export()" pTooltip="Export node"
+          tooltipPosition="top"></button>
+        <button pButton aria-label="button" type="button" icon="pi pi-upload"
+          class="p-button-rounded p-button-text p-button-icon-only" (click)="import()" pTooltip="Import node"
+          tooltipPosition="top"></button>
+        <button pButton aria-label="button" type="button" icon="pi pi-sitemap"
+          class="p-button-rounded p-button-text p-button-icon-only" (click)="switchViewMode()"
+          pTooltip="Switch view mode list and tree" tooltipPosition="top"></button>
       </ng-template>
       <ng-template let-item pTemplate="item">
         <div class="key-list-item">
@@ -16,5 +30,4 @@
   <ng-container *ngIf="viewMode == 'tree'">
 
   </ng-container>
-  <pre>{{listDataSource | json}}</pre>
 </ng-container>

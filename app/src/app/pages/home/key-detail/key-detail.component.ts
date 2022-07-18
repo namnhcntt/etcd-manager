@@ -13,14 +13,15 @@ import { KeyValueService } from 'src/app/service/key-value.service';
   providers: [ComCtxService]
 })
 export class KeyDetailComponent implements OnInit {
-
+  loaded = false;
   rootCtx: ComCtxService;
   theme = 'vs-light';
   connection: any;
+  keyDetail: any;
   codeModel: CodeModel = {
     language: 'yaml',
-    uri: 'file1.yaml',
-    value: 'hello: world'
+    uri: '*.yaml',
+    value: ''
   };
 
   options = {
@@ -45,8 +46,10 @@ export class KeyDetailComponent implements OnInit {
 
   ngOnInit() {
     this.rootCtx.subscribe('changeSelectedKey', async (value) => {
+      this.loaded = true;
       const keyDetail = await this._keyValueService.getByKey(this.connection, value.key);
       if (keyDetail.success) {
+        this.keyDetail = keyDetail.data;
         this.codeModel.value = keyDetail.data.value;
         this.codeModel = { ...this.codeModel };
       } else {
