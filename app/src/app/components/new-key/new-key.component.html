@@ -1,0 +1,27 @@
+<form class="p-fluid" [formGroup]="form">
+    <h6>Key:</h6>
+    <span class="p-float-label">
+        <div class="p-inputgroup">
+            <span class="p-inputgroup-addon">/</span>
+            <input pInputText formControlName="key" type="text" placeholder="key key. ex: key1/subkey1" [ngClass]="{
+                'ng-invalid': form.get('key')?.invalid && (form.get('key')?.dirty || form.get('key')?.touched),
+                'ng-dirty': form.get('key')?.invalid && (form.get('key')?.dirty || form.get('key')?.touched)
+            }" />
+        </div>
+    </span>
+    <ng-container *ngIf="form.get('key')?.invalid && (form.get('key')?.dirty || form.get('key')?.touched)">
+        <small id="key-help" class="p-error" *ngIf="form.get('key')?.errors?.['required']">Key is
+            required.</small>
+    </ng-container>
+    <h6>Value:</h6>
+    <span class="p-float-label">
+        <ngs-code-editor [theme]="codeEditorConstant.DEFAULT_THEME" [codeModel]="codeModel"
+            [options]="codeEditorConstant.DEFAULT_OPTIONS" [style]="{'height':'calc(100vh - 565px)','overflow':'auto'}"
+            (valueChanged)="onCodeChanged($event)">
+        </ngs-code-editor>
+    </span>
+    <ng-container *ngIf="form.get('value')?.invalid && (form.get('value')?.dirty || form.get('value')?.touched)">
+        <small id="value-help" class="p-error" *ngIf="form.get('value')?.errors?.['required']">Value is
+            required.</small>
+    </ng-container>
+</form>

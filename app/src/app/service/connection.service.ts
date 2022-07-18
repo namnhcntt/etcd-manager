@@ -20,6 +20,9 @@ export class ConnectionService {
 
     checkConnection(connection: any): Promise<ResponseModel> {
         const url = `${environment.apiEndpoint}/${this.ENDPOINT_CHECK_CONNECTION}`;
+        if (!connection.id) {
+            connection = { ...connection, id: Guid.newGuid().toString() };
+        }
         return firstValueFrom(this._httpClient.post<ResponseModel>(url, connection));
     }
 

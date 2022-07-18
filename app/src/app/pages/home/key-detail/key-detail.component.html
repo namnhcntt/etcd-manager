@@ -3,7 +3,7 @@
         <div class="p-toolbar-group-left">
             <div class="left-side">
                 <i aria-hidden="true" class="pi pi-file"></i>
-                <span class="key-detail-path">{{keyDetail.key}}</span>
+                <span class="key-detail-path" *ngIf="keyDetail">{{keyDetail.key}}</span>
             </div>
             <div class="more-info">
                 <span>Last Modifed By: NamNH</span>
@@ -31,7 +31,7 @@
                 tooltipPosition="top"></button>
         </div>
     </p-toolbar>
-    <ngs-code-editor [theme]="theme" [codeModel]="codeModel" [options]="options" (valueChanged)="onCodeChanged($event)"
-        [style]="{'height':'calc(100vh - 270px)','overflow':'auto'}">
+    <ngs-code-editor [theme]="codeEditorConstant.DEFAULT_THEME" [codeModel]="codeModel"
+        [options]="codeEditorConstant.DEFAULT_OPTIONS" [style]="{'height':'calc(100vh - 270px)','overflow':'auto'}">
     </ngs-code-editor>
 </ng-container>

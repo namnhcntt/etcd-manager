@@ -152,6 +152,7 @@ import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-scss';
 import { PrismComponent } from './components/prism/prism.component';
 import { CodeEditorModule } from '@ngstack/code-editor';
+import { NewKeyComponent } from './components/new-key/new-key.component';
 
 @NgModule({
     imports: [
@@ -297,7 +298,8 @@ import { CodeEditorModule } from '@ngstack/code-editor';
         UserManagerComponent,
         KeyListComponent,
         KeyDetailComponent,
-        PrismComponent
+        PrismComponent,
+        NewKeyComponent
     ],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },

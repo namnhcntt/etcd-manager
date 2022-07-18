@@ -6,69 +6,71 @@ import { ComCtxService } from 'src/app/service/com-ctx.service';
 import { KeyValueService } from 'src/app/service/key-value.service';
 
 @Component({
-  selector: 'app-key-list',
-  templateUrl: './key-list.component.html',
-  styleUrls: ['./key-list.component.scss'],
-  providers: [ComCtxService]
+    selector: 'app-key-list',
+    templateUrl: './key-list.component.html',
+    styleUrls: ['./key-list.component.scss'],
+    providers: [ComCtxService]
 })
 export class KeyListComponent implements OnInit {
-  viewMode: 'tree' | 'list' = 'list';
+    viewMode: 'tree' | 'list' = 'list';
+    showNewKeyForm = true;
+    selectedKey: string;
+    loaded = false;
+    treeDataSource = [];
+    listDataSource = [];
+    rootCtx: ComCtxService;
 
-  selectedKey: string;
-  loaded = false;
-  treeDataSource = [];
-  listDataSource = [];
-  rootCtx: ComCtxService;
+    constructor(
+        private _appEventService: AppEventService,
+        private _keyValueService: KeyValueService,
+        private _messageService: MessageService,
+        private _appCtxService: AppCtxService
+    ) {
+        this.rootCtx = this._appCtxService.getRootCtx();
+    }
 
-  constructor(
-    private _appEventService: AppEventService,
-    private _keyValueService: KeyValueService,
-    private _messageService: MessageService,
-    private _appCtxService: AppCtxService
-  ) {
-    this.rootCtx = this._appCtxService.getRootCtx();
-  }
+    ngOnInit() {
+        this._appEventService.getSubscriptionConnection().subscribe(async rs => {
+            console.log('selected connection', rs);
+            if (rs) {
+                this.rootCtx.data.connection = rs;
+                const ds = await this._keyValueService.getAll(rs);
+                if (ds.success) {
+                    console.log('all keys', ds.data);
+                    this.listDataSource = ds.data.map(x => {
+                        return { key: x };
+                    });
+                    this.loaded = true;
+                } else {
+                    this._messageService.add({ severity: 'error', summary: 'Error', detail: ds.message });
+                }
+            }
+        });
+    }
 
-  ngOnInit() {
-    this._appEventService.getSubscriptionConnection().subscribe(async rs => {
-      console.log('selected connection', rs);
-      if (rs) {
-        const ds = await this._keyValueService.getAll(rs);
-        if (ds.success) {
-          console.log('all keys', ds.data);
-          this.listDataSource = ds.data.map(x => {
-            return { key: x };
-          });
-          this.loaded = true;
-        } else {
-          this._messageService.add({ severity: 'error', summary: 'Error', detail: ds.message });
-        }
-      }
-    });
-  }
+    onChangeSelectedKey(evt) {
+        console.log('onchange selected key', evt);
+        this.rootCtx.dispatchEvent('changeSelectedKey', evt.value);
+    }
 
-  onChangeSelectedKey(evt) {
-    console.log('onchange selected key', evt);
-    this.rootCtx.dispatchEvent('changeSelectedKey', evt.value);
-  }
+    refreshList() {
+        console.log('refresh list');
+    }
 
-  refreshList() {
-    console.log('refresh list');
-  }
+    switchViewMode() {
+        console.log('switch view mode');
+    }
 
-  switchViewMode() {
-    console.log('switch view mode');
-  }
+    export() {
+        console.log('export');
+    }
 
-  export() {
-    console.log('export');
-  }
+    import() {
+        console.log('import')
+    }
 
-  import() {
-    console.log('import')
-  }
-
-  newKey() {
-    console.log('newkey')
-  }
+    newKey() {
+        console.log('newkey');
+        this.showNewKeyForm = true;
+    }
 }

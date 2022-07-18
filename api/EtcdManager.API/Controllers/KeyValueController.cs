@@ -28,5 +28,11 @@ namespace EtcdManager.API.Controllers
         {
             return Ok(await this._keyValueService.Get(connection, key));
         }
+
+        [HttpPost("Save")]
+        public async Task<IActionResult> Save([FromBody] SaveKeyModel keyModel)
+        {
+            return Ok(await this._keyValueService.Save(keyModel));
+        }
     }
 }
