@@ -153,6 +153,7 @@ import 'prismjs/components/prism-scss';
 import { PrismComponent } from './components/prism/prism.component';
 import { CodeEditorModule } from '@ngstack/code-editor';
 import { NewKeyComponent } from './components/new-key/new-key.component';
+import { LiveCodeEditorComponent } from './components/live-code-editor/live-code-editor.component';
 
 @NgModule({
     imports: [
@@ -299,7 +300,8 @@ import { NewKeyComponent } from './components/new-key/new-key.component';
         KeyListComponent,
         KeyDetailComponent,
         PrismComponent,
-        NewKeyComponent
+        NewKeyComponent,
+        LiveCodeEditorComponent
     ],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },

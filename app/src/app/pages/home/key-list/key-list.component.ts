@@ -54,7 +54,6 @@ export class KeyListComponent implements OnInit {
         private _keyValueService: KeyValueService,
         private _messageService: MessageService,
         private _appCtxService: AppCtxService,
-        private _confirmationService: ConfirmationService,
     ) {
         this.rootCtx = this._appCtxService.getRootCtx();
     }
@@ -124,7 +123,25 @@ export class KeyListComponent implements OnInit {
     }
 
     switchViewMode() {
+        if (this.viewMode == 'list') {
+            // list
+            this.bindDataSourceList();
+            this.viewMode = 'tree';
+        } else {
+            // tree
+            this.bindDataSourceTree();
+            this.viewMode = 'list';
+        }
         console.log('switch view mode');
+    }
+
+    bindDataSourceList() {
+
+    }
+
+    bindDataSourceTree() {
+        // change this array to tree
+        const rootTree = '';
     }
 
     export() {
@@ -154,5 +171,10 @@ export class KeyListComponent implements OnInit {
             this.currentSelectRow = item;
             menu.toggle(event);
         }, 1);
+    }
+
+    preventMouseDown(event) {
+        event.preventDefault();
+        event.stopPropagation();
     }
 }

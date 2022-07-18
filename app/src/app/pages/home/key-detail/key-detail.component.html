@@ -29,6 +29,10 @@
             <div class="more-info">
                 <span>Last Modifed By: NamNH</span>
             </div>
+            <div class="dropdown-language">
+                <p-dropdown [options]="languages" [style]="{'width': '150px'}" optionLabel="value"
+                    (onChange)="changeLanguage($event)"></p-dropdown>
+            </div>
         </div>
 
         <div class="p-toolbar-group-right">

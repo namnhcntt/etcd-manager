@@ -22,7 +22,8 @@
             <ng-template let-item pTemplate="item">
                 <!-- TODO: This (contextmenu) is not working -->
                 <div class="key-list-item"
-                    (contextmenu)="showContextMenuViewModeList(contextMenuViewModeListControl, $event, item)">
+                    (contextmenu)="showContextMenuViewModeList(contextMenuViewModeListControl, $event, item)"
+                    (mousedown)="preventMouseDown($event)">
                     <i aria-hidden="true" class="pi pi-file"></i>
                     <span>{{item.key}}</span>
                 </div>

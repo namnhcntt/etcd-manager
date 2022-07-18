@@ -18,10 +18,20 @@ export class KeyDetailComponent implements OnInit {
     rootCtx: ComCtxService;
     connection: any;
     keyDetail: any;
+    showCodeEditor = true;
     codeEditorConstant = CodeEditorConstant;
     codeModel = CodeEditorConstant.DEFAULT_CODE_MODEL;
     inplaceRenameValue: string;
     editing = false;
+    //  TODO: Error on change language but syntax highlight not changed
+    languages = [
+        { value: 'yaml' },
+        { value: 'json' },
+        { value: 'xml' },
+        { value: 'javascript' },
+        { value: 'typescript' },
+        { value: 'plaintext' },
+    ];
 
     constructor(
         private _appCtxService: AppCtxService,
@@ -102,5 +112,19 @@ export class KeyDetailComponent implements OnInit {
                 this.loaded = false;
             }
         });
+    }
+
+    onCodeChanged(evt) {
+        this.keyDetail.value = evt;
+    }
+
+    changeLanguage(evt) {
+        this.codeModel.language = evt.value;
+        this.codeModel.uri = `*.${evt.value}`;
+        this.codeModel = { ...this.codeModel };
+        this.showCodeEditor = false;
+        setTimeout(() => {
+            this.showCodeEditor = true;
+        }, 1000);
     }
 }
