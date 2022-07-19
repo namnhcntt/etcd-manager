@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MenuItem, MessageService, TreeNode } from 'primeng/api';
+import { MenuItem, MessageService, PrimeIcons, TreeNode } from 'primeng/api';
 import { ContextMenu } from 'primeng/contextmenu';
 import { AppCtxService } from 'src/app/service/app-ctx.service';
 import { AppEventService } from 'src/app/service/app-event.service';
@@ -14,10 +14,11 @@ import { KeyValueService } from 'src/app/service/key-value.service';
 })
 export class KeyListComponent implements OnInit {
     viewMode: 'tree' | 'list' = 'list';
+    parentKeyOnNew = '';
     showNewKeyForm = false;
     selectedKey: string;
     loaded = false;
-    treeSelectedItem: any;
+    treeSelectedItem: any = {};
     treeDataSource: TreeNode[] = [];
     listDataSource = [];
     rootCtx: ComCtxService;
@@ -93,7 +94,8 @@ export class KeyListComponent implements OnInit {
     }
 
     createChildNode() {
-        console.log('create child node');
+        this.parentKeyOnNew = this.currentSelectRow.key + '/';
+        this.showNewKeyForm = true;
     }
 
     menuRename() {
@@ -107,6 +109,9 @@ export class KeyListComponent implements OnInit {
             this.listDataSource = ds.data.map(x => {
                 return { key: x };
             });
+            if (this.viewMode == 'tree') {
+                this.bindDataSourceTree();
+            }
             this.loaded = true;
         } else {
             this._messageService.add({ severity: 'error', summary: 'Error', detail: ds.message });
@@ -114,7 +119,6 @@ export class KeyListComponent implements OnInit {
     }
 
     onChangeSelectedKey(evt) {
-        console.log('onchange selected key', evt);
         this.rootCtx.dispatchEvent('changeSelectedKey', evt.value);
     }
 
@@ -130,38 +134,45 @@ export class KeyListComponent implements OnInit {
             this.viewMode = 'tree';
         } else {
             // tree
-            this.bindDataSourceList();
             this.viewMode = 'list';
         }
         console.log('switch view mode');
     }
 
-    bindDataSourceList() {
-
-    }
-
     bindDataSourceTree() {
-        // change this array to tree
-        const lstKey = this.listDataSource.map(x => x.key);
-        const nodes: TreeNode[] = [{ label: '/', data: '/', expanded: false }];
-        nodes[0].children = this.bindChildTree(lstKey, '/');
-
-        this.treeDataSource = nodes;
+        let paths = this.listDataSource.map(x => x.key);
+        let result: TreeNode[] = [];
+        let level = { result };
+        paths.forEach(path => {
+            let pathCombine = '';
+            path.split('/').reduce((r, name, i, a) => {
+                pathCombine += '/' + name;
+                if (!r[name]) {
+                    r[name] = { label: name, data: this.nomarlizePathCombine(pathCombine), children: [], result: [] } as TreeNode;
+                    if (pathCombine != '//') {
+                        r.result.push({
+                            label: name == '' ? '/' : name,
+                            data: this.nomarlizePathCombine(pathCombine),
+                            children: r[name].result,
+                            expanded: true,
+                            collapsedIcon: PrimeIcons.FOLDER,
+                            expandedIcon: PrimeIcons.FOLDER_OPEN,
+                        } as TreeNode);
+                    }
+                } else if (i === a.length - 1) {
+                    r.result.push({ label: name, data: this.nomarlizePathCombine(pathCombine), children: [], expanded: true });
+                }
+                return r[name];
+            }, level)
+        })
+        this.treeDataSource = result;
     }
 
-    bindChildTree(lstKey: string[], startWithStr: string): TreeNode[] {
-        const childTree: TreeNode[] = [];
-
-        lstKey.filter((x: string) => x.startsWith(startWithStr)).forEach(item => {
-            // child
-            const arr = item.split('/');
-            const nodeName = arr[1];
-            const childNode: TreeNode = { label: nodeName, data: item, expanded: false };
-            childNode.children = this.bindChildTree(lstKey, item);
-            childTree.push(childNode);
-        });
-
-        return childTree;
+    nomarlizePathCombine(path: string) {
+        if (path.startsWith('//')) {
+            path = path.substring(1);
+        }
+        return path;
     }
 
     export() {
@@ -193,8 +204,17 @@ export class KeyListComponent implements OnInit {
         }, 1);
     }
 
+    contextMenuViewModeTreeSelect(evt) {
+        this.currentSelectRow = this.listDataSource.find(x => x.key == evt.node.data);
+    }
+
     preventMouseDown(event) {
         event.preventDefault();
         event.stopPropagation();
+    }
+
+    onNodeSelect(evt) {
+        this.selectedKey = this.treeSelectedItem.data;
+        this.rootCtx.dispatchEvent('changeSelectedKey', { key: this.selectedKey });
     }
 }

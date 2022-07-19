@@ -1,26 +1,27 @@
 <ng-container *ngIf="loaded">
+    <p-toolbar styleClass="p-custom-toolbar">
+        <div class="p-toolbar-group-left">
+            <button pButton aria-label="button" type="button" icon="pi pi-plus"
+                class="p-button-rounded p-button-text p-button-icon-only" (click)="newKey()" pTooltip="New key"
+                tooltipPosition="top"></button>
+            <button pButton aria-label="button" type="button" icon="pi pi-refresh"
+                class="p-button-rounded p-button-text p-button-icon-only" (click)="refreshList()"
+                pTooltip="Refresh list" tooltipPosition="top"></button>
+            <button pButton aria-label="button" type="button" icon="pi pi-download"
+                class="p-button-rounded p-button-text p-button-icon-only" (click)="export()" pTooltip="Export node"
+                tooltipPosition="top"></button>
+            <button pButton aria-label="button" type="button" icon="pi pi-upload"
+                class="p-button-rounded p-button-text p-button-icon-only" (click)="import()" pTooltip="Import node"
+                tooltipPosition="top"></button>
+            <button pButton aria-label="button" type="button" icon="pi pi-sitemap"
+                class="p-button-rounded p-button-text p-button-icon-only" (click)="switchViewMode()"
+                pTooltip="Switch view mode list and tree" tooltipPosition="top"></button>
+        </div>
+    </p-toolbar>
     <ng-container *ngIf="viewMode == 'list'">
         <p-listbox [options]="listDataSource" [(ngModel)]="selectedKey" optionLabel="key" [filter]="true"
             (onChange)="onChangeSelectedKey($event)" [listStyle]="{'height':'calc(100vh - 330px)','overflow':'auto'}">
-            <ng-template pTemplate="header">
-                <button pButton aria-label="button" type="button" icon="pi pi-plus"
-                    class="p-button-rounded p-button-text p-button-icon-only" (click)="newKey()" pTooltip="New key"
-                    tooltipPosition="top"></button>
-                <button pButton aria-label="button" type="button" icon="pi pi-refresh"
-                    class="p-button-rounded p-button-text p-button-icon-only" (click)="refreshList()"
-                    pTooltip="Refresh list" tooltipPosition="top"></button>
-                <button pButton aria-label="button" type="button" icon="pi pi-download"
-                    class="p-button-rounded p-button-text p-button-icon-only" (click)="export()" pTooltip="Export node"
-                    tooltipPosition="top"></button>
-                <button pButton aria-label="button" type="button" icon="pi pi-upload"
-                    class="p-button-rounded p-button-text p-button-icon-only" (click)="import()" pTooltip="Import node"
-                    tooltipPosition="top"></button>
-                <button pButton aria-label="button" type="button" icon="pi pi-sitemap"
-                    class="p-button-rounded p-button-text p-button-icon-only" (click)="switchViewMode()"
-                    pTooltip="Switch view mode list and tree" tooltipPosition="top"></button>
-            </ng-template>
             <ng-template let-item pTemplate="item">
-                <!-- TODO: This (contextmenu) is not working -->
                 <div class="key-list-item"
                     (contextmenu)="showContextMenuViewModeList(contextMenuViewModeListControl, $event, item)"
                     (mousedown)="preventMouseDown($event)">
@@ -31,7 +32,10 @@
         </p-listbox>
     </ng-container>
     <ng-container *ngIf="viewMode == 'tree'">
-        <p-tree [value]="treeDataSource" [(selection)]="treeSelectedItem"></p-tree>
+        <p-tree [value]="treeDataSource" [(selection)]="treeSelectedItem" [(selection)]="selectedKey" [filter]="true"
+            selectionMode="single" [contextMenu]="contextMenuViewModeTreeControl" scrollHeight="calc(100vh - 350px)"
+            (onNodeContextMenuSelect)="contextMenuViewModeTreeSelect($event)" (onNodeSelect)="onNodeSelect($event)">
+        </p-tree>
     </ng-container>
 </ng-container>
 
@@ -40,7 +44,8 @@
         [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
         [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true"
         [maximizable]="true" [autoZIndex]="true" #dialog>
-        <app-new-key #newKey [dialog]="dialog" (onSave)="onSaveNewKey($event)"></app-new-key>
+        <app-new-key #newKey [parentKey]="parentKeyOnNew" [dialog]="dialog" (onSave)="onSaveNewKey($event)">
+        </app-new-key>
         <ng-template pTemplate="footer">
             <button *ngFor="let button of newKey.buttons" pButton aria-label="button" [class]="button.styleClass"
                 [disabled]="button.disabled" type="button" [icon]="button.icon" (click)="button.command()"
@@ -49,3 +54,4 @@
     </p-dialog>
 </ng-container>
 <p-contextMenu #contextMenuViewModeListControl [model]="contextMenuViewModeList"></p-contextMenu>
+<p-contextMenu #contextMenuViewModeTreeControl [model]="contextMenuViewModeList"></p-contextMenu>

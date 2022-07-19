@@ -13,6 +13,7 @@ import { KeyValueService } from 'src/app/service/key-value.service';
 })
 export class NewKeyComponent implements OnInit, OnDestroy {
     @Input() dialog: Dialog;
+    @Input() parentKey: string = '';
     @Output() onSave = new EventEmitter<any>();
     codeEditorConstant = CodeEditorConstant;
     form: FormGroup;
@@ -51,7 +52,7 @@ export class NewKeyComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.form = new FormGroup({
             id: new FormControl(),
-            key: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+            key: new FormControl(this.parentKey, { nonNullable: true, validators: [Validators.required] }),
             value: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
         });
     }
