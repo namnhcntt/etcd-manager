@@ -36,9 +36,9 @@ namespace EtcdManager.API.Controllers
         }
 
         [HttpPost("Delete")]
-        public async Task<IActionResult> Delete([FromBody] ConnectionModel connection, [FromQuery] string key)
+        public async Task<IActionResult> Delete([FromBody] ConnectionModel connection, [FromQuery] string key, [FromQuery] bool deleteRecursive = false)
         {
-            return Ok(await this._keyValueService.Delete(connection, key));
+            return Ok(await this._keyValueService.Delete(connection, key, deleteRecursive));
         }
 
         [HttpPost("RenameKey")]

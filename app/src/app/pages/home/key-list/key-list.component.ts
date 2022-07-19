@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { MenuItem, MessageService, PrimeIcons, TreeNode } from 'primeng/api';
 import { ContextMenu } from 'primeng/contextmenu';
 import { AppCtxService } from 'src/app/service/app-ctx.service';
 import { AppEventService } from 'src/app/service/app-event.service';
 import { ComCtxService } from 'src/app/service/com-ctx.service';
 import { KeyValueService } from 'src/app/service/key-value.service';
+import { Tree } from 'primeng/tree';
 
 @Component({
     selector: 'app-key-list',
@@ -18,38 +19,15 @@ export class KeyListComponent implements OnInit {
     showNewKeyForm = false;
     selectedKey: string;
     loaded = false;
+    treeIsExpandAll = false;
     treeSelectedItem: any = {};
     treeDataSource: TreeNode[] = [];
     listDataSource = [];
     rootCtx: ComCtxService;
     currentSelectRow: any;
-    contextMenuViewModeList: MenuItem[] = [
-        {
-            label: 'Create child node',
-            icon: 'pi pi-plus',
-            command: this.createChildNode.bind(this)
-        },
-        {
-            label: 'Export current node',
-            icon: 'pi pi-download',
-            command: this.exportCurrentNode.bind(this)
-        },
-        {
-            label: 'Export node and all childs',
-            icon: 'pi pi-download',
-            command: this.exportAllNodeAndChilds.bind(this)
-        },
-        {
-            label: 'Rename',
-            icon: 'pi pi-pencil',
-            command: this.menuRename.bind(this)
-        },
-        {
-            label: 'Delete',
-            icon: 'pi pi-trash',
-            command: this.menuDelete.bind(this)
-        },
-    ];
+    contextMenuModel: MenuItem[] = this.getContextMenu();
+
+    @ViewChild('mainTree') mainTree: Tree;
 
     constructor(
         private _appEventService: AppEventService,
@@ -77,8 +55,44 @@ export class KeyListComponent implements OnInit {
         });
     }
 
+    getContextMenu() {
+        const menu = [
+            {
+                label: 'Create child node',
+                icon: 'pi pi-plus',
+                command: this.createChildNode.bind(this)
+            },
+            {
+                label: 'Export current node',
+                icon: 'pi pi-download',
+                command: this.exportCurrentNode.bind(this)
+            },
+            {
+                label: 'Export node and all childs',
+                icon: 'pi pi-download',
+                command: this.exportAllNodeAndChilds.bind(this)
+            },
+        ];
+
+        if (this.currentSelectRow) {
+            menu.push(...[{
+                label: 'Rename',
+                icon: 'pi pi-pencil',
+                command: this.menuRename.bind(this)
+            },
+            {
+                label: 'Delete',
+                icon: 'pi pi-trash',
+                command: this.menuDelete.bind(this)
+            },]);
+        }
+
+        return menu;
+    }
+
     menuDelete() {
-        this._keyValueService.onDelete(this.currentSelectRow.key).then(rs => {
+        // if in tree view mode, enable delete recursive option
+        this._keyValueService.onDelete(this.currentSelectRow.key, this.viewMode == 'tree').then(rs => {
             if (rs) {
                 this.refreshList();
             }
@@ -154,13 +168,13 @@ export class KeyListComponent implements OnInit {
                             label: name == '' ? '/' : name,
                             data: this.nomarlizePathCombine(pathCombine),
                             children: r[name].result,
-                            expanded: true,
+                            expanded: false,
                             collapsedIcon: PrimeIcons.FOLDER,
                             expandedIcon: PrimeIcons.FOLDER_OPEN,
                         } as TreeNode);
                     }
                 } else if (i === a.length - 1) {
-                    r.result.push({ label: name, data: this.nomarlizePathCombine(pathCombine), children: [], expanded: true });
+                    r.result.push({ label: name, data: this.nomarlizePathCombine(pathCombine), children: [], expanded: false });
                 }
                 return r[name];
             }, level)
@@ -206,6 +220,7 @@ export class KeyListComponent implements OnInit {
 
     contextMenuViewModeTreeSelect(evt) {
         this.currentSelectRow = this.listDataSource.find(x => x.key == evt.node.data);
+        this.contextMenuModel = this.getContextMenu();
     }
 
     preventMouseDown(event) {
@@ -216,5 +231,21 @@ export class KeyListComponent implements OnInit {
     onNodeSelect(evt) {
         this.selectedKey = this.treeSelectedItem.data;
         this.rootCtx.dispatchEvent('changeSelectedKey', { key: this.selectedKey });
+    }
+
+    toggleExpandTree(isExpand: boolean) {
+        this.treeIsExpandAll = isExpand;
+        this.treeDataSource.forEach(node => {
+            this.expandRecursive(node, isExpand);
+        });
+    }
+
+    private expandRecursive(node: TreeNode, isExpand: boolean) {
+        node.expanded = isExpand;
+        if (node.children) {
+            node.children.forEach(childNode => {
+                this.expandRecursive(childNode, isExpand);
+            });
+        }
     }
 }

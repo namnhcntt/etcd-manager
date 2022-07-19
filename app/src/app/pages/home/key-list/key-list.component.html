@@ -17,6 +17,14 @@
                 class="p-button-rounded p-button-text p-button-icon-only" (click)="switchViewMode()"
                 pTooltip="Switch view mode list and tree" tooltipPosition="top"></button>
         </div>
+        <div class="p-toolbar-group-right">
+            <button *ngIf="viewMode == 'tree' && !treeIsExpandAll" pButton aria-label="button" type="button"
+                icon="pi pi-folder" class="p-button-rounded p-button-text p-button-icon-only"
+                (click)="toggleExpandTree(true)" pTooltip="Collapse all" tooltipPosition="top"></button>
+            <button *ngIf="viewMode == 'tree' && treeIsExpandAll" pButton aria-label="button" type="button"
+                icon="pi pi-folder-open" class="p-button-rounded p-button-text p-button-icon-only"
+                (click)="toggleExpandTree(false)" pTooltip="Expand all" tooltipPosition="top"></button>
+        </div>
     </p-toolbar>
     <ng-container *ngIf="viewMode == 'list'">
         <p-listbox [options]="listDataSource" [(ngModel)]="selectedKey" optionLabel="key" [filter]="true"
@@ -32,9 +40,10 @@
         </p-listbox>
     </ng-container>
     <ng-container *ngIf="viewMode == 'tree'">
-        <p-tree [value]="treeDataSource" [(selection)]="treeSelectedItem" [(selection)]="selectedKey" [filter]="true"
-            selectionMode="single" [contextMenu]="contextMenuViewModeTreeControl" scrollHeight="calc(100vh - 350px)"
-            (onNodeContextMenuSelect)="contextMenuViewModeTreeSelect($event)" (onNodeSelect)="onNodeSelect($event)">
+        <p-tree #mainTree [value]="treeDataSource" [(selection)]="treeSelectedItem" [(selection)]="selectedKey"
+            [filter]="true" selectionMode="single" [contextMenu]="contextMenuViewModeTreeControl"
+            scrollHeight="calc(100vh - 350px)" (onNodeContextMenuSelect)="contextMenuViewModeTreeSelect($event)"
+            (onNodeSelect)="onNodeSelect($event)">
         </p-tree>
     </ng-container>
 </ng-container>
@@ -53,5 +62,5 @@
         </ng-template>
     </p-dialog>
 </ng-container>
-<p-contextMenu #contextMenuViewModeListControl [model]="contextMenuViewModeList"></p-contextMenu>
-<p-contextMenu #contextMenuViewModeTreeControl [model]="contextMenuViewModeList"></p-contextMenu>
+<p-contextMenu #contextMenuViewModeListControl [model]="contextMenuModel"></p-contextMenu>
+<p-contextMenu #contextMenuViewModeTreeControl [model]="contextMenuModel"></p-contextMenu>

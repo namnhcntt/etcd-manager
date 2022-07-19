@@ -43,17 +43,17 @@ export class KeyValueService {
         return firstValueFrom(this._httpClient.post<ResponseModel>(url, { connection, ...keyModel }));
     }
 
-    delete(key: string) {
-        const url = `${environment.apiEndpoint}/${this.ENDPOINT_DELETE_BY_KEY}?key=${encodeURIComponent(key)}`;
+    delete(key: string, deleteRecursive = false): Promise<ResponseModel> {
+        const url = `${environment.apiEndpoint}/${this.ENDPOINT_DELETE_BY_KEY}?key=${encodeURIComponent(key)}&deleteRecursive=${deleteRecursive}`;
         return firstValueFrom(this._httpClient.post<ResponseModel>(url, this.rootCtx.data.connection));
     }
 
-    onDelete(key: string): Promise<any> {
+    onDelete(key: string, deleteRecursive = false): Promise<any> {
         return new Promise((resolve) => {
             this._confirmationService.confirm({
                 message: 'Are you sure that you want to delete?',
                 accept: () => {
-                    this.delete(key).then(rs => {
+                    this.delete(key, deleteRecursive).then(rs => {
                         if (rs.success) {
                             resolve(true);
                             this.rootCtx.dispatchEvent('keyDeleted', { key });

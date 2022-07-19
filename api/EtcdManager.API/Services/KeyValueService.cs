@@ -7,7 +7,7 @@ namespace EtcdManager.API.Services
         Task<ResponseModel<List<string>>> GetAll(ConnectionModel connection);
         Task<ResponseModel<KeyModel>> Get(ConnectionModel connection, string key);
         Task<ResponseModel<bool>> Save(SaveKeyModel keyModel);
-        Task<ResponseModel<bool>> Delete(ConnectionModel connection, string key);
+        Task<ResponseModel<bool>> Delete(ConnectionModel connection, string key, bool deleteRecursive = false);
         Task<ResponseModel<bool>> RenameKey(ConnectionModel connection, string oldKey, string newKey);
     }
 
@@ -73,12 +73,18 @@ namespace EtcdManager.API.Services
             return ResponseModel<bool>.ResponseWithData(true);
         }
 
-        public async Task<ResponseModel<bool>> Delete(ConnectionModel connection, string key)
+        public async Task<ResponseModel<bool>> Delete(ConnectionModel connection, string key, bool deleteRecursive = false)
         {
             var client = await _connectionService.GetClient(connection);
             await client.Instance.DeleteAsync(key, new Grpc.Core.Metadata() {
                 new Grpc.Core.Metadata.Entry("token",client.Token)
             });
+            if (deleteRecursive)
+            {
+                await client.Instance.DeleteRangeAsync($"{key}/", new Grpc.Core.Metadata() {
+                    new Grpc.Core.Metadata.Entry("token",client.Token)
+                });
+            }
             return ResponseModel<bool>.ResponseWithData(true);
         }
 
