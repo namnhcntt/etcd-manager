@@ -31,7 +31,7 @@
         </p-listbox>
     </ng-container>
     <ng-container *ngIf="viewMode == 'tree'">
-
+        <p-tree [value]="treeDataSource" [(selection)]="treeSelectedItem"></p-tree>
     </ng-container>
 </ng-container>
 

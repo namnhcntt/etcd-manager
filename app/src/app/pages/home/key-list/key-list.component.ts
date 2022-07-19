@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
+import { MenuItem, MessageService, TreeNode } from 'primeng/api';
 import { ContextMenu } from 'primeng/contextmenu';
 import { AppCtxService } from 'src/app/service/app-ctx.service';
 import { AppEventService } from 'src/app/service/app-event.service';
@@ -17,7 +17,8 @@ export class KeyListComponent implements OnInit {
     showNewKeyForm = false;
     selectedKey: string;
     loaded = false;
-    treeDataSource = [];
+    treeSelectedItem: any;
+    treeDataSource: TreeNode[] = [];
     listDataSource = [];
     rootCtx: ComCtxService;
     currentSelectRow: any;
@@ -67,10 +68,10 @@ export class KeyListComponent implements OnInit {
             }
         });
 
-        this._appCtxService.getRootCtx().subscribe('keyDeleted', rs => {
+        this.rootCtx.subscribe('keyDeleted', rs => {
             this.refreshList();
         });
-        this._appCtxService.getRootCtx().subscribe('keyRenamed', rs => {
+        this.rootCtx.subscribe('keyRenamed', rs => {
             this.refreshList();
         });
     }
@@ -125,11 +126,11 @@ export class KeyListComponent implements OnInit {
     switchViewMode() {
         if (this.viewMode == 'list') {
             // list
-            this.bindDataSourceList();
+            this.bindDataSourceTree();
             this.viewMode = 'tree';
         } else {
             // tree
-            this.bindDataSourceTree();
+            this.bindDataSourceList();
             this.viewMode = 'list';
         }
         console.log('switch view mode');
@@ -141,7 +142,26 @@ export class KeyListComponent implements OnInit {
 
     bindDataSourceTree() {
         // change this array to tree
-        const rootTree = '';
+        const lstKey = this.listDataSource.map(x => x.key);
+        const nodes: TreeNode[] = [{ label: '/', data: '/', expanded: false }];
+        nodes[0].children = this.bindChildTree(lstKey, '/');
+
+        this.treeDataSource = nodes;
+    }
+
+    bindChildTree(lstKey: string[], startWithStr: string): TreeNode[] {
+        const childTree: TreeNode[] = [];
+
+        lstKey.filter((x: string) => x.startsWith(startWithStr)).forEach(item => {
+            // child
+            const arr = item.split('/');
+            const nodeName = arr[1];
+            const childNode: TreeNode = { label: nodeName, data: item, expanded: false };
+            childNode.children = this.bindChildTree(lstKey, item);
+            childTree.push(childNode);
+        });
+
+        return childTree;
     }
 
     export() {
