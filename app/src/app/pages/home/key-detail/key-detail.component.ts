@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { Inplace } from 'primeng/inplace';
 import { CodeEditorConstant } from 'src/app/constants/code-editor.constant';
@@ -6,6 +6,7 @@ import { AppCtxService } from 'src/app/service/app-ctx.service';
 import { AppEventService } from 'src/app/service/app-event.service';
 import { ComCtxService } from 'src/app/service/com-ctx.service';
 import { KeyValueService } from 'src/app/service/key-value.service';
+import { CodeEditorComponent } from '@ngstack/code-editor';
 
 @Component({
     selector: 'app-key-detail',
@@ -14,6 +15,7 @@ import { KeyValueService } from 'src/app/service/key-value.service';
     providers: [ComCtxService]
 })
 export class KeyDetailComponent implements OnInit {
+    showKeyVersion = false;
     loaded = false;
     rootCtx: ComCtxService;
     connection: any;
@@ -32,6 +34,8 @@ export class KeyDetailComponent implements OnInit {
         { value: 'typescript' },
         { value: 'plaintext' },
     ];
+
+    @ViewChild('codeEditor') codeEditor: CodeEditorComponent;
 
     constructor(
         private _appCtxService: AppCtxService,
@@ -126,5 +130,9 @@ export class KeyDetailComponent implements OnInit {
         setTimeout(() => {
             this.showCodeEditor = true;
         }, 1000);
+    }
+
+    viewAllVersion() {
+        this.showKeyVersion = true;
     }
 }

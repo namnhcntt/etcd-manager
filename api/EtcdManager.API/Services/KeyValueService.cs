@@ -1,4 +1,7 @@
 using EtcdManager.API.Models;
+using Etcdserverpb;
+using Google.Protobuf;
+using Polly;
 
 namespace EtcdManager.API.Services
 {
@@ -9,12 +12,13 @@ namespace EtcdManager.API.Services
         Task<ResponseModel<bool>> Save(SaveKeyModel keyModel);
         Task<ResponseModel<bool>> Delete(ConnectionModel connection, string key, bool deleteRecursive = false);
         Task<ResponseModel<bool>> RenameKey(ConnectionModel connection, string oldKey, string newKey);
+        Task<ResponseModel<List<KeyVersionModel>>> GetRevisionOfKey(ConnectionModel connection, string key);
     }
 
     public class KeyValueService : IKeyValueService
     {
         private readonly IConnectionService _connectionService;
-
+        private Dictionary<string, long> _watchs = new Dictionary<string, long>();
         public KeyValueService(
             IConnectionService connectionService
         )
@@ -108,6 +112,78 @@ namespace EtcdManager.API.Services
             {
                 return ResponseModel<bool>.ResponseWithError("ERR_UNKNOWN", System.Net.HttpStatusCode.InternalServerError, ex.Message);
             }
+        }
+
+        public async Task<ResponseModel<List<KeyVersionModel>>> GetRevisionOfKey(ConnectionModel connection, string key)
+        {
+            var client = await _connectionService.GetClient(connection);
+            var value = await client.Instance.GetAsync(key, new Grpc.Core.Metadata() {
+                new Grpc.Core.Metadata.Entry("token",client.Token)
+            });
+
+            var op = await GetAllRevision(client, key, value.Kvs[0].Version);
+            return ResponseModel<List<KeyVersionModel>>.ResponseWithData(op);
+        }
+
+        private async Task<List<KeyVersionModel>> GetAllRevision(EtcdClientInstance client, string key, long currentVersion)
+        {
+            var op = new List<KeyVersionModel>();
+            bool done = false;
+            var cancelTokenSource = new CancellationTokenSource();
+
+            // nếu chưa khởi tạo thì khởi tạo 1 lần
+            var _ = client.Instance.Watch(new WatchRequest()
+            {
+                CreateRequest = new WatchCreateRequest()
+                {
+                    Key = ByteString.CopyFromUtf8(key),
+                    StartRevision = 1
+                }
+            }, (WatchResponse watchEvent) =>
+            {
+                if (!watchEvent.Created)
+                {
+                    foreach (var evt in watchEvent.Events)
+                    {
+                        var newObj = new KeyVersionModel();
+                        newObj.Key = evt.Kv.Key.ToStringUtf8();
+                        newObj.CreateRevision = evt.Kv.CreateRevision;
+                        newObj.ModRevision = evt.Kv.ModRevision;
+                        newObj.Version = evt.Kv.Version;
+                        newObj.Value = evt.Kv.Value.ToStringUtf8();
+                        newObj.EventType = evt.Type;
+                        newObj.Prev =
+                            evt.PrevKv == null ?
+                            null :
+                         new KeyVersionModel()
+                         {
+                             Key = evt.PrevKv.Key.ToStringUtf8(),
+                             CreateRevision = evt.PrevKv.CreateRevision,
+                             ModRevision = evt.PrevKv.ModRevision,
+                             Version = evt.PrevKv.Version,
+                             Value = evt.PrevKv.Value.ToStringUtf8(),
+                         };
+                        op.Add(newObj);
+                    }
+                    done = true;
+                }
+                else
+                {
+                    _watchs.Add(key, watchEvent.WatchId);
+                }
+            }, new Grpc.Core.Metadata() { new Grpc.Core.Metadata.Entry("token", client.Token) }, null, cancelTokenSource.Token);
+
+            var policy = Policy.HandleResult<bool>(x => !x).WaitAndRetryAsync(5, retry => TimeSpan.FromSeconds(retry));
+            await policy.ExecuteAsync(() =>
+            {
+                if (done)
+                {
+                    cancelTokenSource.Cancel();
+                    return Task.FromResult(true);
+                }
+                return Task.FromResult(false);
+            });
+            return op;
         }
     }
 }

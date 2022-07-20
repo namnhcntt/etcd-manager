@@ -45,9 +45,6 @@
             <button pButton aria-label="button" icon="pi pi-upload button-header"
                 class="p-button-rounded p-button-text p-button-icon-only" (click)="import()" pTooltip="Import node"
                 tooltipPosition="top"></button>
-            <button pButton aria-label="button" icon="pi pi-code button-header"
-                class="p-button-rounded p-button-text p-button-icon-only" (click)="formatContent()"
-                pTooltip="Format content" tooltipPosition="top"></button>
             <button pButton aria-label="button" icon="pi pi-book button-header"
                 class="p-button-rounded p-button-text p-button-icon-only" (click)="viewAllVersion()"
                 pTooltip="View all version" tooltipPosition="top"></button>
@@ -56,7 +53,22 @@
                 tooltipPosition="top"></button>
         </div>
     </p-toolbar>
-    <ngs-code-editor [theme]="codeEditorConstant.DEFAULT_THEME" [codeModel]="codeModel"
-        [options]="codeEditorConstant.DEFAULT_OPTIONS" [style]="{'height':'calc(100vh - 270px)','overflow':'auto'}">
+    <ngs-code-editor #codeEditor [theme]="codeEditorConstant.DEFAULT_THEME" [codeModel]="codeModel"
+        [options]="codeEditorConstant.DEFAULT_OPTIONS" [style]="{'height':'calc(100vh - 270px)','overflow':'auto'}"
+        (valueChanged)="onCodeChanged($event)">
     </ngs-code-editor>
+</ng-container>
+
+<ng-container *ngIf=" showKeyVersion">
+    <p-dialog header="Revision of key {{keyDetail.key}}" [(visible)]="showKeyVersion"
+        [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
+        [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true"
+        [maximizable]="true" [autoZIndex]="true" #dialog>
+        <app-key-version-list #keyVersionList [key]="keyDetail.key" [dialog]="dialog"></app-key-version-list>
+        <ng-template pTemplate="footer">
+            <button *ngFor="let button of keyVersionList.buttons" pButton aria-label="button"
+                [class]="button.styleClass" [disabled]="button.disabled" type="button" [icon]="button.icon"
+                (click)="button.command()" [label]="button.label"></button>
+        </ng-template>
+    </p-dialog>
 </ng-container>

@@ -19,6 +19,8 @@
         "@angular/platform-browser": "~14.0.6",
         "@angular/platform-browser-dynamic": "~14.0.6",
         "@angular/router": "~14.0.6",
+        "@fortawesome/fontawesome-svg-core": "^6.1.1",
+        "@fortawesome/free-solid-svg-icons": "^6.1.1",
         "@ngstack/code-editor": "^4.0.0",
         "chart.js": "^3.3.2",
         "guid-ts": "^1.1.2",
@@ -27,6 +29,7 @@
         "primeicons": "5.0.0",
         "primeng": "^13.1.0",
         "rxjs": "~7.4.0",
+        "text-diff": "^1.0.1",
         "tslib": "^2.3.0",
         "web-animations-js": "^2.3.2",
         "zone.js": "~0.11.4"

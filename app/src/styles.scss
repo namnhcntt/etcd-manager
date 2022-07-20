@@ -1,5 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
-
+@import "assets/fontawesome-free-6.1.1-web/scss/fontawesome.scss";
+@import "assets/fontawesome-free-6.1.1-web/scss/regular.scss";
+@import "assets/fontawesome-free-6.1.1-web/scss/solid.scss";
+@import "assets/fontawesome-free-6.1.1-web/scss/brands.scss";
+@import "assets/fontawesome-free-6.1.1-web/scss/v4-shims.scss";
 @import "../node_modules/primeng/resources/primeng.min.css";
 @import "../node_modules/primeflex/primeflex.scss";
 @import "../node_modules/primeicons/primeicons.css";

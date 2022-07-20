@@ -108,7 +108,12 @@ export class KeyListComponent implements OnInit {
     }
 
     createChildNode() {
-        this.parentKeyOnNew = this.currentSelectRow.key + '/';
+        if (this.currentSelectRow) {
+            this.parentKeyOnNew = this.currentSelectRow.key + '/';
+        } else if (this.viewMode == 'tree' && this.treeSelectedItem) {
+            this.parentKeyOnNew = this.treeSelectedItem.data + '/';
+        }
+
         this.showNewKeyForm = true;
     }
 

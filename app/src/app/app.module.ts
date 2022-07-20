@@ -126,13 +126,25 @@ import { PanelsComponent } from './components/panels/panels.component';
 import { TableComponent } from './components/table/table.component';
 import { TimelineComponent } from './components/timeline/timeline.component';
 import { TreeComponent } from './components/tree/tree.component';
-
+import { CodeEditorModule } from '@ngstack/code-editor';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-scss';
+import 'prismjs/components/prism-typescript';
 import { AccessComponent } from './components/access/access.component';
+import { DiffTextComponent } from './components/diff-text/diff-text.component';
 import { ErrorComponent } from './components/error/error.component';
+import { KeyVersionListComponent } from './components/key-version-list/key-version-list.component';
+import { LiveCodeEditorComponent } from './components/live-code-editor/live-code-editor.component';
 import { LoginComponent } from './components/login/login.component';
+import { NewKeyComponent } from './components/new-key/new-key.component';
 import { NotfoundComponent } from './components/notfound/notfound.component';
+import { PrismComponent } from './components/prism/prism.component';
 import { ConnectionManagerComponent } from './pages/connection-manager/connection-manager.component';
 import { HomeComponent } from './pages/home/home.component';
+import { KeyDetailComponent } from './pages/home/key-detail/key-detail.component';
+import { KeyListComponent } from './pages/home/key-list/key-list.component';
 import { UserManagerComponent } from './pages/user-manager/user-manager.component';
 import { ConfigService } from './service/app.config.service';
 import { MenuService } from './service/app.menu.service';
@@ -143,17 +155,6 @@ import { IconService } from './service/iconservice';
 import { NodeService } from './service/nodeservice';
 import { PhotoService } from './service/photoservice';
 import { ProductService } from './service/productservice';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { KeyListComponent } from './pages/home/key-list/key-list.component';
-import { KeyDetailComponent } from './pages/home/key-detail/key-detail.component';
-import 'prismjs/components/prism-css';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-scss';
-import { PrismComponent } from './components/prism/prism.component';
-import { CodeEditorModule } from '@ngstack/code-editor';
-import { NewKeyComponent } from './components/new-key/new-key.component';
-import { LiveCodeEditorComponent } from './components/live-code-editor/live-code-editor.component';
 
 @NgModule({
     imports: [
@@ -245,7 +246,6 @@ import { LiveCodeEditorComponent } from './components/live-code-editor/live-code
         VirtualScrollerModule,
         AppCodeModule,
         StyleClassModule,
-
         CodeEditorModule.forRoot({
             baseUrl: 'assets/monaco',
             typingsWorkerUrl: 'assets/workers/typings-worker.js'
@@ -301,7 +301,9 @@ import { LiveCodeEditorComponent } from './components/live-code-editor/live-code
         KeyDetailComponent,
         PrismComponent,
         NewKeyComponent,
-        LiveCodeEditorComponent
+        LiveCodeEditorComponent,
+        KeyVersionListComponent,
+        DiffTextComponent
     ],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },

@@ -79,4 +79,9 @@ export class KeyValueService {
         const url = `${environment.apiEndpoint}/${this.ENDPOINT_RENAME_KEY}?oldKey=${encodeURIComponent(oldKey)}&newKey=${encodeURIComponent(newKey)}`;
         return firstValueFrom(this._httpClient.post<ResponseModel>(url, this.rootCtx.data.connection));
     }
+
+    getRevisionOfKey(key: string): Promise<ResponseModel> {
+        const url = `${environment.apiEndpoint}/keyvalue/getrevision?key=${encodeURIComponent(key)}`;
+        return firstValueFrom(this._httpClient.post<ResponseModel>(url, this.rootCtx.data.connection));
+    }
 }

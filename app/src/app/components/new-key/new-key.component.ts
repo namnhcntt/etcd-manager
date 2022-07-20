@@ -37,7 +37,6 @@ export class NewKeyComponent implements OnInit, OnDestroy {
             },
             {
                 label: 'Cancel', icon: 'pi pi-times', command: (event) => {
-                    console.log('click cancel');
                     this.dialog.close({} as Event);
                 },
                 styleClass: 'p-ripple p-button-raised p-button-secondary p-button-text'

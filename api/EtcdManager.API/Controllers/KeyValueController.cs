@@ -46,5 +46,11 @@ namespace EtcdManager.API.Controllers
         {
             return Ok(await this._keyValueService.RenameKey(connection, oldKey, newKey));
         }
+
+        [HttpPost("getrevision")]
+        public async Task<IActionResult> GetRevision([FromBody] ConnectionModel connection, [FromQuery] string key)
+        {
+            return Ok(await this._keyValueService.GetRevisionOfKey(connection, key));
+        }
     }
 }
