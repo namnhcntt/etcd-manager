@@ -18,9 +18,15 @@ namespace EtcdManager.API.Controllers
         }
 
         [HttpPost("GetAll")]
-        public async Task<IActionResult> Get([FromBody] ConnectionModel connection)
+        public async Task<IActionResult> GetAll(ConnectionModel connection)
         {
-            return Ok(await this._keyValueService.GetAll(connection));
+            return Ok(await _keyValueService.GetAll(connection));
+        }
+
+        [HttpPost("GetAllKeys")]
+        public async Task<IActionResult> GetAllKeys([FromBody] ConnectionModel connection)
+        {
+            return Ok(await this._keyValueService.GetAllKeys(connection));
         }
 
         [HttpPost("Get")]

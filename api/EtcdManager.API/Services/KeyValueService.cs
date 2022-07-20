@@ -7,12 +7,13 @@ namespace EtcdManager.API.Services
 {
     public interface IKeyValueService
     {
-        Task<ResponseModel<List<string>>> GetAll(ConnectionModel connection);
+        Task<ResponseModel<List<string>>> GetAllKeys(ConnectionModel connection);
         Task<ResponseModel<KeyModel>> Get(ConnectionModel connection, string key);
         Task<ResponseModel<bool>> Save(SaveKeyModel keyModel);
         Task<ResponseModel<bool>> Delete(ConnectionModel connection, string key, bool deleteRecursive = false);
         Task<ResponseModel<bool>> RenameKey(ConnectionModel connection, string oldKey, string newKey);
         Task<ResponseModel<List<KeyVersionModel>>> GetRevisionOfKey(ConnectionModel connection, string key);
+        Task<ResponseModel<List<KeyVersionModel>>> GetAll(ConnectionModel connection);
     }
 
     public class KeyValueService : IKeyValueService
@@ -26,7 +27,7 @@ namespace EtcdManager.API.Services
             this._connectionService = connectionService;
         }
 
-        public async Task<ResponseModel<List<string>>> GetAll(ConnectionModel connection)
+        public async Task<ResponseModel<List<string>>> GetAllKeys(ConnectionModel connection)
         {
             var client = await _connectionService.GetClient(connection);
             var keys = await client.Instance.GetRangeAsync("/", new Grpc.Core.Metadata() {
@@ -184,6 +185,27 @@ namespace EtcdManager.API.Services
                 return Task.FromResult(false);
             });
             return op;
+        }
+
+        public async Task<ResponseModel<List<KeyVersionModel>>> GetAll(ConnectionModel connection)
+        {
+            var client = await _connectionService.GetClient(connection);
+            var keys = await client.Instance.GetRangeAsync("/", new Grpc.Core.Metadata() {
+                new Grpc.Core.Metadata.Entry("token",client.Token)
+            });
+            var op = new List<KeyVersionModel>();
+            foreach (var key in keys.Kvs)
+            {
+                op.Add(new KeyVersionModel()
+                {
+                    Key = key.Key.ToStringUtf8(),
+                    CreateRevision = key.CreateRevision,
+                    ModRevision = key.ModRevision,
+                    Version = key.Version,
+                    Value = key.Value.ToStringUtf8()
+                });
+            }
+            return ResponseModel<List<KeyVersionModel>>.ResponseWithData(op);
         }
     }
 }

@@ -11,8 +11,8 @@ import { ComCtxService } from './com-ctx.service';
     providedIn: 'root'
 })
 export class KeyValueService {
-
-    readonly ENDPOINT_GET_KEY_BY_CONNECTION = 'keyvalue/getall';
+    readonly ENDPOINT_GET_KEY_BY_CONNECTION = 'keyvalue/getallkeys';
+    readonly ENDPOINT_GET_ALL_BY_CONNECTION = 'keyvalue/getall';
     readonly ENDPOINT_GET_DETAIL_BY_KEY = 'keyvalue/get';
     readonly ENDPOINT_DELETE_BY_KEY = 'keyvalue/delete';
     readonly ENDPOINT_SAVE = 'keyvalue/save';
@@ -27,7 +27,12 @@ export class KeyValueService {
         this.rootCtx = this._appCtxService.getRootCtx();
     }
 
-    getAll(connection: any): Promise<ResponseModel> {
+    getAll() {
+        const url = `${environment.apiEndpoint}/${this.ENDPOINT_GET_ALL_BY_CONNECTION}`;
+        return firstValueFrom(this._httpClient.post<ResponseModel>(url, this.rootCtx.data.connection));
+    }
+
+    getAllKeys(connection: any): Promise<ResponseModel> {
         const url = `${environment.apiEndpoint}/${this.ENDPOINT_GET_KEY_BY_CONNECTION}`;
         return firstValueFrom(this._httpClient.post<any>(url, connection));
     }

@@ -64,7 +64,8 @@
         [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
         [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true"
         [maximizable]="true" [autoZIndex]="true" #dialog>
-        <app-key-version-list #keyVersionList [key]="keyDetail.key" [dialog]="dialog"></app-key-version-list>
+        <app-key-version-list #keyVersionList [key]="keyDetail.key" [dialog]="dialog"
+            (onUseValue)="useValueFromOldVersion($event)"></app-key-version-list>
         <ng-template pTemplate="footer">
             <button *ngFor="let button of keyVersionList.buttons" pButton aria-label="button"
                 [class]="button.styleClass" [disabled]="button.disabled" type="button" [icon]="button.icon"
@@ -72,3 +73,7 @@
         </ng-template>
     </p-dialog>
 </ng-container>
+
+<p-fileUpload #fileControl [ngStyle]="{'display': 'none'}" mode="basic" name="file" [url]="''"
+    (onSelect)="handleSelectFile($event)" [accept]="'application/json'">
+</p-fileUpload>

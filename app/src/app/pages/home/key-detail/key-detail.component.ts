@@ -7,6 +7,8 @@ import { AppEventService } from 'src/app/service/app-event.service';
 import { ComCtxService } from 'src/app/service/com-ctx.service';
 import { KeyValueService } from 'src/app/service/key-value.service';
 import { CodeEditorComponent } from '@ngstack/code-editor';
+import { ExportService } from 'src/app/service/export.service';
+import { FileUpload } from 'primeng/fileupload';
 
 @Component({
     selector: 'app-key-detail',
@@ -36,12 +38,14 @@ export class KeyDetailComponent implements OnInit {
     ];
 
     @ViewChild('codeEditor') codeEditor: CodeEditorComponent;
+    @ViewChild('fileControl') fileControl: FileUpload;
 
     constructor(
         private _appCtxService: AppCtxService,
         public _keyValueService: KeyValueService,
         private _appEventService: AppEventService,
-        private _messageService: MessageService
+        private _messageService: MessageService,
+        private _exportService: ExportService
     ) {
         this.rootCtx = this._appCtxService.getRootCtx();
         this._appEventService.getSubscriptionConnection().subscribe(async rs => {
@@ -132,7 +136,37 @@ export class KeyDetailComponent implements OnInit {
         }, 1000);
     }
 
+    useValueFromOldVersion(value: string) {
+        this.showCodeEditor = false;
+        this.keyDetail.value = value;
+        this.codeModel.value = value;
+        this.codeModel = { ...this.codeModel };
+        setTimeout(() => {
+            this.showCodeEditor = true;
+        }, 1000);
+    }
+
     viewAllVersion() {
         this.showKeyVersion = true;
+    }
+
+    export() {
+        this._exportService.exportJsonNode(this.keyDetail);
+    }
+
+    import() {
+        if (this.fileControl.basicFileInput) {
+            this.fileControl.basicFileInput.nativeElement.click();
+        }
+    }
+
+    handleSelectFile(evt) {
+        this._exportService.readDataFromFile(evt.currentFiles[0]).then(rs => {
+            if (rs) {
+                this.keyDetail.value = rs.value;
+                this.codeModel.value = this.keyDetail.value;
+                this.codeModel = { ...this.codeModel };
+            }
+        });
     }
 }

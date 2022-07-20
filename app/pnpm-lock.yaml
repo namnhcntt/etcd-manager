@@ -19,8 +19,10 @@ specifiers:
   '@types/jasmine': ~3.10.0
   '@types/jasminewd2': ~2.0.8
   '@types/node': ^12.11.1
+  '@types/underscore': ^1.11.4
   chart.js: ^3.3.2
   codelyzer: ^6.0.0
+  file-saver: ^2.0.5
   guid-ts: ^1.1.2
   jasmine-core: ~3.10.0
   jasmine-spec-reporter: ~5.0.0
@@ -42,6 +44,7 @@ specifiers:
   tslib: ^2.3.0
   tslint: ~6.1.0
   typescript: ~4.7.4
+  underscore: ^1.13.4
   web-animations-js: ^2.3.2
   zone.js: ~0.11.4
 
@@ -59,6 +62,7 @@ dependencies:
   '@fortawesome/free-solid-svg-icons': 6.1.1
   '@ngstack/code-editor': 4.0.0_jgc7rjv6dmfsh4hhmn3evgouju
   chart.js: 3.8.0
+  file-saver: 2.0.5
   guid-ts: 1.1.2
   monaco-editor: 0.33.0
   primeflex: 3.2.1
@@ -67,6 +71,7 @@ dependencies:
   rxjs: 7.4.0
   text-diff: 1.0.1
   tslib: 2.4.0
+  underscore: 1.13.4
   web-animations-js: 2.3.2
   zone.js: 0.11.6
 
@@ -77,6 +82,7 @@ devDependencies:
   '@types/jasmine': 3.10.6
   '@types/jasminewd2': 2.0.10
   '@types/node': 12.20.55
+  '@types/underscore': 1.11.4
   codelyzer: 6.0.2_tslint@6.1.3
   jasmine-core: 3.10.1
   jasmine-spec-reporter: 5.0.2
@@ -2171,6 +2177,10 @@ packages:
       '@types/node': 12.20.55
     dev: true
 
+  /@types/underscore/1.11.4:
+    resolution: {integrity: sha512-uO4CD2ELOjw8tasUrAhvnn2W4A0ZECOvMjCivJr4gA9pGgjv+qxKWY9GLTMVEK8ej85BxQOocUyE7hImmSQYcg==}
+    dev: true
+
   /@types/ws/8.5.3:
     resolution: {integrity: sha512-6YOoWjruKj1uLf3INHH7D3qTXwFfEsg1kf3c0uDdSBJwfa/llkwIjrAGV7j7mVgGNbzTQ3HiHKKDXl6bJPD97w==}
     dependencies:
@@ -4085,6 +4095,10 @@ packages:
     dependencies:
       escape-string-regexp: 1.0.5
     dev: true
+
+  /file-saver/2.0.5:
+    resolution: {integrity: sha512-P9bmyZ3h/PRG+Nzga+rbdI4OEpNDzAVyy74uVO9ATgzLK6VtAsYybF/+TOCvrc0MO793d6+42lLyZTw7/ArVzA==}
+    dev: false
 
   /fill-range/7.0.1:
     resolution: {integrity: sha512-qOo9F+dMUmC2Lcb4BbVvnKJxTPjCm+RRpe4gDuGrzkL7mEVl/djYSu2OdQ2Pa302N4oqkSg9ir6jaLWJ2USVpQ==}
@@ -7745,6 +7759,10 @@ packages:
   /ua-parser-js/0.7.31:
     resolution: {integrity: sha512-qLK/Xe9E2uzmYI3qLeOmI0tEOt+TBBQyUIAh4aAgU05FVYzeZrKUdkAZfBNVGRaHVgV0TDkdEngJSw/SyQchkQ==}
     dev: true
+
+  /underscore/1.13.4:
+    resolution: {integrity: sha512-BQFnUDuAQ4Yf/cYY5LNrK9NCJFKriaRbD9uR1fTeXnBeoa97W0i41qkZfGO9pSo8I5KzjAcSY2XYtdf0oKd7KQ==}
+    dev: false
 
   /unicode-canonical-property-names-ecmascript/2.0.0:
     resolution: {integrity: sha512-yY5PpDlfVIU5+y/BSCxAJRBIS1Zc2dDG3Ujq+sR0U+JjUevW2JhocOF+soROYDSaAezOzOKuyyixhD6mBknSmQ==}

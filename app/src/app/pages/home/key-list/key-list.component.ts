@@ -6,6 +6,8 @@ import { AppEventService } from 'src/app/service/app-event.service';
 import { ComCtxService } from 'src/app/service/com-ctx.service';
 import { KeyValueService } from 'src/app/service/key-value.service';
 import { Tree } from 'primeng/tree';
+import { FileUpload } from 'primeng/fileupload';
+import { ExportService } from 'src/app/service/export.service';
 
 @Component({
     selector: 'app-key-list',
@@ -28,12 +30,13 @@ export class KeyListComponent implements OnInit {
     contextMenuModel: MenuItem[] = this.getContextMenu();
 
     @ViewChild('mainTree') mainTree: Tree;
-
+    @ViewChild('fileControl') fileControl: FileUpload;
     constructor(
         private _appEventService: AppEventService,
         private _keyValueService: KeyValueService,
         private _messageService: MessageService,
         private _appCtxService: AppCtxService,
+        private _exportService: ExportService
     ) {
         this.rootCtx = this._appCtxService.getRootCtx();
     }
@@ -122,7 +125,7 @@ export class KeyListComponent implements OnInit {
     }
 
     async bindData(connection: any) {
-        const ds = await this._keyValueService.getAll(connection);
+        const ds = await this._keyValueService.getAllKeys(connection);
         if (ds.success) {
             console.log('all keys', ds.data);
             this.listDataSource = ds.data.map(x => {
@@ -195,11 +198,19 @@ export class KeyListComponent implements OnInit {
     }
 
     export() {
-        console.log('export');
+        this._keyValueService.getAll().then(rs => {
+            if (rs.success) {
+                this._exportService.exportNodes(rs.data);
+            } else {
+                this._messageService.add({ severity: 'error', summary: 'Error', detail: rs.message });
+            }
+        });
     }
 
     import() {
-        console.log('import')
+        if (this.fileControl.basicFileInput) {
+            this.fileControl.basicFileInput.nativeElement.click();
+        }
     }
 
     newKey() {
@@ -242,6 +253,14 @@ export class KeyListComponent implements OnInit {
         this.treeIsExpandAll = isExpand;
         this.treeDataSource.forEach(node => {
             this.expandRecursive(node, isExpand);
+        });
+    }
+
+    handleSelectFile(evt: any) {
+        this._exportService.readDataFromFile(evt.currentFiles[0]).then(rs => {
+            if (rs) {
+                console.log('file content', rs);
+            }
         });
     }
 

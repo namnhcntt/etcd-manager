@@ -3,7 +3,7 @@
     Latest Version: <p-badge severity="info" [value]="currentVersion"></p-badge>
 </div>
 <p-table #dt1 [value]="versions" dataKey="key" [rows]="10" [loading]="loading" [rowHover]="true"
-    styleClass="p-datatable-gridlines" [paginator]="true" sortField="version" [sortOrder]="1"
+    styleClass="p-datatable-gridlines" [paginator]="true" sortField="modRevision" [sortOrder]="-1"
     [globalFilterFields]="['value', 'modRevision','version']" responsiveLayout="scroll">
     <ng-template pTemplate="caption">
         <div class="flex justify-content-between flex-column sm:flex-row">
@@ -36,14 +36,18 @@
             </th>
         </tr>
     </ng-template>
-    <ng-template pTemplate="body" let-item>
+    <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
         <tr>
             <td>{{item.modRevision}}</td>
             <td>{{item.version}}</td>
-            <td>{{item.value}}</td>
+            <td>{{item.shortValue}}</td>
             <td>
-                <button pButton aria-label="button" type="button" icon="fas fa-code-compare"
-                    pTooltip="Compare current version with latest" tooltipPosition="top"
+                <button pButton aria-label="button" type="button" icon="fas fa-hand-pointer"
+                    class="p-button-rounded p-button-text p-button-icon-only"
+                    pTooltip="Use this value for current editing" tooltipPosition="top"
+                    (click)="selectThisValue(item)"></button>
+                <button *ngIf="rowIndex > 0" pButton aria-label="button" type="button" icon="fas fa-code-compare"
+                    pTooltip="Diff this version with latest" tooltipPosition="top"
                     class="p-button-rounded p-button-text p-button-icon-only" (click)="compareVersion(item)"></button>
             </td>
         </tr>
@@ -64,7 +68,7 @@
         [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
         [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true"
         [maximizable]="true" [autoZIndex]="true" #dialog>
-        <app-diff-text #diffText [dialog]="dialog" [left]="currentVersionItem" [right]="diffItem"></app-diff-text>
+        <app-diff-text #diffText [dialog]="dialog" [right]="currentVersionItem" [left]="diffItem"></app-diff-text>
         <ng-template pTemplate="footer">
             <button *ngFor="let button of diffText.buttons" pButton aria-label="button" [class]="button.styleClass"
                 [disabled]="button.disabled" type="button" [icon]="button.icon" (click)="button.command()"

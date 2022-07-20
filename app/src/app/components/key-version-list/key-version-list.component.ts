@@ -1,9 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import * as allFonts from '@fortawesome/free-solid-svg-icons';
 import { MenuItem, MessageService } from 'primeng/api';
 import { Dialog } from 'primeng/dialog';
 import { KeyValueService } from 'src/app/service/key-value.service';
-import { CommonUtils } from 'src/app/utils/common.utils';
-import * as allFonts from '@fortawesome/free-solid-svg-icons';
 
 @Component({
     selector: 'app-key-version-list',
@@ -14,7 +13,7 @@ export class KeyVersionListComponent implements OnInit {
 
     @Input() dialog: Dialog;
     @Input() key: string;
-    @Output() onClose = new EventEmitter<any>();
+    @Output() onUseValue = new EventEmitter<any>();
 
     showDiffDialog = false;
     loading = true;
@@ -41,7 +40,15 @@ export class KeyVersionListComponent implements OnInit {
                     this.currentVersionItem = arr[arr.length - 1];
                     this.currentVersion = arr[arr.length - 1].version;
                 }
-                this.versions = CommonUtils.sortArray(arr, 'modRevision', false);
+                for (const item of arr) {
+                    const temp = item.value.split(' ');
+                    if (temp.length > 20) {
+                        item.shortValue = temp.slice(0, 20).join(' ') + '...';
+                    } else {
+                        item.shortValue = item.value;
+                    }
+                }
+                this.versions = arr;
             } else {
                 this._messageService.add({ severity: 'error', summary: 'Error', detail: rs.message });
             }
@@ -61,5 +68,10 @@ export class KeyVersionListComponent implements OnInit {
     compareVersion(item) {
         this.diffItem = item;
         this.showDiffDialog = true;
+    }
+
+    selectThisValue(item) {
+        this.onUseValue.emit(item.value);
+        this.dialog.close(item);
     }
 }

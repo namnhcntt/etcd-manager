@@ -1,13 +1,8 @@
+import { sortBy } from 'underscore';
+
 export class CommonUtils {
-    static sortArray(array: any[], key: string, isAscending: boolean = true) {
-        return array.sort((a, b) => {
-            if (a[key] < b[key]) {
-                return isAscending ? -1 : 1;
-            } else if (a[key] > b[key]) {
-                return isAscending ? 1 : -1;
-            } else {
-                return 0;
-            }
-        });
+    static sortArray(array: any[], key: string, isAscending = true) {
+        const sorted = sortBy(array, key);
+        return isAscending ? sorted : sorted.reverse();
     }
 }

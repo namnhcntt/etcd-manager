@@ -1,3 +1,10 @@
+<!-- TODO: Curent issue detected:
+- In treeview, when you click on a node that not exit in etcd, the server return 500 error and do nothing
+    -> Expected: When click on a node that not exit in etcd, handle this error on server, return 404 not found status, and client show a new
+    empty node value, If user fill value and save, the new node should be created
+- When switch between treeview and list, missing current selected item
+    -> Expected: When switch between treeview and list, the current selected item should be kept
+ -->
 <ng-container *ngIf="loaded">
     <p-toolbar styleClass="p-custom-toolbar">
         <div class="p-toolbar-group-left">
@@ -64,3 +71,7 @@
 </ng-container>
 <p-contextMenu #contextMenuViewModeListControl [model]="contextMenuModel"></p-contextMenu>
 <p-contextMenu #contextMenuViewModeTreeControl [model]="contextMenuModel"></p-contextMenu>
+
+<p-fileUpload #fileControl [ngStyle]="{'display': 'none'}" mode="basic" name="file" [url]="''"
+    (onSelect)="handleSelectFile($event)" [accept]="'application/json'">
+</p-fileUpload>
