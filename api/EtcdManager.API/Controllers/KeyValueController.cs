@@ -23,6 +23,12 @@ namespace EtcdManager.API.Controllers
             return Ok(await _keyValueService.GetAll(connection));
         }
 
+        [HttpPost("GetByKeyPrefix")]
+        public async Task<IActionResult> GetByKeyPrefix([FromBody] ConnectionModel connection, [FromQuery] string keyPrefix)
+        {
+            return Ok(await _keyValueService.GetByKeyPrefix(connection, keyPrefix));
+        }
+
         [HttpPost("GetAllKeys")]
         public async Task<IActionResult> GetAllKeys([FromBody] ConnectionModel connection)
         {
@@ -57,6 +63,12 @@ namespace EtcdManager.API.Controllers
         public async Task<IActionResult> GetRevision([FromBody] ConnectionModel connection, [FromQuery] string key)
         {
             return Ok(await this._keyValueService.GetRevisionOfKey(connection, key));
+        }
+
+        [HttpPost("importnodes")]
+        public async Task<IActionResult> ImportNodes([FromBody] ImportNodesModel importNodesModel)
+        {
+            return Ok(await this._keyValueService.ImportNodes(importNodesModel.Connection, importNodesModel.KeyModels));
         }
     }
 }

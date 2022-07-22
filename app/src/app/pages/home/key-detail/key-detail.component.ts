@@ -61,7 +61,7 @@ export class KeyDetailComponent implements OnInit {
     }
 
     async getByKey(value: any) {
-        const keyDetail = await this._keyValueService.getByKey(this.connection, value.key);
+        const keyDetail = await this._keyValueService.getByKey(value.key);
         if (keyDetail.success) {
             this.keyDetail = keyDetail.data;
             this.codeModel.value = keyDetail.data.value;

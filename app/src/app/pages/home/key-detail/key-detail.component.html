@@ -69,7 +69,7 @@
         <ng-template pTemplate="footer">
             <button *ngFor="let button of keyVersionList.buttons" pButton aria-label="button"
                 [class]="button.styleClass" [disabled]="button.disabled" type="button" [icon]="button.icon"
-                (click)="button.command()" [label]="button.label"></button>
+                (click)="button.command($event)" [label]="button.label"></button>
         </ng-template>
     </p-dialog>
 </ng-container>

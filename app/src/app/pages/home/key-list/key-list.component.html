@@ -18,8 +18,8 @@
                 class="p-button-rounded p-button-text p-button-icon-only" (click)="export()" pTooltip="Export node"
                 tooltipPosition="top"></button>
             <button pButton aria-label="button" type="button" icon="pi pi-upload"
-                class="p-button-rounded p-button-text p-button-icon-only" (click)="import()" pTooltip="Import node"
-                tooltipPosition="top"></button>
+                class="p-button-rounded p-button-text p-button-icon-only" (click)="importNodes()"
+                pTooltip="Import nodes" tooltipPosition="top"></button>
             <button pButton aria-label="button" type="button" icon="pi pi-sitemap"
                 class="p-button-rounded p-button-text p-button-icon-only" (click)="switchViewMode()"
                 pTooltip="Switch view mode list and tree" tooltipPosition="top"></button>
@@ -64,11 +64,26 @@
         </app-new-key>
         <ng-template pTemplate="footer">
             <button *ngFor="let button of newKey.buttons" pButton aria-label="button" [class]="button.styleClass"
-                [disabled]="button.disabled" type="button" [icon]="button.icon" (click)="button.command()"
+                [disabled]="button.disabled" type="button" [icon]="button.icon" (click)="button.command($event)"
                 [label]="button.label"></button>
         </ng-template>
     </p-dialog>
 </ng-container>
+
+<ng-container *ngIf="showImportNodes">
+    <p-dialog header="ImportNodes" [(visible)]="showImportNodes"
+        [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
+        [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true"
+        [maximizable]="true" [autoZIndex]="true" #dialogImportNodes>
+        <app-import-nodes #importNodes [dialog]="dialogImportNodes" (importSuccess)="refreshList()"></app-import-nodes>
+        <ng-template pTemplate="footer">
+            <button *ngFor="let button of importNodes.buttons" pButton aria-label="button" [class]="button.styleClass"
+                [disabled]="button.disabled" type="button" [icon]="button.icon" (click)="button.command($event)"
+                [label]="button.label"></button>
+        </ng-template>
+    </p-dialog>
+</ng-container>
+
 <p-contextMenu #contextMenuViewModeListControl [model]="contextMenuModel"></p-contextMenu>
 <p-contextMenu #contextMenuViewModeTreeControl [model]="contextMenuModel"></p-contextMenu>
 

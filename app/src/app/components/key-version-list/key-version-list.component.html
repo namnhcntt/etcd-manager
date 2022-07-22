@@ -71,7 +71,7 @@
         <app-diff-text #diffText [dialog]="dialog" [right]="currentVersionItem" [left]="diffItem"></app-diff-text>
         <ng-template pTemplate="footer">
             <button *ngFor="let button of diffText.buttons" pButton aria-label="button" [class]="button.styleClass"
-                [disabled]="button.disabled" type="button" [icon]="button.icon" (click)="button.command()"
+                [disabled]="button.disabled" type="button" [icon]="button.icon" (click)="button.command($event)"
                 [label]="button.label"></button>
         </ng-template>
     </p-dialog>

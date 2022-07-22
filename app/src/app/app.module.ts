@@ -155,6 +155,8 @@ import { IconService } from './service/iconservice';
 import { NodeService } from './service/nodeservice';
 import { PhotoService } from './service/photoservice';
 import { ProductService } from './service/productservice';
+import { ImportNodesComponent } from './components/import-nodes/import-nodes.component';
+import { ValueDetailComponent } from './components/value-detail/value-detail.component';
 
 @NgModule({
     imports: [
@@ -303,7 +305,9 @@ import { ProductService } from './service/productservice';
         NewKeyComponent,
         LiveCodeEditorComponent,
         KeyVersionListComponent,
-        DiffTextComponent
+        DiffTextComponent,
+        ImportNodesComponent,
+        ValueDetailComponent
     ],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },

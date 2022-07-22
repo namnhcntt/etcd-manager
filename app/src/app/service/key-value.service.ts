@@ -27,25 +27,30 @@ export class KeyValueService {
         this.rootCtx = this._appCtxService.getRootCtx();
     }
 
+    getByKeyPrefix(key: string): Promise<ResponseModel> {
+        const url = `${environment.apiEndpoint}/keyvalue/GetByKeyPrefix?keyPrefix=${encodeURIComponent(key)}`;
+        return firstValueFrom(this._httpClient.post<ResponseModel>(url, this.rootCtx.data.connection));
+    }
+
     getAll() {
         const url = `${environment.apiEndpoint}/${this.ENDPOINT_GET_ALL_BY_CONNECTION}`;
         return firstValueFrom(this._httpClient.post<ResponseModel>(url, this.rootCtx.data.connection));
     }
 
-    getAllKeys(connection: any): Promise<ResponseModel> {
+    getAllKeys(): Promise<ResponseModel> {
         const url = `${environment.apiEndpoint}/${this.ENDPOINT_GET_KEY_BY_CONNECTION}`;
-        return firstValueFrom(this._httpClient.post<any>(url, connection));
+        return firstValueFrom(this._httpClient.post<any>(url, this.rootCtx.data.connection));
     }
 
-    getByKey(connection: any, key: string): Promise<ResponseModel> {
+    getByKey(key: string): Promise<ResponseModel> {
         const url = `${environment.apiEndpoint}/${this.ENDPOINT_GET_DETAIL_BY_KEY}?key=${encodeURIComponent(key)}`;
-        return firstValueFrom(this._httpClient.post<ResponseModel>(url, connection));
+        return firstValueFrom(this._httpClient.post<ResponseModel>(url, this.rootCtx.data.connection));
     }
 
-    save(connection: any, keyModel: any, isInsert = false): Promise<ResponseModel> {
+    save(keyModel: any, isInsert = false): Promise<ResponseModel> {
         const url = `${environment.apiEndpoint}/${this.ENDPOINT_SAVE}`;
         keyModel.isInsert = isInsert;
-        return firstValueFrom(this._httpClient.post<ResponseModel>(url, { connection, ...keyModel }));
+        return firstValueFrom(this._httpClient.post<ResponseModel>(url, { ...keyModel, connection: this.rootCtx.data.connection }));
     }
 
     delete(key: string, deleteRecursive = false): Promise<ResponseModel> {
@@ -88,5 +93,10 @@ export class KeyValueService {
     getRevisionOfKey(key: string): Promise<ResponseModel> {
         const url = `${environment.apiEndpoint}/keyvalue/getrevision?key=${encodeURIComponent(key)}`;
         return firstValueFrom(this._httpClient.post<ResponseModel>(url, this.rootCtx.data.connection));
+    }
+
+    importNodes(nodes: any[]): Promise<ResponseModel> {
+        const url = `${environment.apiEndpoint}/keyvalue/importnodes`;
+        return firstValueFrom(this._httpClient.post<ResponseModel>(url, { connection: this.rootCtx.data.connection, keyModels: nodes }));
     }
 }

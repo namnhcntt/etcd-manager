@@ -14,6 +14,8 @@ namespace EtcdManager.API.Services
         Task<ResponseModel<bool>> RenameKey(ConnectionModel connection, string oldKey, string newKey);
         Task<ResponseModel<List<KeyVersionModel>>> GetRevisionOfKey(ConnectionModel connection, string key);
         Task<ResponseModel<List<KeyVersionModel>>> GetAll(ConnectionModel connection);
+        Task<ResponseModel<bool>> ImportNodes(ConnectionModel connection, KeyModel[] keyModels);
+        Task<ResponseModel<List<KeyVersionModel>>> GetByKeyPrefix(ConnectionModel connection, string keyPrefix);
     }
 
     public class KeyValueService : IKeyValueService
@@ -203,6 +205,46 @@ namespace EtcdManager.API.Services
                     ModRevision = key.ModRevision,
                     Version = key.Version,
                     Value = key.Value.ToStringUtf8()
+                });
+            }
+            return ResponseModel<List<KeyVersionModel>>.ResponseWithData(op);
+        }
+
+        public async Task<ResponseModel<bool>> ImportNodes(ConnectionModel connection, KeyModel[] keyModels)
+        {
+            try
+            {
+                var client = await _connectionService.GetClient(connection);
+                foreach (var keyModel in keyModels)
+                {
+                    await client.Instance.PutAsync(keyModel.Key, keyModel.Value, new Grpc.Core.Metadata() {
+                        new Grpc.Core.Metadata.Entry("token",client.Token)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return ResponseModel<bool>.ResponseWithError("ERR_UNKNOWN", System.Net.HttpStatusCode.InternalServerError, ex.Message);
+            }
+            return ResponseModel<bool>.ResponseWithData(true);
+        }
+
+        public async Task<ResponseModel<List<KeyVersionModel>>> GetByKeyPrefix(ConnectionModel connection, string keyPrefix)
+        {
+            var client = await _connectionService.GetClient(connection);
+            var range = client.Instance.GetRange(keyPrefix, new Grpc.Core.Metadata() {
+                new Grpc.Core.Metadata.Entry("token",client.Token)
+            });
+            var op = new List<KeyVersionModel>();
+            foreach (var key in range.Kvs)
+            {
+                op.Add(new KeyVersionModel()
+                {
+                    Key = key.Key.ToStringUtf8(),
+                    Value = key.Value.ToStringUtf8(),
+                    CreateRevision = key.CreateRevision,
+                    ModRevision = key.ModRevision,
+                    Version = key.Version
                 });
             }
             return ResponseModel<List<KeyVersionModel>>.ResponseWithData(op);

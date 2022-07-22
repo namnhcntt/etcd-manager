@@ -66,7 +66,7 @@ export class NewKeyComponent implements OnInit, OnDestroy {
     save() {
         if (this.form.valid) {
             this.processing = true;
-            this._keyValueService.save(this.rootCtx.data.connection, this.form.value, true).then(rs => {
+            this._keyValueService.save(this.form.value, true).then(rs => {
                 if (rs.success) {
                     this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Create new key sucess!' });
                     this.form.reset();

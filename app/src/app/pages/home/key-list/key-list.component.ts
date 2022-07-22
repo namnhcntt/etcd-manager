@@ -19,7 +19,9 @@ export class KeyListComponent implements OnInit {
     viewMode: 'tree' | 'list' = 'list';
     parentKeyOnNew = '';
     showNewKeyForm = false;
+    showImportNodes = false;
     selectedKey: string;
+    contextMenuSelectedKey: string;
     loaded = false;
     treeIsExpandAll = false;
     treeSelectedItem: any = {};
@@ -59,35 +61,40 @@ export class KeyListComponent implements OnInit {
     }
 
     getContextMenu() {
-        const menu = [
-            {
+        const menu = [];
+
+        if (this.viewMode == 'tree') {
+            menu.push({
                 label: 'Create child node',
                 icon: 'pi pi-plus',
                 command: this.createChildNode.bind(this)
-            },
-            {
-                label: 'Export current node',
-                icon: 'pi pi-download',
-                command: this.exportCurrentNode.bind(this)
-            },
-            {
-                label: 'Export node and all childs',
-                icon: 'pi pi-download',
-                command: this.exportAllNodeAndChilds.bind(this)
-            },
-        ];
+            });
+        }
 
-        if (this.currentSelectRow) {
-            menu.push(...[{
-                label: 'Rename',
-                icon: 'pi pi-pencil',
-                command: this.menuRename.bind(this)
-            },
+        menu.push(...[
             {
                 label: 'Delete',
                 icon: 'pi pi-trash',
                 command: this.menuDelete.bind(this)
             },]);
+
+        if (this.currentSelectRow) {
+            menu.push(
+                {
+                    label: 'Export current node',
+                    icon: 'pi pi-download',
+                    command: this.exportCurrentNode.bind(this)
+                },
+            );
+
+        }
+
+        if (this.viewMode == 'tree') {
+            menu.push({
+                label: 'Export node and all childs',
+                icon: 'pi pi-download',
+                command: this.exportAllNodeAndChilds.bind(this)
+            });
         }
 
         return menu;
@@ -95,7 +102,7 @@ export class KeyListComponent implements OnInit {
 
     menuDelete() {
         // if in tree view mode, enable delete recursive option
-        this._keyValueService.onDelete(this.currentSelectRow.key, this.viewMode == 'tree').then(rs => {
+        this._keyValueService.onDelete(this.contextMenuSelectedKey, this.viewMode == 'tree').then(rs => {
             if (rs) {
                 this.refreshList();
             }
@@ -103,11 +110,25 @@ export class KeyListComponent implements OnInit {
     }
 
     exportAllNodeAndChilds() {
-        console.log('export all node and childs');
+        this._keyValueService.getByKeyPrefix(this.contextMenuSelectedKey).then(rs => {
+            if (rs.success) {
+                this._exportService.exportNodes(rs.data);
+            } else {
+                this._messageService.add({ severity: 'error', summary: 'Error', detail: rs.message });
+            }
+        });
     }
 
     exportCurrentNode() {
-        console.log('export current node');
+        this._keyValueService.getByKey(this.currentSelectRow.key).then(rs => {
+            if (rs.success) {
+                this._exportService.exportJsonNode(rs.data);
+            } else {
+                this._messageService.add({ severity: 'error', summary: 'Error', detail: rs.message });
+            }
+        }).catch(err => {
+            this._messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
+        });
     }
 
     createChildNode() {
@@ -125,7 +146,7 @@ export class KeyListComponent implements OnInit {
     }
 
     async bindData(connection: any) {
-        const ds = await this._keyValueService.getAllKeys(connection);
+        const ds = await this._keyValueService.getAllKeys();
         if (ds.success) {
             console.log('all keys', ds.data);
             this.listDataSource = ds.data.map(x => {
@@ -236,6 +257,7 @@ export class KeyListComponent implements OnInit {
 
     contextMenuViewModeTreeSelect(evt) {
         this.currentSelectRow = this.listDataSource.find(x => x.key == evt.node.data);
+        this.contextMenuSelectedKey = evt.node.data;
         this.contextMenuModel = this.getContextMenu();
     }
 
@@ -262,6 +284,10 @@ export class KeyListComponent implements OnInit {
                 console.log('file content', rs);
             }
         });
+    }
+
+    importNodes() {
+        this.showImportNodes = true;
     }
 
     private expandRecursive(node: TreeNode, isExpand: boolean) {
