@@ -12,17 +12,20 @@
         placeholder="Select connection...">
     </p-dropdown>
     <div class="layout-topbar-menu" [ngClass]="{'layout-topbar-menu-mobile-active':appMain.topMenuActive}">
-        <a [routerLink]="'/'" class="p-link layout-topbar-button">
-            <i aria-hidden="true" class="pi pi-home"></i>
-            <span>Home</span>
-        </a>
-        <a (click)="onClickPage.emit('/connection-manager')" class="p-link layout-topbar-button">
+        <a *ngIf="hasManageUserPermission" (click)="onClickPage.emit('/connection-manager')"
+            class="p-link layout-topbar-button" pTooltip="Connection manager" tooltipPosition="bottom">
             <i aria-hidden="true" class="pi pi-cog"></i>
             <span>Connection manager</span>
         </a>
-        <a (click)="onClickPage.emit('/user-manager')" class="p-link layout-topbar-button">
-            <i aria-hidden="true" class="pi pi-user"></i>
+        <a *ngIf="hasManageUserPermission" (click)="onClickPage.emit('/user-manager')"
+            class="p-link layout-topbar-button" pTooltip="User manager" tooltipPosition="bottom">
+            <i aria-hidden="true" class="pi pi-users"></i>
             <span>User manager</span>
         </a>
+        <p-menu #menu [popup]="true" [model]="userMenuItems"></p-menu>
+        <div *ngIf="authenService.hasValidAccessToken()" (click)="menu.toggle($event)" class="user-topbar">
+            <p-avatar icon="pi pi-user" shape="circle"></p-avatar>
+            <span>Hello {{user?.userName}}</span>
+        </div>
     </div>
 </div>

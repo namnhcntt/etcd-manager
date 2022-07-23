@@ -7,6 +7,7 @@ namespace EtcdManager.API.Models
         public string Server { get; set; }
         public string UserName { get; set; }
         public string Password { get; set; }
+        public string? PermissionUsers { get; set; }
         public bool EnableAuthenticated { get; set; }
         public bool Insecure { get; set; }
         public string Host

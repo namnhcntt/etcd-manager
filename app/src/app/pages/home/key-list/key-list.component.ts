@@ -2,7 +2,6 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MenuItem, MessageService, PrimeIcons, TreeNode } from 'primeng/api';
 import { ContextMenu } from 'primeng/contextmenu';
 import { AppCtxService } from 'src/app/service/app-ctx.service';
-import { AppEventService } from 'src/app/service/app-event.service';
 import { ComCtxService } from 'src/app/service/com-ctx.service';
 import { KeyValueService } from 'src/app/service/key-value.service';
 import { Tree } from 'primeng/tree';
@@ -34,7 +33,6 @@ export class KeyListComponent implements OnInit {
     @ViewChild('mainTree') mainTree: Tree;
     @ViewChild('fileControl') fileControl: FileUpload;
     constructor(
-        private _appEventService: AppEventService,
         private _keyValueService: KeyValueService,
         private _messageService: MessageService,
         private _appCtxService: AppCtxService,
@@ -44,13 +42,12 @@ export class KeyListComponent implements OnInit {
     }
 
     ngOnInit() {
-        this._appEventService.getSubscriptionConnection().subscribe(async rs => {
-            console.log('selected connection', rs);
+        this.rootCtx.replaySubscribe('SELECT_CONNECTION', (rs) => {
             if (rs) {
                 this.rootCtx.data.connection = rs;
                 this.bindData(rs);
             }
-        });
+        })
 
         this.rootCtx.subscribe('keyDeleted', rs => {
             this.refreshList();

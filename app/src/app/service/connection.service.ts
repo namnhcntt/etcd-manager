@@ -12,6 +12,9 @@ export class ConnectionService {
 
     readonly STORAGE_KEY = 'etcdmanager_data';
     readonly ENDPOINT_CHECK_CONNECTION = 'connection/checkconnection';
+    readonly ENDPOINT_DELETE_BY_NAME = 'connection/deleteconnectionbyname';
+    readonly ENDPOINT_CONNECTION = 'connection';
+
     constructor(
         private _httpClient: HttpClient
     ) {
@@ -26,33 +29,14 @@ export class ConnectionService {
         return firstValueFrom(this._httpClient.post<ResponseModel>(url, connection));
     }
 
-    update(connection: any): string {
-        const ds = this.getDataSource();
-        const existItem = ds.find(item => item.id === connection.id);
-        if (existItem) {
-            const rs = this.validate(ds, connection);
-            if (rs) { return rs; }
-            existItem.name = connection.name;
-            existItem.server = connection.server;
-            existItem.username = connection.username;
-            existItem.password = connection.password;
-            existItem.insecure = connection.insecure;
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(ds));
-        } else {
-            return 'item does not exist';
-        }
-        return '';
+    update(connection: any): Promise<ResponseModel> {
+        const url = `${environment.apiEndpoint}/${this.ENDPOINT_CONNECTION}/${connection.id}`;
+        return firstValueFrom(this._httpClient.put<ResponseModel>(url, connection));
     }
 
-    insert(connection: any): string {
-        const ds = this.getDataSource();
-        const rs = this.validate(ds, connection);
-        if (rs) { return rs; }
-        connection.createdAt = new Date();
-        connection.id = Guid.newGuid().toString();
-        ds.push(connection);
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(ds));
-        return '';
+    insert(connection: any): Promise<ResponseModel> {
+        const url = `${environment.apiEndpoint}/${this.ENDPOINT_CONNECTION}`;
+        return firstValueFrom(this._httpClient.post<ResponseModel>(url, connection));
     }
 
     validate(ds: any[], connection: any): string {
@@ -79,24 +63,17 @@ export class ConnectionService {
     }
 
     deleteByName(name: string) {
-        const ds = this.getDataSource();
-        const index = ds.findIndex(x => x.name == name);
-        if (index >= 0) {
-            ds.splice(index, 1);
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(ds));
-        }
+        const url = `${environment.apiEndpoint}/${this.ENDPOINT_DELETE_BY_NAME}?name=${name}`;
+        return firstValueFrom(this._httpClient.delete<ResponseModel>(url));
     }
 
-    getByName(name: string): any {
-        const ds = this.getDataSource();
-        return ds.find(x => x.name == name);
+    getByName(name: string): Promise<ResponseModel> {
+        const url = `${environment.apiEndpoint}/${this.ENDPOINT_CONNECTION}/GetByName?name=${name}`;
+        return firstValueFrom(this._httpClient.get<ResponseModel>(url));
     }
 
     getDataSource() {
-        const data = localStorage.getItem(this.STORAGE_KEY);
-        if (data) {
-            return JSON.parse(data);
-        }
-        return [];
+        const url = `${environment.apiEndpoint}/${this.ENDPOINT_CONNECTION}`;
+        return firstValueFrom(this._httpClient.get<ResponseModel>(url));
     }
 }

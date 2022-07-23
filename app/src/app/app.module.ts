@@ -1,5 +1,5 @@
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
@@ -137,7 +137,6 @@ import { DiffTextComponent } from './components/diff-text/diff-text.component';
 import { ErrorComponent } from './components/error/error.component';
 import { KeyVersionListComponent } from './components/key-version-list/key-version-list.component';
 import { LiveCodeEditorComponent } from './components/live-code-editor/live-code-editor.component';
-import { LoginComponent } from './components/login/login.component';
 import { NewKeyComponent } from './components/new-key/new-key.component';
 import { NotfoundComponent } from './components/notfound/notfound.component';
 import { PrismComponent } from './components/prism/prism.component';
@@ -157,6 +156,8 @@ import { PhotoService } from './service/photoservice';
 import { ProductService } from './service/productservice';
 import { ImportNodesComponent } from './components/import-nodes/import-nodes.component';
 import { ValueDetailComponent } from './components/value-detail/value-detail.component';
+import { LoginComponent } from './pages/login/login.component';
+import { SendAccessTokenInterceptor } from './interceptors/access-token.interceptor';
 
 @NgModule({
     imports: [
@@ -307,13 +308,18 @@ import { ValueDetailComponent } from './components/value-detail/value-detail.com
         KeyVersionListComponent,
         DiffTextComponent,
         ImportNodesComponent,
-        ValueDetailComponent
+        ValueDetailComponent,
     ],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },
         CountryService, CustomerService, EventService, IconService, NodeService,
         PhotoService, ProductService, MenuService, ConfigService, ConfirmationService,
-        MessageService
+        MessageService,
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: SendAccessTokenInterceptor,
+            multi: true,
+        },
     ],
     bootstrap: [AppComponent]
 })

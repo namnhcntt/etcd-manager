@@ -1,14 +1,13 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { CodeEditorComponent } from '@ngstack/code-editor';
 import { MessageService } from 'primeng/api';
+import { FileUpload } from 'primeng/fileupload';
 import { Inplace } from 'primeng/inplace';
 import { CodeEditorConstant } from 'src/app/constants/code-editor.constant';
 import { AppCtxService } from 'src/app/service/app-ctx.service';
-import { AppEventService } from 'src/app/service/app-event.service';
 import { ComCtxService } from 'src/app/service/com-ctx.service';
-import { KeyValueService } from 'src/app/service/key-value.service';
-import { CodeEditorComponent } from '@ngstack/code-editor';
 import { ExportService } from 'src/app/service/export.service';
-import { FileUpload } from 'primeng/fileupload';
+import { KeyValueService } from 'src/app/service/key-value.service';
 
 @Component({
     selector: 'app-key-detail',
@@ -43,12 +42,11 @@ export class KeyDetailComponent implements OnInit {
     constructor(
         private _appCtxService: AppCtxService,
         public _keyValueService: KeyValueService,
-        private _appEventService: AppEventService,
         private _messageService: MessageService,
         private _exportService: ExportService
     ) {
         this.rootCtx = this._appCtxService.getRootCtx();
-        this._appEventService.getSubscriptionConnection().subscribe(async rs => {
+        this.rootCtx.replaySubscribe('SELECT_CONNECTION', rs => {
             this.connection = rs;
         });
     }

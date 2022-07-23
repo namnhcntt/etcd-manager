@@ -1,4 +1,4 @@
-<div class="layout-wrapper"
+<div *ngIf="pageLoaded" class="layout-wrapper"
     [ngClass]="{'layout-overlay':isOverlay(),
                                 'layout-static':isStatic(),
                                 'layout-theme-light':!config.dark,

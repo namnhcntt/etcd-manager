@@ -1,10 +1,12 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { AfterViewInit, Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AppConfig } from './api/appconfig';
 import { AppComponent } from './app.component';
 import { AppCtxService } from './service/app-ctx.service';
 import { ConfigService } from './service/app.config.service';
+import { AuthenService } from './service/authen.service';
 import { ComCtxService } from './service/com-ctx.service';
 
 @Component({
@@ -60,16 +62,26 @@ export class AppMainComponent implements AfterViewInit, OnDestroy, OnInit {
         '/user-manager': false
     }
 
+    pageLoaded = false;
+
     constructor(
         public renderer: Renderer2,
         public app: AppComponent,
         public configService: ConfigService,
         private _appCtxService: AppCtxService,
-        private _comCtxService: ComCtxService) {
+        private _comCtxService: ComCtxService,
+        private _authenService: AuthenService,
+        private _router: Router
+    ) {
         this._appCtxService.createRootCtx(this._comCtxService);
     }
 
     ngOnInit() {
+        if (this._authenService.hasValidAccessToken()) {
+            this.pageLoaded = true;
+        } else {
+            this._router.navigate(['/login']);
+        }
         this.config = this.configService.config;
         this.subscription = this.configService.configUpdate$.subscribe(config => this.config = config);
     }
