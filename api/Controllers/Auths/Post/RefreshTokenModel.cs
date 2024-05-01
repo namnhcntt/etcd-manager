@@ -1,4 +1,4 @@
-﻿namespace EtcdManager.API.Controllers.Post
+﻿namespace EtcdManager.API.Controllers.Auths.Post
 {
     public class RefreshTokenModel
     {

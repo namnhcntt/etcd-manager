@@ -1,21 +1,19 @@
-﻿using EtcdManager.API.ApplicationService.Commands.Auth;
-using EtcdManager.API.Controllers.Post;
+﻿using EtcdManager.API.ApplicationService.Commands.Auths;
+using EtcdManager.API.Controllers.Auths.Post;
+using EtcdManager.API.Core.Abstract;
 using Mapster;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EtcdManager.API.Controllers
+namespace EtcdManager.API.Controllers.Auth
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController : CoreController
     {
-        private readonly ISender _mediator;
-
-        public AuthController(ISender mediator)
+        public AuthController(ISender mediator) : base(mediator)
         {
-            _mediator = mediator;
         }
 
         [HttpPost("Login")]

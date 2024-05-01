@@ -2,7 +2,7 @@
 {
     public interface ITokenService
     {
-        Task<JwtTokenData> GenerateJwtTokenData(string userName);
+        Task<JwtTokenData> GenerateJwtTokenData(int userId, string userName);
         Task<JwtTokenData> RefreshToken(string refreshToken);
     }
 }

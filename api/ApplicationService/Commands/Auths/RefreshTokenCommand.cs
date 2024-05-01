@@ -1,9 +1,9 @@
 ﻿using EtcdManager.API.Domain.Services;
 using Mapster;
 using MediatR;
-using static EtcdManager.API.ApplicationService.Commands.Auth.LoginCommand;
+using static EtcdManager.API.ApplicationService.Commands.Auths.LoginCommand;
 
-namespace EtcdManager.API.ApplicationService.Commands.Auth
+namespace EtcdManager.API.ApplicationService.Commands.Auths
 {
     public class RefreshTokenCommand: IRequest<LoginCommandResult>
     {

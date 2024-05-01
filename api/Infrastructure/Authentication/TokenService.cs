@@ -16,7 +16,7 @@ namespace EtcdManager.API.Infrastructure.Authentication
             _configuration = configuration;
         }
 
-        public Task<JwtTokenData> GenerateJwtTokenData(string userName)
+        public Task<JwtTokenData> GenerateJwtTokenData(int userId, string userName)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
@@ -24,6 +24,7 @@ namespace EtcdManager.API.Infrastructure.Authentication
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
+                    new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                     new Claim(ClaimTypes.Name, userName),
                     new Claim(JwtRegisteredClaimNames.Sub, userName),
                     new Claim(JwtRegisteredClaimNames.Iss, _configuration["Jwt:Issuer"]),
@@ -40,6 +41,7 @@ namespace EtcdManager.API.Infrastructure.Authentication
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
+                    new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                     new Claim(ClaimTypes.Name, userName),
                     new Claim(JwtRegisteredClaimNames.Sub, userName),
                     new Claim(JwtRegisteredClaimNames.Iss, _configuration["Jwt:Issuer"]),
@@ -90,12 +92,13 @@ namespace EtcdManager.API.Infrastructure.Authentication
             }
 
             var userName = principal.Identity?.Name;
+            var userId = int.Parse(principal.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
             if (userName == null)
             {
                 throw new SecurityTokenException("Invalid refresh token");
             }
 
-            return GenerateJwtTokenData(userName);
+            return GenerateJwtTokenData(userId, userName);
         }
     }
 }

@@ -7,9 +7,9 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
-using static EtcdManager.API.ApplicationService.Commands.Auth.LoginCommand;
+using static EtcdManager.API.ApplicationService.Commands.Auths.LoginCommand;
 
-namespace EtcdManager.API.ApplicationService.Commands.Auth
+namespace EtcdManager.API.ApplicationService.Commands.Auths
 {
     public class LoginCommand : IRequest<LoginCommandResult>
     {
@@ -42,7 +42,7 @@ namespace EtcdManager.API.ApplicationService.Commands.Auth
                     // generate token
                     if (user != null)
                     {
-                        var tokenData = await _tokenService.GenerateJwtTokenData(request.Username);
+                        var tokenData = await _tokenService.GenerateJwtTokenData(user.Id, request.Username);
                         return tokenData.Adapt<LoginCommandResult>();
                     }
 

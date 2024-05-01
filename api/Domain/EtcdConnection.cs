@@ -14,6 +14,10 @@
         public bool EnableAuthenticated { get; set; }
         public bool Insecure { get; set; }
         public DateTime CreatedAt { get; set; }
+        /// <summary>
+        /// The account id of the owner of this connection.
+        /// </summary>
+        public int OwnerId { get; set; }
         public string? AgentDomain { get; set; }
         public string Host
         {
