@@ -10,31 +10,39 @@ enum BlockView {
     selector: 'block-viewer',
     template: `
     <div class="block-section">
-        <div class="block-header">
-            <span class="block-title">
-                <span>{{header}}</span>
-                <span class="badge-free" *ngIf="free">Free</span>
-                <span class="badge-new" *ngIf="new">New</span>
-            </span>
-            <div class="block-actions">
-                <a tabindex="0" [ngClass]="{'block-action-active': blockView === BlockView.PREVIEW}" (click)="activateView($event, BlockView.PREVIEW)"><span>Preview</span></a>
-                <a [attr.tabindex]="'0'" [ngClass]="{'block-action-active': blockView === BlockView.CODE}" (click)="activateView($event, BlockView.CODE)">
-                    <span>Code</span>
-                </a>
-                <a [attr.tabindex]="'0'" class="block-action-copy" (click)="copyCode($event)" 
-                    pTooltip="Copied to clipboard" tooltipEvent="focus" tooltipPosition="bottom"><i class="pi pi-copy m-0"></i></a>
-            </div>
+      <div class="block-header">
+        <span class="block-title">
+          <span>{{header}}</span>
+          @if (free) {
+            <span class="badge-free">Free</span>
+          }
+          @if (new) {
+            <span class="badge-new">New</span>
+          }
+        </span>
+        <div class="block-actions">
+          <a tabindex="0" [ngClass]="{'block-action-active': blockView === BlockView.PREVIEW}" (click)="activateView($event, BlockView.PREVIEW)"><span>Preview</span></a>
+          <a [attr.tabindex]="'0'" [ngClass]="{'block-action-active': blockView === BlockView.CODE}" (click)="activateView($event, BlockView.CODE)">
+            <span>Code</span>
+          </a>
+          <a [attr.tabindex]="'0'" class="block-action-copy" (click)="copyCode($event)"
+            pTooltip="Copied to clipboard" tooltipEvent="focus" tooltipPosition="bottom"><i class="pi pi-copy m-0"></i></a>
+          </div>
         </div>
         <div class="block-content">
-            <div [class]="containerClass" [ngStyle]="previewStyle" *ngIf="blockView === BlockView.PREVIEW">
-                <ng-content></ng-content>
+          @if (blockView === BlockView.PREVIEW) {
+            <div [class]="containerClass" [ngStyle]="previewStyle">
+              <ng-content></ng-content>
             </div>
-            <div *ngIf="blockView === BlockView.CODE">
-                <pre class="app-code"><code>{{code}}</code></pre>
+          }
+          @if (blockView === BlockView.CODE) {
+            <div>
+              <pre class="app-code"><code>{{code}}</code></pre>
             </div>
+          }
         </div>
-    </div>
-  `,
+      </div>
+    `,
     styleUrls: ['./blockviewer.component.scss']
 })
 export class BlockViewerComponent {

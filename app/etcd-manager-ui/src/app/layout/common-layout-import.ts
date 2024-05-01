@@ -1,4 +1,4 @@
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -21,5 +21,6 @@ export const commonLayoutImport = [
   RouterModule,
   NgClass,
   NgIf,
-  NgFor
+  NgFor,
+  NgStyle
 ];

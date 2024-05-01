@@ -6,7 +6,10 @@ export const routes: Routes = [
   {
     path: '', component: AppLayoutComponent,
     children: [
-
+      {
+        path: '',
+        loadChildren: () => import('./demo/demo.routes').then(m => m.demoRoutes)
+      }
     ]
   },
   { path: 'auth', loadChildren: () => import('./demo/components/auth/auth.routes').then(m => m.authRoutes) },
