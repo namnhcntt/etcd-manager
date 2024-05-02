@@ -19,6 +19,7 @@ specifiers:
   '@fullcalendar/interaction': ^6.1.11
   '@fullcalendar/timegrid': ^6.1.11
   '@ngrx/signals': ^17.1.1
+  '@ngstack/code-editor': ^7.2.0
   '@types/jasmine': ~5.1.4
   chart.js: ^4.4.2
   guid-ts: ^1.1.2
@@ -55,6 +56,7 @@ dependencies:
   '@fullcalendar/interaction': 6.1.11_@fullcalendar+core@6.1.11
   '@fullcalendar/timegrid': 6.1.11_@fullcalendar+core@6.1.11
   '@ngrx/signals': 17.2.0_py36oqngxdr33hhgjv5y256ume
+  '@ngstack/code-editor': 7.2.0_b5nrkqdiozv6m3jxob45u5zuha
   chart.js: 4.4.2
   guid-ts: 1.1.2
   jwt-decode: 4.0.0
@@ -2297,6 +2299,17 @@ packages:
     dependencies:
       '@angular/core': 17.3.6_rxjs@7.8.1+zone.js@0.14.5
       rxjs: 7.8.1
+      tslib: 2.6.2
+    dev: false
+
+  /@ngstack/code-editor/7.2.0_b5nrkqdiozv6m3jxob45u5zuha:
+    resolution: {integrity: sha512-z//yN5o3O9CLwvb68cP4TxBlrBvm9CqBeRWKHDl72lJnwabT/4s9vGtU4C3/b0VXF9KoWPouTgypbVPnCkBTrg==}
+    peerDependencies:
+      '@angular/common': '>=17.1.1'
+      '@angular/core': '>=17.1.1'
+    dependencies:
+      '@angular/common': 17.3.6_py36oqngxdr33hhgjv5y256ume
+      '@angular/core': 17.3.6_rxjs@7.8.1+zone.js@0.14.5
       tslib: 2.6.2
     dev: false
 

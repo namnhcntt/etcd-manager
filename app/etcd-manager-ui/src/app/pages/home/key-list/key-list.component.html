@@ -50,10 +50,9 @@ empty node value, If user fill value and save, the new node should be created
 </p-listbox>
 }
 @if (viewMode == 'tree') {
-<p-tree #mainTree [value]="globalStore.keyValues.treeDataSource()" [(selection)]="treeSelectedItem"
-  [(selection)]="selectedKey" [filter]="true" selectionMode="single" [contextMenu]="contextMenuViewModeTreeControl"
-  scrollHeight="calc(100vh - 350px)" (onNodeContextMenuSelect)="contextMenuViewModeTreeSelect($event)"
-  (onNodeSelect)="onNodeSelect($event)">
+<p-tree #mainTree [value]="globalStore.keyValues.treeDataSource()" [(selection)]="selectedKey" [filter]="true"
+  selectionMode="single" [contextMenu]="contextMenuViewModeTreeControl" scrollHeight="calc(100vh - 350px)"
+  (onNodeContextMenuSelect)="contextMenuViewModeTreeSelect($event)" (onNodeSelect)="onNodeSelect($event)">
 </p-tree>
 }
 }

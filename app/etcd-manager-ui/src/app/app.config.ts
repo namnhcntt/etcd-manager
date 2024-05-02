@@ -9,6 +9,7 @@ import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { accessTokenInterceptor } from './access-token.interceptor';
+import { CodeEditorModule } from '@ngstack/code-editor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,6 +22,9 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(ToastModule),
     importProvidersFrom(ConfirmPopupModule),
     importProvidersFrom(ConfirmDialogModule),
+    importProvidersFrom(CodeEditorModule.forRoot({
+
+    })),
     MessageService, ConfirmationService,
   ]
 };

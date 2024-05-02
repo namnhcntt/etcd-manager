@@ -8,7 +8,7 @@ namespace EtcdManager.API.Infrastructure.Etcd
         Task Delete(string key, bool deleteRecursive, EtcdConnection etcdConnection);
         Task<List<KeyVersion>> GetAll(EtcdConnection etcdConnection);
         Task<List<string>> GetAllKeys(EtcdConnection etcdConnection);
-        Task<KeyValue> GetByKey(string key, EtcdConnection etcdConnection);
+        Task<KeyVersion> GetByKey(string key, EtcdConnection etcdConnection);
         Task<List<KeyVersion>> GetByKeyPrefix(string keyPrefix, EtcdConnection etcdConnection);
         Task<List<KeyVersion>> GetRevisionOfKey(string key, EtcdConnection etcdConnection);
         Task ImportNodes(KeyValue[] keyModels, EtcdConnection etcdConnection);

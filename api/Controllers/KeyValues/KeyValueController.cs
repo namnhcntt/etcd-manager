@@ -40,10 +40,16 @@ namespace EtcdManager.API.Controllers.KeyValues
             return Ok(result);
         }
 
-        [HttpGet("{key}")]
-        public async Task<IActionResult> GetByKey([FromRoute] string key)
+        [HttpGet("GetByKey")]
+        public async Task<IActionResult> GetByKey([FromQuery] string key, [FromQuery] int selectedEtcdConnectionId)
         {
-            return Ok();
+            var query = new GetByKeyQuery()
+            {
+                Key = key,
+                EtcdConnectionId = selectedEtcdConnectionId
+            };
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
 
         [HttpPost("Save")]

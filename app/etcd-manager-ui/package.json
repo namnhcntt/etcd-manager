@@ -35,7 +35,8 @@
     "tslib": "^2.6.2",
     "zone.js": "~0.14.5",
     "jwt-decode": "^4.0.0",
-    "guid-ts": "^1.1.2"
+    "guid-ts": "^1.1.2",
+    "@ngstack/code-editor": "^7.2.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^17.3.6",

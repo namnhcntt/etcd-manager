@@ -11,6 +11,7 @@ import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { EtcdConnectionService } from './pages/service/etcd-connection.service';
+import { LocalCacheService } from './pages/service/local-cache.service';
 
 @Component({
   selector: 'app-root',
@@ -25,9 +26,10 @@ export class AppComponent extends BaseComponent implements OnInit {
   title = 'etcd-manager-ui';
   primengConfig = inject(PrimeNGConfig);
   authService = inject(AuthService);
+  router = inject(Router);
   private _etcdConnectionService = inject(EtcdConnectionService);
   private _messageService = inject(MessageService);
-  router = inject(Router);
+  private _localCacheService = inject(LocalCacheService);
 
   dipslaySidebar = false;
 

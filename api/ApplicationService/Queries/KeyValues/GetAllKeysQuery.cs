@@ -14,20 +14,20 @@ namespace EtcdManager.API.ApplicationService.Queries.KeyValues
         public class GetAllKeysQueryHandler : IRequestHandler<GetAllKeysQuery, List<string>>
         {
             private readonly IEtcdService _etcdService;
-            private readonly EtcdManagerDataContext _etcdManagerDataContext;
+            private readonly EtcdManagerDataContext _dataContext;
             private readonly IUserPrincipalService _userPrincipalService;
 
-            public GetAllKeysQueryHandler(IEtcdService etcdService, EtcdManagerDataContext etcdManagerDataContext, IUserPrincipalService userPrincipalService)
+            public GetAllKeysQueryHandler(IEtcdService etcdService, EtcdManagerDataContext dataContext, IUserPrincipalService userPrincipalService)
             {
                 _etcdService = etcdService;
-                _etcdManagerDataContext = etcdManagerDataContext;
+                _dataContext = dataContext;
                 _userPrincipalService = userPrincipalService;
             }
 
             public async Task<List<string>> Handle(GetAllKeysQuery request, CancellationToken cancellationToken)
             {
                 var currentUserId = _userPrincipalService.Id;
-                var connectionSetting = await _etcdManagerDataContext.EtcdConnections.FirstAsync(x => x.Id == request.EtcdConnectionId && x.OwnerId == currentUserId);
+                var connectionSetting = await _dataContext.EtcdConnections.FirstAsync(x => x.Id == request.EtcdConnectionId && x.OwnerId == currentUserId);
                 var result = await _etcdService.GetAllKeys(connectionSetting);
                 return result;
             }

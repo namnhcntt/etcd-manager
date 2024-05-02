@@ -62,12 +62,6 @@ namespace EtcdManager.API.Infrastructure.Etcd
         public async Task<List<string>> GetAllKeys(EtcdConnection etcdConnection)
         {
             var client = await GetEtcdToken(etcdConnection);
-            //var request = new SnapshotRequest();
-            //await client.Instance.Snapshot(request, (response) =>
-            //{
-            //}, new CancellationToken(), new Grpc.Core.Metadata() {
-            //    new Grpc.Core.Metadata.Entry("token",client.Token)
-            //});
             var userDetail = await client.Instance.UserGetAsync(new AuthUserGetRequest { Name = etcdConnection.Username }, new Grpc.Core.Metadata() {
                 new Grpc.Core.Metadata.Entry("token",client.Token)
             });
@@ -165,7 +159,7 @@ namespace EtcdManager.API.Infrastructure.Etcd
                 return op;
             }
         }
-        public async Task<KeyValue> GetByKey(string key, EtcdConnection etcdConnection)
+        public async Task<KeyVersion> GetByKey(string key, EtcdConnection etcdConnection)
         {
             var client = await GetEtcdToken(etcdConnection);
             var keyResult = await client.Instance.GetAsync(key, new Grpc.Core.Metadata() { { "token", client.Token } });
@@ -174,10 +168,13 @@ namespace EtcdManager.API.Infrastructure.Etcd
                 var keys = keyResult.Kvs;
                 foreach (var kv in keys)
                 {
-                    return new KeyValue()
+                    return new KeyVersion()
                     {
                         Key = kv.Key.ToStringUtf8(),
-                        Value = kv.Value.ToStringUtf8()
+                        Value = kv.Value.ToStringUtf8(),
+                        CreateRevision = kv.CreateRevision,
+                        ModRevision = kv.ModRevision,
+                        Version = kv.Version
                     };
                 }
             }
@@ -345,6 +342,23 @@ namespace EtcdManager.API.Infrastructure.Etcd
             var existToken = await _cacheService.Get<EtcdClientInstance>(cacheKey);
             if (existToken != null)
             {
+                // test token, if invalid auth, then re-auth
+                try
+                {
+                    var userDetail = await existToken.Instance.UserGetAsync(new AuthUserGetRequest { Name = etcdConnection.Username }, new Grpc.Core.Metadata() {
+                        new Grpc.Core.Metadata.Entry("token",existToken.Token)
+                    });
+                    if (userDetail == null)
+                    {
+                        throw new Exception("User not found");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await _cacheService.Remove(cacheKey);
+                    return await GetEtcdToken(etcdConnection);
+                }
+
                 return existToken;
             }
 

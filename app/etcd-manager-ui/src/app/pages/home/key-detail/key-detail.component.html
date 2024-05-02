@@ -1,3 +1,87 @@
-<p>
-  key-detail works!
-</p>
+@if (loaded) {
+<p-toolbar styleClass="p-custom-toolbar">
+  <div class="p-toolbar-group-left">
+    <div class="left-side">
+      <i aria-hidden="true" class="pi pi-file"></i>
+      @if (keyDetail && !editing) {
+      <span class="key-detail-path">
+        {{keyDetail.key}}
+      </span>
+      }
+    </div>
+    <p-inplace [ngClass]="{'hidden': !editing}" #renameKeyInplace>
+      <ng-template pTemplate="content">
+        <input placeholder="key name" type="text" pInputText [(ngModel)]="inplaceRenameValue">
+      </ng-template>
+    </p-inplace>
+    @if (editing) {
+    <button pButton aria-label="button" type="button" icon="pi pi-save"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="saveRenameKey(renameKeyInplace)"
+      pTooltip="Save rename key" tooltipPosition="top"></button>
+    }
+    @if (editing) {
+    <button pButton aria-label="button" type="button" icon="pi pi-times"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="cancelRenameKey(renameKeyInplace)"
+      pTooltip="Cancel rename key" tooltipPosition="top"></button>
+    }
+    @if (keyDetail && !_keyValueService.isRootKey(keyDetail.key) && !editing) {
+    <button pButton aria-label="button" type="button" icon="pi pi-pencil"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="renameKey(renameKeyInplace)"
+      pTooltip="Rename key" tooltipPosition="top"></button>
+    }
+    @if (keyDetail && !_keyValueService.isRootKey(keyDetail.key)) {
+    <button pButton aria-label="button" type="button" icon="pi pi-trash"
+      class="p-button-rounded p-button-text p-button-danger p-button-icon-only" (click)="deleteKey()"
+      pTooltip="Delete key" tooltipPosition="top"></button>
+    }
+    <div class="more-info">
+      <span>Last Modifed By: NamNH</span>
+    </div>
+    <div class="dropdown-language">
+      <p-dropdown [options]="languages" [style]="{'width': '150px'}" optionLabel="value"
+        (onChange)="changeLanguage($event)"></p-dropdown>
+    </div>
+  </div>
+  <div class="p-toolbar-group-right">
+    <button pButton aria-label="button" icon="pi pi-refresh button-header"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="refresh()" pTooltip="Refresh"
+      tooltipPosition="top"></button>
+    <button pButton aria-label="button" icon="pi pi-download button-header"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="export()" pTooltip="Export node"
+      tooltipPosition="top"></button>
+    <button pButton aria-label="button" icon="pi pi-upload button-header"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="import()" pTooltip="Import node"
+      tooltipPosition="top"></button>
+    <button pButton aria-label="button" icon="pi pi-book button-header"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="viewAllVersion()" pTooltip="View all version"
+      tooltipPosition="top"></button>
+    <button pButton aria-label="button" icon="pi pi-save button-header"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="save()" pTooltip="Save"
+      tooltipPosition="top"></button>
+  </div>
+</p-toolbar>
+<ngs-code-editor #codeEditor [theme]="codeEditorConstant.DEFAULT_THEME" [codeModel]="codeModel"
+  [options]="codeEditorConstant.DEFAULT_OPTIONS" [style]="{'height':'calc(100vh - 270px)','overflow':'auto'}"
+  (valueChanged)="onCodeChanged($event)">
+</ngs-code-editor>
+}
+
+@if (showKeyVersion) {
+<p-dialog header="Revision of key {{keyDetail.key}}" [(visible)]="showKeyVersion"
+  [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
+  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="true"
+  [autoZIndex]="true" #dialog>
+  <!-- <app-key-version-list #keyVersionList [key]="keyDetail.key" [dialog]="dialog"
+    (onUseValue)="useValueFromOldVersion($event)"></app-key-version-list> -->
+  <ng-template pTemplate="footer">
+    <!-- @for (button of keyVersionList.buttons; track button) {
+    <button pButton aria-label="button" [class]="button.styleClass" [disabled]="button.disabled" type="button"
+      [icon]="button.icon" (click)="button.command($event)" [label]="button.label"></button>
+    } -->
+  </ng-template>
+</p-dialog>
+}
+
+<p-fileUpload #fileControl [ngStyle]="{'display': 'none'}" mode="basic" name="file" [url]="''"
+  (onSelect)="handleSelectFile($event)" [accept]="'application/json'">
+</p-fileUpload>

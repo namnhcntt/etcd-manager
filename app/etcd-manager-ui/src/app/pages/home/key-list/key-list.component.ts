@@ -44,13 +44,11 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   parentKeyOnNew = '';
   showNewKeyForm = false;
   showImportNodes = false;
-  selectedKey?: string;
   contextMenuSelectedKey?: string;
   treeIsExpandAll = false;
-  treeSelectedItem: any = {};
-  currentSelectRow: any;
   contextMenuModel: MenuItem[] = this.getContextMenu();
   msgs: Message[] = [];
+  selectedKey?: string;
   @ViewChild('mainTree') mainTree!: Tree;
   @ViewChild('fileControl') fileControl!: FileUpload;
 
@@ -88,16 +86,16 @@ export class KeyListComponent extends BaseComponent implements OnInit {
         command: this.menuDelete.bind(this)
       },]);
 
-    if (this.currentSelectRow) {
-      menu.push(
-        {
-          label: 'Export current node',
-          icon: 'pi pi-download',
-          command: this.exportCurrentNode.bind(this)
-        },
-      );
+    // if (this.currentSelectRow) {
+    //   menu.push(
+    //     {
+    //       label: 'Export current node',
+    //       icon: 'pi pi-download',
+    //       command: this.exportCurrentNode.bind(this)
+    //     },
+    //   );
 
-    }
+    // }
 
     if (this.viewMode == 'tree') {
       menu.push({
@@ -142,13 +140,13 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   createChildNode() {
-    if (this.currentSelectRow) {
-      this.parentKeyOnNew = this.currentSelectRow.key + '/';
-    } else if (this.viewMode == 'tree' && this.treeSelectedItem) {
-      this.parentKeyOnNew = this.treeSelectedItem.data + '/';
-    }
+    // if (this.currentSelectRow) {
+    //   this.parentKeyOnNew = this.currentSelectRow.key + '/';
+    // } else if (this.viewMode == 'tree' && this.treeSelectedItem) {
+    //   this.parentKeyOnNew = this.treeSelectedItem.data + '/';
+    // }
 
-    this.showNewKeyForm = true;
+    // this.showNewKeyForm = true;
   }
 
   menuRename() {
@@ -258,21 +256,21 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   showContextMenuViewModeList(menu: ContextMenu, event: MouseEvent, item: any) {
-    menu.hide();
-    event.preventDefault();
-    event.stopPropagation();
-    setTimeout(() => {
-      console.log('context menu', menu, event, item);
-      this.currentSelectRow = item;
-      this.contextMenuSelectedKey = item.key;
-      menu.toggle(event);
-    }, 1);
+    // menu.hide();
+    // event.preventDefault();
+    // event.stopPropagation();
+    // setTimeout(() => {
+    //   console.log('context menu', menu, event, item);
+    //   this.currentSelectRow = item;
+    //   this.contextMenuSelectedKey = item.key;
+    //   menu.toggle(event);
+    // }, 1);
   }
 
   contextMenuViewModeTreeSelect(evt: any) {
-    this.currentSelectRow = this.globalStore.keyValues.dataSource().find(x => x.key == evt.node.data);
-    this.contextMenuSelectedKey = evt.node.data;
-    this.contextMenuModel = this.getContextMenu();
+    // this.currentSelectRow = this.globalStore.keyValues.dataSource().find(x => x.key == evt.node.data);
+    // this.contextMenuSelectedKey = evt.node.data;
+    // this.contextMenuModel = this.getContextMenu();
   }
 
   preventMouseDown(event: any) {
@@ -281,7 +279,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   onNodeSelect(evt: any) {
-    this.selectedKey = this.treeSelectedItem.data;
+    patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), selectedKey: evt.node.data } });
   }
 
   toggleExpandTree(isExpand: boolean) {

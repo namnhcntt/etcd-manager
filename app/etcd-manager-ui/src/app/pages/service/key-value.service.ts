@@ -18,4 +18,13 @@ export class KeyValueService extends BaseService {
     const url = `${environment.apiEndpoint}/${this.ENDPOINT_KEYVALUE}/GetAllKeys?selectedEtcdConnectionId=${selectedConnectionId}`;
     return firstValueFrom(this.httpClient.get<any[]>(url));
   }
+
+  getByKey(selectedConnectionId: number, key: string) {
+    const url = `${environment.apiEndpoint}/${this.ENDPOINT_KEYVALUE}/GetByKey?selectedEtcdConnectionId=${selectedConnectionId}&key=${key}`;
+    return firstValueFrom(this.httpClient.get<any>(url));
+  }
+
+  isRootKey(key: string): boolean {
+    return key === '/';
+  }
 }
