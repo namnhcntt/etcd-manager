@@ -7,3 +7,6 @@
   <app-user-manager (closeForm)="globalStore.closeSidebar()"></app-user-manager>
   }
 </p-sidebar>
+<p-confirmPopup #confirmPopup key="main" appendTo="body"></p-confirmPopup>
+<p-confirmDialog header="Confirm" appendTo="body" icon="pi pi-exclamation-triangle"></p-confirmDialog>
+<p-toast appendTo="body"></p-toast>

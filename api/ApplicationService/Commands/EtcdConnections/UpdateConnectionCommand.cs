@@ -11,7 +11,7 @@ namespace EtcdManager.API.ApplicationService.Commands.EtcdConnections
         public int Id { get; set; }
         public string Name { get; set; } = null!;
         public string Server { get; set; } = null!;
-        public string? UserName { get; set; }
+        public string? Username { get; set; }
         public string? Password { get; set; }
         public string? PermissionUsers { get; set; }
         public bool EnableAuthenticated { get; set; }
@@ -35,8 +35,9 @@ namespace EtcdManager.API.ApplicationService.Commands.EtcdConnections
                 var connection = await _dataContext.EtcdConnections.FirstOrDefaultAsync(x => x.Id == request.Id && x.OwnerId == ownerId);
                 if (connection != null)
                 {
+                    connection.Name = request.Name;
                     connection.Server = request.Server;
-                    connection.UserName = request.UserName;
+                    connection.Username = request.Username;
                     connection.Password = request.Password;
                     connection.PermissionUsers = request.PermissionUsers;
                     connection.EnableAuthenticated = request.EnableAuthenticated;

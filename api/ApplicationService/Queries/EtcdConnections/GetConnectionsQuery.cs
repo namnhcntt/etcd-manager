@@ -13,6 +13,13 @@ namespace EtcdManager.API.ApplicationService.Queries.EtcdConnections
         public class GetConnectionsQueryResult
         {
             public List<GetConnectionByIdQueryResult> Connections { get; set; }
+            public int TotalCount
+            {
+                get
+                {
+                    return Connections.Count;
+                }
+            }
         }
 
         public class GetConnectionsQueryHandler : IRequestHandler<GetConnectionsQuery, GetConnectionsQueryResult>

@@ -21,6 +21,7 @@ specifiers:
   '@ngrx/signals': ^17.1.1
   '@types/jasmine': ~5.1.4
   chart.js: ^4.4.2
+  guid-ts: ^1.1.2
   jasmine-core: ~5.1.2
   jwt-decode: ^4.0.0
   karma: ~6.4.3
@@ -55,6 +56,7 @@ dependencies:
   '@fullcalendar/timegrid': 6.1.11_@fullcalendar+core@6.1.11
   '@ngrx/signals': 17.2.0_py36oqngxdr33hhgjv5y256ume
   chart.js: 4.4.2
+  guid-ts: 1.1.2
   jwt-decode: 4.0.0
   primeflex: 3.3.1
   primeicons: 7.0.0
@@ -4428,6 +4430,10 @@ packages:
   /graceful-fs/4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
     dev: true
+
+  /guid-ts/1.1.2:
+    resolution: {integrity: sha512-8LKkTis9udlKO23g+wEEmQxrpaq4cj41IQuAjy+NXyrPKSBLXssTVaBXVs+u8jv1nkjUl9fExgrYoqh3Rsd8Bg==}
+    dev: false
 
   /handle-thing/2.0.1:
     resolution: {integrity: sha512-9Qn4yBxelxoh2Ow62nP+Ka/kMnOXRi8BXnRaUwezLNhqelnN49xKz4F/dPP8OYLxLxq6JDtZb2i9XznUQbNPTg==}

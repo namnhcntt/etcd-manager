@@ -1,3 +1,170 @@
-<p>
-  connection-manager works!
-</p>
+<div class="grid">
+  <div class="col-12">
+    <div class="card">
+      <h5>Connection manager</h5>
+      @if (formState == 'list') {
+      <ng-container *ngTemplateOutlet="listLayout"></ng-container>
+      }
+      @if (formState == 'new' || formState == 'edit') {
+      <ng-container *ngTemplateOutlet="formLayout"></ng-container>
+      }
+    </div>
+  </div>
+</div>
+
+<ng-template #formLayout>
+  <h5>@if (formState == 'new') {
+    <span>New</span>
+    }@if (formState == 'edit') {
+    <span>Edit</span>
+    } connection
+  </h5>
+  <p-messages [(value)]="msgs"></p-messages>
+  <form class="p-fluid" [formGroup]="form">
+    <h6>Connection name:</h6>
+    <span class="p-float-label">
+      <input pInputText formControlName="name" type="text" [ngClass]="{
+                'ng-invalid': form.get('name')?.invalid && (form.get('name')?.dirty || form.get('name')?.touched),
+                'ng-dirty': form.get('name')?.invalid && (form.get('name')?.dirty || form.get('name')?.touched)
+            }" />
+    </span>
+    @if (form.get('name')?.invalid && (form.get('name')?.dirty || form.get('name')?.touched)) {
+    @if (form.get('name')?.errors?.['required']) {
+    <small id="name-help" class="p-error">Name is
+      required.</small>
+    }
+    }
+    <h6>Server:</h6>
+    <span class="p-float-label">
+      <input pInputText formControlName="server" type="text" placeholder="14.225.3.52:2379" [ngClass]="{
+                'ng-invalid': form.get('server')?.invalid && (form.get('server')?.dirty || form.get('server')?.touched),
+                'ng-dirty': form.get('server')?.invalid && (form.get('server')?.dirty || form.get('server')?.touched)
+            }" />
+    </span>
+    @if (form.get('server')?.invalid && (form.get('server')?.dirty || form.get('server')?.touched)) {
+    @if (form.get('server')?.errors?.['required']) {
+    <small id="server-help" class="p-error">Server is
+      required.</small>
+    }
+    }
+    <h6>Enable Authenticated:</h6>
+    <p-inputSwitch formControlName="enableAuthenticated" (onChange)="handleChangeEnableAuthenticated($event)">
+    </p-inputSwitch>
+    @if (!form.get('username')?.disabled) {
+    <h6>Username:</h6>
+    <span class="p-float-label">
+      <input pInputText formControlName="username" type="text" placeholder="root" [ngClass]="{
+                    'ng-invalid': form.get('username')?.invalid && (form.get('username')?.dirty || form.get('username')?.touched),
+                    'ng-dirty': form.get('username')?.invalid && (form.get('username')?.dirty || form.get('username')?.touched)
+                }" />
+    </span>
+    @if (form.get('username')?.invalid && (form.get('username')?.dirty || form.get('username')?.touched)) {
+    @if (form.get('username')?.errors?.['required']) {
+    <small id="username-help" class="p-error">Username is
+      required.</small>
+    }
+    }
+    }
+    @if (!form.get('password')?.disabled) {
+    <h6>Password:</h6>
+    <span class="p-float-label">
+      <input pInputText formControlName="password" type="password" placeholder="your password..." [ngClass]="{
+                'ng-invalid': form.get('password')?.invalid && (form.get('password')?.dirty || form.get('password')?.touched),
+                'ng-dirty': form.get('password')?.invalid && (form.get('password')?.dirty || form.get('password')?.touched)
+            }" />
+    </span>
+    @if (form.get('password')?.invalid && (form.get('password')?.dirty || form.get('password')?.touched)) {
+    @if (form.get('password')?.errors?.['required']) {
+    <small id="password-help" class="p-error">Password is
+      required.</small>
+    }
+    }
+    }
+    <ng-container>
+      <h6>Agent Domain:</h6>
+      <span class="p-float-label">
+        <input pInputText formControlName="agentDomain" type="agentDomain" placeholder="type your custom agent here..."
+          [ngClass]="{
+                'ng-invalid': form.get('agentDomain')?.invalid && (form.get('agentDomain')?.dirty || form.get('agentDomain')?.touched),
+                'ng-dirty': form.get('agentDomain')?.invalid && (form.get('agentDomain')?.dirty || form.get('agentDomain')?.touched)
+            }" />
+      </span>
+    </ng-container>
+    <h6>Insecure:</h6>
+    <p-inputSwitch formControlName="insecure"></p-inputSwitch>
+  </form>
+  <div class="form-footer mt-4">
+    <button arial-label="button" pButton type="button" label="Check connection" icon="pi pi-check"
+      [disabled]="form.invalid || processing" class="p-button-success" (click)="checkConnection()"></button>
+    <button arial-label="button" pButton type="button" label="Save" icon="pi pi-save" class="p-button-info ml-2"
+      [disabled]="form.invalid || processing" (click)="saveConnection()"></button>
+    <button arial-label="button" pButton type="button" label="Cancel" icon="pi pi-times" class="p-button-danger  ml-2"
+      (click)="cancelConnection($event)"></button>
+  </div>
+</ng-template>
+
+<ng-template #listLayout>
+  <p-table #dt1 [value]="globalStore.connections.dataSource()" dataKey="id" [rows]="10" [loading]="loading"
+    [rowHover]="true" styleClass="p-datatable-gridlines" [paginator]="true" sortField="server" [sortOrder]="1"
+    [globalFilterFields]="['name','server','createdAt']" responsiveLayout="scroll">
+    <ng-template pTemplate="caption">
+      <div class="flex justify-content-between flex-column sm:flex-row">
+        <button aria-label="button" pButton label="New" class="p-button-outlined mb-2" icon="pi pi-plus"
+          (click)="newConnection()"></button>
+        <span class="p-input-icon-left mb-2">
+          <i aria-hidden="true" class="pi pi-search"></i>
+          <input pInputText type="text" #filter (input)="dt1.filterGlobal($event.target, 'contains')"
+            placeholder="Search Keyword" class="w-full" />
+        </span>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="header">
+      <tr>
+        <th scope="col">
+          <div class="flex justify-content-between align-items-center">
+            Name
+          </div>
+        </th>
+        <th scope="col">
+          <div class="flex justify-content-between align-items-center">
+            Server
+          </div>
+        </th>
+        <th scope="col">
+          <div class="flex justify-content-between align-items-center">
+            Created At
+          </div>
+        </th>
+        <th scope="col" style="width:15rem;">
+          Action
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td>{{item.name}}</td>
+        <td>{{item.server}}</td>
+        <td>{{item.createdAt | date:'d/M/y h:m'}}</td>
+        <td>
+          <button arial-label="button" pButton type="button" icon="pi pi-arrow-up-right"
+            class="p-button-rounded p-button-text" pTooltip="Select this connection"
+            (click)="onSelectConnection(item)"></button>
+          <button arial-label="button" pButton type="button" icon="pi pi-pencil" pTooltip="Edit this connection"
+            class="p-button-rounded p-button-text" (click)="editConnection(item)"></button>
+          <button arial-label="button" pButton type="button" icon="pi pi-trash" pTooltip="Delete this connection"
+            class="p-button-rounded p-button-text p-button-danger" (click)="deleteConnection($event, item)"></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7">No connection found.</td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody">
+      <tr>
+        <td colspan="7">Loading connection data. Please wait.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</ng-template>

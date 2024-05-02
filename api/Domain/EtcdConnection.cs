@@ -8,7 +8,7 @@
         public int Id { get; set; }
         public string Name { get; set; } = null!;
         public string Server { get; set; } = null!;
-        public string? UserName { get; set; }
+        public string? Username { get; set; }
         public string? Password { get; set; }
         public string? PermissionUsers { get; set; }
         public bool EnableAuthenticated { get; set; }

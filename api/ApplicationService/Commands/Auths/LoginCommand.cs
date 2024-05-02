@@ -5,8 +5,6 @@ using FluentValidation;
 using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
-using System.Text;
 using static EtcdManager.API.ApplicationService.Commands.Auths.LoginCommand;
 
 namespace EtcdManager.API.ApplicationService.Commands.Auths

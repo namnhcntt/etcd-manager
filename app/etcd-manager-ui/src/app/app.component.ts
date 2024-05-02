@@ -1,17 +1,22 @@
-import { Component, OnInit, ViewChild, effect, inject } from '@angular/core';
+import { Component, OnInit, effect, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { patchState } from '@ngrx/signals';
 import { PrimeNGConfig } from 'primeng/api';
-import { Sidebar, SidebarModule } from 'primeng/sidebar';
+import { SidebarModule } from 'primeng/sidebar';
 import { BaseComponent } from './base.component';
 import { ConnectionManagerComponent } from './pages/connection-manager/connection-manager.component';
 import { AuthService } from './pages/service/auth.service';
 import { UserManagerComponent } from './pages/user-manager/user-manager.component';
+import { ConfirmPopupModule } from 'primeng/confirmpopup';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SidebarModule, ConnectionManagerComponent, UserManagerComponent],
+  imports: [RouterOutlet, SidebarModule, ConnectionManagerComponent, UserManagerComponent,
+    ConfirmPopupModule, ConfirmDialogModule, ToastModule
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -40,6 +45,8 @@ export class AppComponent extends BaseComponent implements OnInit {
   ngOnInit(): void {
     this.primengConfig.ripple = true;
     patchState(this.globalStore, { readyRenderPage: true });
+
+    patchState(this.globalStore, { dipslaySidebar: { ...this.globalStore.dipslaySidebar(), connectionManager: true } });
     if (!this.authService.hasValidAccessToken()) {
       this.router.navigateByUrl('/login');
     } else {
