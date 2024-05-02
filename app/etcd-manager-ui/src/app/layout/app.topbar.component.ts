@@ -1,23 +1,77 @@
-import { Component, ElementRef, ViewChild, inject } from '@angular/core';
-import { MenuItem } from 'primeng/api';
-import { LayoutService } from "./service/app.layout.service";
-import { commonLayoutImport } from './common-layout-import';
 import { NgClass } from '@angular/common';
+import { Component, inject, model, output } from '@angular/core';
+import { MenuItem, PrimeIcons } from 'primeng/api';
+import { AvatarModule } from 'primeng/avatar';
+import { DialogModule } from 'primeng/dialog';
+import { DropdownModule } from 'primeng/dropdown';
+import { MenuModule } from 'primeng/menu';
+import { BaseComponent } from '../base.component';
+import { AuthService } from '../pages/service/auth.service';
+import { commonLayoutImport } from './common-layout-import';
+import { LayoutService } from "./service/app.layout.service";
 
 @Component({
   selector: 'app-topbar',
   templateUrl: './app.topbar.component.html',
   standalone: true,
-  imports: [...commonLayoutImport, NgClass]
+  styles: [`
+  .user-topbar {
+        height: 3rem;
+        line-height: 3rem;
+        margin-left:10px;
+        display: inline-flex;
+        justify-content: right;
+        align-items: right;
+    }
+    .user-topbar:hover {
+        cursor: pointer;
+
+    }
+
+    .user-topbar span {
+        margin-left:10px;
+    }
+
+    .layout-topbar-menu-left .layout-topbar-button {
+        margin-left:20px;
+
+    }`],
+  imports: [...commonLayoutImport, NgClass, MenuModule, DropdownModule, AvatarModule, DialogModule]
 })
-export class AppTopBarComponent {
-
-  items!: MenuItem[];
-
-  @ViewChild('menubutton') menuButton!: ElementRef;
-
-  @ViewChild('topbarmenubutton') topbarMenuButton!: ElementRef;
-
-  @ViewChild('topbarmenu') menu!: ElementRef;
+export class AppTopBarComponent extends BaseComponent {
   public layoutService = inject(LayoutService);
+  public authService = inject(AuthService);
+
+  selectedConnection = model<any>();
+  selfEvent = false;
+
+  showChangeMyPassword = false;
+  userMenuItems: MenuItem[] = [
+    {
+      label: 'Change Password', icon: PrimeIcons.LOCK,
+      command: this.changePassword.bind(this)
+    },
+    {
+      label: 'Logout', icon: PrimeIcons.SIGN_OUT,
+      command: this.logout.bind(this)
+    },
+  ];
+  hasManageUserPermission = true;
+
+  constructor() {
+    super();
+  }
+
+  changePassword() {
+    this.showChangeMyPassword = true;
+  }
+
+  logout() {
+    this.hasManageUserPermission = false;
+    this.authService.logout();
+  }
+
+  onSelectConnection(evt: any) {
+    console.log('select connection', evt);
+  }
 }

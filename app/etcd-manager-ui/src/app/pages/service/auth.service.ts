@@ -48,7 +48,7 @@ export class AuthService extends BaseService {
     return firstValueFrom(this.httpClient.post<any>(url, { userName, password }));
   }
 
-  localLogout() {
+  logout() {
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USERINFO_KEY);

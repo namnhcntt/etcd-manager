@@ -10,7 +10,7 @@ namespace EtcdManager.API.Infrastructure.Authentication
     public class TokenService : ITokenService
     {
         private readonly IConfiguration _configuration;
-
+        private const int EXPIRES_IN = 90000;
         public TokenService(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -30,7 +30,7 @@ namespace EtcdManager.API.Infrastructure.Authentication
                     new Claim(JwtRegisteredClaimNames.Iss, _configuration["Jwt:Issuer"]),
                     new Claim(JwtRegisteredClaimNames.Aud, _configuration["Jwt:Audience"]),
                 }),
-                Expires = DateTime.UtcNow.AddSeconds(900),
+                Expires = DateTime.UtcNow.AddSeconds(EXPIRES_IN),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
@@ -58,7 +58,7 @@ namespace EtcdManager.API.Infrastructure.Authentication
             {
                 Token = tokenHandler.WriteToken(token),
                 RefreshToken = tokenHandler.WriteToken(refreshToken),
-                ExpiresIn = 900,
+                ExpiresIn = EXPIRES_IN,
             });
         }
 
