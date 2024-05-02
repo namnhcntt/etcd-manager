@@ -1,5 +1,5 @@
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
-import { Component, OnInit, inject, output } from '@angular/core';
+import { Component, OnInit, inject, output, signal } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { patchState } from '@ngrx/signals';
 import { Guid } from 'guid-ts';
@@ -22,8 +22,8 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 })
 export class ConnectionManagerComponent extends BaseComponent implements OnInit {
 
-  loading = false;
-  processing = false;
+  loading = signal(true);
+  processing = signal(false);
   formState: 'list' | 'new' | 'edit' = 'list';
   form: FormGroup;
   msgs = [];
@@ -56,8 +56,10 @@ export class ConnectionManagerComponent extends BaseComponent implements OnInit 
   }
 
   loadGrid() {
+    this.loading.update(() => true);
     this._etcdConnectionService.getDataSource().then((data: any) => {
-      patchState(this.globalStore, { connections: { ...this.globalStore.connections(), dataSource: data.connections } })
+      patchState(this.globalStore, { connections: { ...this.globalStore.connections(), dataSource: data.connections } });
+      this.loading.update(() => false);
     });
   }
 
@@ -72,12 +74,25 @@ export class ConnectionManagerComponent extends BaseComponent implements OnInit 
   }
 
   checkConnection() {
-
+    this.processing.update(() => true);
+    this._etcdConnectionService.testConnection
+      (
+        this.form.value.server,
+        this.form.value.username,
+        this.form.value.password,
+        this.form.value.insecure
+      ).then((data: any) => {
+        this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Connection successful' });
+        this.processing.update(() => false);
+      }).catch((err: any) => {
+        this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
+        this.processing.update(() => false);
+      })
   }
 
   async saveConnection() {
     if (this.form.valid) {
-      this.processing = true;
+      this.processing.update(() => true);
       try {
         if (this.formState == 'new') {
           await this._etcdConnectionService.insert(this.form.value);
@@ -89,7 +104,7 @@ export class ConnectionManagerComponent extends BaseComponent implements OnInit 
       } catch (e: any) {
         this._messageService.add({ severity: 'error', summary: 'Error', detail: e.error });
       }
-      this.processing = false;
+      this.processing.update(() => false);
     }
   }
 
@@ -125,7 +140,7 @@ export class ConnectionManagerComponent extends BaseComponent implements OnInit 
         await this._etcdConnectionService.delete(item.id).then(() => {
           this.loadGrid();
         }).catch(err => {
-          this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error });
+          this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
         });
       },
     });

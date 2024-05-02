@@ -33,4 +33,9 @@ export class EtcdConnectionService extends BaseService {
     const url = `${environment.apiEndpoint}/${this.ENDPOINT_CONNECTION}`;
     return firstValueFrom(this.httpClient.post(url, item));
   }
+
+  testConnection(server: string, username: string, password: string, insecure: boolean) {
+    const url = `${environment.apiEndpoint}/${this.ENDPOINT_CONNECTION}/TestConnection`;
+    return firstValueFrom(this.httpClient.post(url, { server, username, password, insecure }));
+  }
 }

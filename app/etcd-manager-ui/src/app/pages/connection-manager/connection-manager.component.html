@@ -95,16 +95,16 @@
   </form>
   <div class="form-footer mt-4">
     <button arial-label="button" pButton type="button" label="Check connection" icon="pi pi-check"
-      [disabled]="form.invalid || processing" class="p-button-success" (click)="checkConnection()"></button>
+      [disabled]="form.invalid || processing()" class="p-button-success" (click)="checkConnection()"></button>
     <button arial-label="button" pButton type="button" label="Save" icon="pi pi-save" class="p-button-info ml-2"
-      [disabled]="form.invalid || processing" (click)="saveConnection()"></button>
+      [disabled]="form.invalid || processing()" (click)="saveConnection()"></button>
     <button arial-label="button" pButton type="button" label="Cancel" icon="pi pi-times" class="p-button-danger  ml-2"
       (click)="cancelConnection($event)"></button>
   </div>
 </ng-template>
 
 <ng-template #listLayout>
-  <p-table #dt1 [value]="globalStore.connections.dataSource()" dataKey="id" [rows]="10" [loading]="loading"
+  <p-table #dt1 [value]="globalStore.connections.dataSource()" dataKey="id" [rows]="10" [loading]="loading()"
     [rowHover]="true" styleClass="p-datatable-gridlines" [paginator]="true" sortField="server" [sortOrder]="1"
     [globalFilterFields]="['name','server','createdAt']" responsiveLayout="scroll">
     <ng-template pTemplate="caption">

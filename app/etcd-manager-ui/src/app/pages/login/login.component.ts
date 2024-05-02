@@ -65,7 +65,7 @@ export class LoginComponent extends BaseComponent implements OnInit {
       this.authService.saveToken(res.token, res.refreshToken);
       this.router.navigateByUrl('/');
     }).catch(err => {
-      this.msgs1 = [{ severity: 'error', summary: 'Error', detail: err.error }];
+      this.msgs1 = [{ severity: 'error', summary: 'Error', detail: err.error.error }];
     });
   }
 }
