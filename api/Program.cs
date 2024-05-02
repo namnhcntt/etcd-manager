@@ -20,7 +20,8 @@ builder.Services.Scan(scan =>
                     .AddClasses()
                     .AsMatchingInterface()
                     .WithLifetime(ServiceLifetime.Scoped));
-
+builder.Services.AddMemoryCache();
+builder.Services.AddDistributedMemoryCache();
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add(new GlobalApiFilterAttribute());

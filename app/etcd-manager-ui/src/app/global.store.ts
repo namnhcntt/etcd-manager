@@ -1,4 +1,5 @@
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
+import { TreeNode } from 'primeng/api';
 
 export const globalStore = signalStore(
   { providedIn: 'root' },
@@ -8,8 +9,11 @@ export const globalStore = signalStore(
       name: '',
     },
     connections: {
-      selectedEtcdConnectionId: '',
-      dataSource: [],
+      selectedEtcdConnection: {
+        id: -1,
+        name: ''
+      },
+      dataSource: [] as any[],
     },
     readyRenderPage: false,
     topMenuActive: false,
@@ -19,6 +23,10 @@ export const globalStore = signalStore(
       etcdUserManager: false,
       etcdRoleManager: false,
       etcdSnapshotManager: false
+    },
+    keyValues: {
+      dataSource: [] as any[],
+      treeDataSource: [] as TreeNode[]
     }
   }),
   withMethods((store) => ({

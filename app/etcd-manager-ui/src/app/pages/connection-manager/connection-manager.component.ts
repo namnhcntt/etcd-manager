@@ -124,7 +124,8 @@ export class ConnectionManagerComponent extends BaseComponent implements OnInit 
   }
 
   onSelectConnection(selectedItem: any) {
-
+    patchState(this.globalStore, { connections: { ...this.globalStore.connections(), selectedEtcdConnection: selectedItem } });
+    this.closeForm.emit(true);
   }
 
   editConnection(item: any) {

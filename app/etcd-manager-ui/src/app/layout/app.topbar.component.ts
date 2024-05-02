@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { Component, inject, model, output } from '@angular/core';
+import { Component, effect, inject, model, output, untracked } from '@angular/core';
 import { MenuItem, PrimeIcons } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { DialogModule } from 'primeng/dialog';
@@ -9,6 +9,7 @@ import { BaseComponent } from '../base.component';
 import { AuthService } from '../pages/service/auth.service';
 import { commonLayoutImport } from './common-layout-import';
 import { LayoutService } from "./service/app.layout.service";
+import { patchState } from '@ngrx/signals';
 
 @Component({
   selector: 'app-topbar',
@@ -42,7 +43,7 @@ export class AppTopBarComponent extends BaseComponent {
   public layoutService = inject(LayoutService);
   public authService = inject(AuthService);
 
-  selectedConnection = model<any>();
+  selectedConnection = model<any>(-1);
   selfEvent = false;
 
   showChangeMyPassword = false;
@@ -60,6 +61,23 @@ export class AppTopBarComponent extends BaseComponent {
 
   constructor() {
     super();
+
+    effect(() => {
+      const selectedItem = this.globalStore.connections.selectedEtcdConnection();
+      if (selectedItem && selectedItem.id && selectedItem.id > 0) {
+        untracked(() => {
+          this.selectedConnection.update(() => selectedItem.id);
+        });
+      }
+    });
+
+    effect(() => {
+      const selectedConnectionChanged = this.selectedConnection();
+      const selectedItem = this.globalStore.connections.dataSource().find(x => x.id == selectedConnectionChanged);
+      untracked(() => {
+        patchState(this.globalStore, { connections: { ...this.globalStore.connections(), selectedEtcdConnection: selectedItem } });
+      });
+    });
   }
 
   changePassword() {
@@ -69,9 +87,5 @@ export class AppTopBarComponent extends BaseComponent {
   logout() {
     this.hasManageUserPermission = false;
     this.authService.logout();
-  }
-
-  onSelectConnection(evt: any) {
-    console.log('select connection', evt);
   }
 }

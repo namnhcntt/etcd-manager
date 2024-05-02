@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="ApplicationService\Commands\KeyValues\" />
     <Folder Include="wwwroot\data\" />
     <Folder Include="wwwroot\rawdb\" />
   </ItemGroup>

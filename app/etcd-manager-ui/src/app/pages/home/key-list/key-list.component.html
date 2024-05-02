@@ -1,0 +1,97 @@
+<!-- TODO: Curent issue detected:
+- In treeview, when you click on a node that not exit in etcd, the server return 500 error and do nothing
+-> Expected: When click on a node that not exit in etcd, handle this error on server, return 404 not found status, and client show a new
+empty node value, If user fill value and save, the new node should be created
+- When switch between treeview and list, missing current selected item
+-> Expected: When switch between treeview and list, the current selected item should be kept
+-->
+@if (loaded()) {
+<p-toolbar styleClass="p-custom-toolbar">
+  <div class="p-toolbar-group-left">
+    <button pButton aria-label="button" type="button" icon="pi pi-plus"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="newKey()" pTooltip="New key"
+      tooltipPosition="top"></button>
+    <button pButton aria-label="button" type="button" icon="pi pi-refresh"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="refreshList()" pTooltip="Refresh list"
+      tooltipPosition="top"></button>
+    <button pButton aria-label="button" type="button" icon="pi pi-download"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="export()" pTooltip="Export node"
+      tooltipPosition="top"></button>
+    <button pButton aria-label="button" type="button" icon="pi pi-upload"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="importNodes()" pTooltip="Import nodes"
+      tooltipPosition="top"></button>
+    <button pButton aria-label="button" type="button" icon="pi pi-sitemap"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="switchViewMode()"
+      pTooltip="Switch view mode list and tree" tooltipPosition="top"></button>
+  </div>
+  <div class="p-toolbar-group-right">
+    @if (viewMode == 'tree' && !treeIsExpandAll) {
+    <button pButton aria-label="button" type="button" icon="pi pi-folder"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="toggleExpandTree(true)" pTooltip="Collapse all"
+      tooltipPosition="top"></button>
+    }
+    @if (viewMode == 'tree' && treeIsExpandAll) {
+    <button pButton aria-label="button" type="button" icon="pi pi-folder-open"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="toggleExpandTree(false)" pTooltip="Expand all"
+      tooltipPosition="top"></button>
+    }
+  </div>
+</p-toolbar>
+@if (viewMode == 'list') {
+<p-listbox [options]="globalStore.keyValues.dataSource()" [(ngModel)]="selectedKey" optionLabel="key" [filter]="true"
+  (onChange)="onChangeSelectedKey($event)" [listStyle]="{'height':'calc(100vh - 330px)','overflow':'auto'}">
+  <ng-template let-item pTemplate="item">
+    <div class="key-list-item" (contextmenu)="showContextMenuViewModeList(contextMenuViewModeListControl, $event, item)"
+      (mousedown)="preventMouseDown($event)">
+      <i aria-hidden="true" class="pi pi-file"></i>
+      <span>{{item.key}}</span>
+    </div>
+  </ng-template>
+</p-listbox>
+}
+@if (viewMode == 'tree') {
+<p-tree #mainTree [value]="globalStore.keyValues.treeDataSource()" [(selection)]="treeSelectedItem"
+  [(selection)]="selectedKey" [filter]="true" selectionMode="single" [contextMenu]="contextMenuViewModeTreeControl"
+  scrollHeight="calc(100vh - 350px)" (onNodeContextMenuSelect)="contextMenuViewModeTreeSelect($event)"
+  (onNodeSelect)="onNodeSelect($event)">
+</p-tree>
+}
+}
+
+@if (showNewKeyForm) {
+<p-dialog header="New key" [(visible)]="showNewKeyForm"
+  [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
+  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="true"
+  [autoZIndex]="true" #dialog>
+  <!-- <app-new-key #newKey [parentKey]="parentKeyOnNew" [dialog]="dialog" (onSave)="onSaveNewKey($event)">
+  </app-new-key> -->
+  <ng-template pTemplate="footer">
+    <!-- @for (button of newKey.buttons; track button) {
+    <button pButton aria-label="button" [class]="button.styleClass" [disabled]="button.disabled" type="button"
+      [icon]="button.icon" (click)="button.command($event)" [label]="button.label"></button>
+    } -->
+  </ng-template>
+</p-dialog>
+}
+
+@if (showImportNodes) {
+<p-dialog header="ImportNodes" [(visible)]="showImportNodes"
+  [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
+  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="true"
+  [autoZIndex]="true" #dialogImportNodes>
+  <!-- <app-import-nodes #importNodes [dialog]="dialogImportNodes" (importSuccess)="refreshList()"></app-import-nodes> -->
+  <ng-template pTemplate="footer">
+    <!-- @for (button of importNodes.buttons; track button) {
+    <button pButton aria-label="button" [class]="button.styleClass" [disabled]="button.disabled" type="button"
+      [icon]="button.icon" (click)="button.command($event)" [label]="button.label"></button>
+    } -->
+  </ng-template>
+</p-dialog>
+}
+
+<p-contextMenu #contextMenuViewModeListControl [model]="contextMenuModel"></p-contextMenu>
+<p-contextMenu #contextMenuViewModeTreeControl [model]="contextMenuModel"></p-contextMenu>
+
+<p-fileUpload #fileControl [ngStyle]="{'display': 'none'}" mode="basic" name="file" [url]="''"
+  (onSelect)="handleSelectFile($event)" [accept]="'application/json'">
+</p-fileUpload>

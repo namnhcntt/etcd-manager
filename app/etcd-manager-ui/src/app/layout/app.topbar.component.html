@@ -6,8 +6,8 @@
   </a>
   @if (globalStore.currentUser.id()) {
   <p-dropdown styleClass="dropdown-select-connection" [(ngModel)]="selectedConnection" [filter]="true"
-    (onChange)="onSelectConnection($event)" [options]="globalStore.connections.dataSource()" optionLabel="name"
-    optionValue="id" placeholder="Select connection...">
+    [options]="globalStore.connections.dataSource()" optionLabel="name" optionValue="id"
+    placeholder="Select connection...">
   </p-dropdown>
   }
   <div class="layout-topbar-menu-left">

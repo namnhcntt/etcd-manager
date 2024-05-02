@@ -10,10 +10,6 @@ export class EtcdConnectionService extends BaseService {
 
   readonly ENDPOINT_CONNECTION = 'api/etcdconnection';
 
-  constructor() {
-    super();
-  }
-
   getDataSource() {
     const url = `${environment.apiEndpoint}/${this.ENDPOINT_CONNECTION}`;
     return firstValueFrom(this.httpClient.get<any[]>(url));
