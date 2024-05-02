@@ -18,9 +18,11 @@ specifiers:
   '@fullcalendar/daygrid': ^6.1.11
   '@fullcalendar/interaction': ^6.1.11
   '@fullcalendar/timegrid': ^6.1.11
+  '@ngrx/signals': ^17.1.1
   '@types/jasmine': ~5.1.4
   chart.js: ^4.4.2
   jasmine-core: ~5.1.2
+  jwt-decode: ^4.0.0
   karma: ~6.4.3
   karma-chrome-launcher: ~3.2.0
   karma-coverage: ~2.2.1
@@ -51,7 +53,9 @@ dependencies:
   '@fullcalendar/daygrid': 6.1.11_@fullcalendar+core@6.1.11
   '@fullcalendar/interaction': 6.1.11_@fullcalendar+core@6.1.11
   '@fullcalendar/timegrid': 6.1.11_@fullcalendar+core@6.1.11
+  '@ngrx/signals': 17.2.0_py36oqngxdr33hhgjv5y256ume
   chart.js: 4.4.2
+  jwt-decode: 4.0.0
   primeflex: 3.3.1
   primeicons: 7.0.0
   primeng: 17.15.0_ftmpy5zgxwj66b6qyo77otud6u
@@ -2279,6 +2283,20 @@ packages:
     dependencies:
       call-bind: 1.0.7
     dev: true
+
+  /@ngrx/signals/17.2.0_py36oqngxdr33hhgjv5y256ume:
+    resolution: {integrity: sha512-tkkxifeOVPOhpTqbHyK1WOx4qz49HLR/h0vhaa/MRGRIZoOR/6gR4KB3hbC8FD3FdnuNqOgOZ2lGsTfWPB/6BQ==}
+    peerDependencies:
+      '@angular/core': ^17.0.0
+      rxjs: ^6.5.3 || ^7.4.0
+    peerDependenciesMeta:
+      rxjs:
+        optional: true
+    dependencies:
+      '@angular/core': 17.3.6_rxjs@7.8.1+zone.js@0.14.5
+      rxjs: 7.8.1
+      tslib: 2.6.2
+    dev: false
 
   /@ngtools/webpack/17.3.6_ul7unyakmbnwrkspdpp3uozusa:
     resolution: {integrity: sha512-equxbgh2DKzZtiFMoVf1KD4yJcH1q8lpqQ/GSPPQUvONcmHrr+yqdRUdaJ7oZCyCYmXF/nByBxtMKtJr6nKZVg==}
@@ -4973,6 +4991,11 @@ packages:
     resolution: {integrity: sha512-POQXvpdL69+CluYsillJ7SUhKvytYjW9vG/GKpnf+xP8UWgYEM/RaMzHHofbALDiKbbP1W8UEYmgGl39WkPZsg==}
     engines: {'0': node >= 0.2.0}
     dev: true
+
+  /jwt-decode/4.0.0:
+    resolution: {integrity: sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==}
+    engines: {node: '>=18'}
+    dev: false
 
   /karma-chrome-launcher/3.2.0:
     resolution: {integrity: sha512-rE9RkUPI7I9mAxByQWkGJFXfFD6lE4gC5nPuZdobf/QdTEJI6EU4yIay/cfU/xV4ZxlM5JiTv7zWYgA64NpS5Q==}

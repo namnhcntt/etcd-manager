@@ -2,12 +2,8 @@
   <a class="layout-topbar-logo" routerLink="">
     <img src="assets/layout/images/{{layoutService.config().colorScheme === 'light' ? 'logo-dark' : 'logo-white'}}.svg"
       alt="logo">
-    <span>SAKAI</span>
+    <span>Etcd Manager</span>
   </a>
-
-  <button #menubutton class="p-link layout-menu-button layout-topbar-button" (click)="layoutService.onMenuToggle()">
-    <i class="pi pi-bars"></i>
-  </button>
 
   <button #topbarmenubutton class="p-link layout-topbar-menu-button layout-topbar-button"
     (click)="layoutService.showProfileSidebar()">

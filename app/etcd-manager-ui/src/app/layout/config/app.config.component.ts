@@ -1,12 +1,11 @@
-import { Component, Input } from '@angular/core';
-import { LayoutService } from '../service/app.layout.service';
-import { MenuService } from '../app.menu.service';
 import { CommonModule } from '@angular/common';
+import { Component, inject, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { SidebarModule } from 'primeng/sidebar';
+import { LayoutService } from '../service/app.layout.service';
 
 @Component({
   selector: 'app-config',
@@ -22,14 +21,10 @@ import { SidebarModule } from 'primeng/sidebar';
   ]
 })
 export class AppConfigComponent {
-  @Input() minimal: boolean = false;
+  minimal = input<boolean>(false);
 
   scales: number[] = [12, 13, 14, 15, 16];
-
-  constructor(
-    public layoutService: LayoutService,
-    public menuService: MenuService
-  ) { }
+  public layoutService = inject(LayoutService);
 
   get visible(): boolean {
     return this.layoutService.state.configSidebarVisible;

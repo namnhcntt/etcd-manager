@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { LayoutService } from "./service/app.layout.service";
 import { commonLayoutImport } from './common-layout-import';
 
@@ -9,5 +9,5 @@ import { commonLayoutImport } from './common-layout-import';
   imports: [...commonLayoutImport]
 })
 export class AppFooterComponent {
-  constructor(public layoutService: LayoutService) { }
+  public layoutService = inject(LayoutService);
 }
