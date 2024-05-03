@@ -63,10 +63,17 @@ namespace EtcdManager.API.Controllers.KeyValues
             return Ok(result);
         }
 
-        [HttpDelete("{key}")]
-        public async Task<IActionResult> Delete([FromRoute] string key, [FromQuery] bool deleteRecursive = false)
+        [HttpDelete("DeleteKey")]
+        public async Task<IActionResult> Delete([FromQuery] string key, [FromQuery] int selectedEtcdConnectionId, [FromQuery] bool deleteRecursive = false)
         {
-            return Ok();
+            var command = new DeleteKeyCommand()
+            {
+                Key = key,
+                DeleteRecursive = deleteRecursive,
+                EtcdConnectionId = selectedEtcdConnectionId
+            };
+            var result = await _mediator.Send(command);
+            return Ok(result);
         }
 
         [HttpPost("RenameKey")]
@@ -78,10 +85,29 @@ namespace EtcdManager.API.Controllers.KeyValues
             return Ok(result);
         }
 
-        [HttpPost("GetRevision/{key}")]
-        public async Task<IActionResult> GetRevision([FromRoute] string key)
+        [HttpGet("GetRevision")]
+        public async Task<IActionResult> GetRevision([FromQuery] string key, [FromQuery] int selectedEtcdConnectionId)
         {
-            return Ok();
+            var query = new GetRevisionQuery()
+            {
+                Key = key,
+                EtcdConnectionId = selectedEtcdConnectionId
+            };
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        [HttpGet("GetRevisionDetail")]
+        public async Task<IActionResult> GetRevisionDetail([FromQuery] string key, [FromQuery] long revision, [FromQuery] int selectedEtcdConnectionId)
+        {
+            var query = new GetRevisionDetailQuery()
+            {
+                Key = key,
+                Revision = revision,
+                EtcdConnectionId = selectedEtcdConnectionId
+            };
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
 
         [HttpPost("ImportNodes")]

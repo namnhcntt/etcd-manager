@@ -1,4 +1,4 @@
-import { Component, OnInit, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, output } from '@angular/core';
 import { BaseComponent } from '../../base.component';
 
 @Component({
@@ -6,7 +6,8 @@ import { BaseComponent } from '../../base.component';
   templateUrl: './user-manager.component.html',
   styles: [``],
   standalone: true,
-  imports: []
+  imports: [],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserManagerComponent extends BaseComponent implements OnInit {
   closeForm = output<any>();

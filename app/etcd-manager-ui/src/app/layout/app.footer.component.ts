@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { LayoutService } from "./service/app.layout.service";
 import { commonLayoutImport } from './common-layout-import';
 
@@ -6,7 +6,8 @@ import { commonLayoutImport } from './common-layout-import';
   selector: 'app-footer',
   templateUrl: './app.footer.component.html',
   standalone: true,
-  imports: [...commonLayoutImport]
+  imports: [...commonLayoutImport],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppFooterComponent {
   public layoutService = inject(LayoutService);

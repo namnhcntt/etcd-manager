@@ -1,4 +1,4 @@
-import { Component, OnInit, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, effect, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { patchState } from '@ngrx/signals';
 import { MessageService, PrimeNGConfig } from 'primeng/api';
@@ -20,7 +20,8 @@ import { LocalCacheService } from './pages/service/local-cache.service';
     ConfirmPopupModule, ConfirmDialogModule, ToastModule
   ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent extends BaseComponent implements OnInit {
   title = 'etcd-manager-ui';

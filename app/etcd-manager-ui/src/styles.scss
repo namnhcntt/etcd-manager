@@ -12,3 +12,16 @@ $gutter: 1rem; //for primeflex grid system
 @import "assets/demo/styles/flags/flags.css";
 @import "assets/demo/styles/badges.scss";
 @import "assets/demo/styles/code.scss";
+
+
+.layout-main-container {
+  padding: 6rem 2rem 2rem 0rem;
+}
+
+.p-splitter {
+  height: calc(0px + 100vh);
+}
+
+.inplace-text {
+  min-width:400px;
+}

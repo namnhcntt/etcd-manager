@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { SplitterModule } from 'primeng/splitter';
 import { BaseComponent } from '../../base.component';
 import { commonLayoutImport } from '../../layout/common-layout-import';
@@ -23,7 +23,8 @@ import { KeyDetailComponent } from './key-detail/key-detail.component';
 }
   `],
   standalone: true,
-  imports: [...commonLayoutImport, SplitterModule, KeyListComponent, KeyDetailComponent]
+  imports: [...commonLayoutImport, SplitterModule, KeyListComponent, KeyDetailComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent extends BaseComponent implements OnInit {
 

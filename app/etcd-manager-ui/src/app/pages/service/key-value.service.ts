@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
   providedIn: 'root'
 })
 export class KeyValueService extends BaseService {
+
   readonly ENDPOINT_KEYVALUE = 'api/keyvalue';
 
   getAll(selectedConnectionId: number) {
@@ -24,7 +25,7 @@ export class KeyValueService extends BaseService {
     return firstValueFrom(this.httpClient.get<any>(url));
   }
 
-  isRootKey(key: string): boolean {
+  isRootKey(key?: string | null): boolean {
     return key === '/';
   }
 
@@ -36,5 +37,20 @@ export class KeyValueService extends BaseService {
   renameKey(selectedConnectionId: number, oldKey: string, newKey: string) {
     const url = `${environment.apiEndpoint}/${this.ENDPOINT_KEYVALUE}/RenameKey?selectedEtcdConnectionId=${selectedConnectionId}`;
     return firstValueFrom(this.httpClient.post<any>(url, { oldKey, newKey }));
+  }
+
+  deleteKey(selectedConnectionId: number, key: string) {
+    const url = `${environment.apiEndpoint}/${this.ENDPOINT_KEYVALUE}/DeleteKey?selectedEtcdConnectionId=${selectedConnectionId}&key=${key}`;
+    return firstValueFrom(this.httpClient.delete<any>(url));
+  }
+
+  getRevision(selectedConnectionId: number, key: string) {
+    const url = `${environment.apiEndpoint}/${this.ENDPOINT_KEYVALUE}/GetRevision?selectedEtcdConnectionId=${selectedConnectionId}&key=${key}`;
+    return firstValueFrom(this.httpClient.get<any>(url));
+  }
+
+  getRevisionDetail(selectedConnectionId: number, key: string, revision: number) {
+    const url = `${environment.apiEndpoint}/${this.ENDPOINT_KEYVALUE}/GetRevisionDetail?selectedEtcdConnectionId=${selectedConnectionId}&key=${key}&revision=${revision}`;
+    return firstValueFrom(this.httpClient.get<any>(url));
   }
 }

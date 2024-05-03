@@ -10,7 +10,8 @@ namespace EtcdManager.API.Infrastructure.Etcd
         Task<List<string>> GetAllKeys(EtcdConnection etcdConnection);
         Task<KeyVersion> GetByKey(string key, EtcdConnection etcdConnection);
         Task<List<KeyVersion>> GetByKeyPrefix(string keyPrefix, EtcdConnection etcdConnection);
-        Task<List<KeyVersion>> GetRevisionOfKey(string key, EtcdConnection etcdConnection);
+        Task<KeyVersion?> GetRevision(string key, long revision, EtcdConnection etcdConnection);
+        Task<List<KeyVersion>> GetRevisions(string key, EtcdConnection etcdConnection);
         Task ImportNodes(KeyValue[] keyModels, EtcdConnection etcdConnection);
         Task RenameKey(string oldKey, string newKey, EtcdConnection etcdConnection);
         Task Save(KeyValue saveKeyValue, EtcdConnection etcdConnection);

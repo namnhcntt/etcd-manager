@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { Component, OnInit, effect, inject, model, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, effect, inject, model, untracked } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { MenuItem, PrimeIcons } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
@@ -38,7 +38,8 @@ import { LayoutService } from "./service/app.layout.service";
         margin-left:20px;
 
     }`],
-  imports: [...commonLayoutImport, NgClass, MenuModule, DropdownModule, AvatarModule, DialogModule]
+  imports: [...commonLayoutImport, NgClass, MenuModule, DropdownModule, AvatarModule, DialogModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppTopBarComponent extends BaseComponent implements OnInit {
   public layoutService = inject(LayoutService);

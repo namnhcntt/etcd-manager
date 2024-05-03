@@ -30,7 +30,18 @@ namespace EtcdManager.API.Core.Exceptions
         private static Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             var code = HttpStatusCode.InternalServerError;
-            var result = JsonSerializer.Serialize(new { error = exception.Message });
+            var message = exception.Message;
+            if (exception is DomainListException)
+            {
+                message = string.Empty;
+                code = HttpStatusCode.BadRequest;
+                var domainListException = (exception as DomainListException)!;
+                foreach (var error in domainListException.Errors)
+                {
+                    message += $"{error.Key.message}{Environment.NewLine}";
+                }
+            }
+            var result = JsonSerializer.Serialize(new { error = message });
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)code;
             return context.Response.WriteAsync(result);

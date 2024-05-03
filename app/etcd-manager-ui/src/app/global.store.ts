@@ -27,7 +27,12 @@ export const globalStore = signalStore(
     keyValues: {
       dataSource: [] as any[],
       treeDataSource: [] as TreeNode[],
-      selectedKey: ''
+      selectedKey: '',
+      isNewState: false,
+      treeLoading: false,
+      newKeySuccessAt: null as Date | null,
+      renameKeySuccessAt: null as Date | null,
+      deleteSuccessAt: null as Date | null,
     }
   }),
   withMethods((store) => ({

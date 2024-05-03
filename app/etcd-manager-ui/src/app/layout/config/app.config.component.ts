@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputSwitchModule } from 'primeng/inputswitch';
@@ -18,7 +18,8 @@ import { LayoutService } from '../service/app.layout.service';
     RadioButtonModule,
     ButtonModule,
     InputSwitchModule
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppConfigComponent {
   minimal = input<boolean>(false);

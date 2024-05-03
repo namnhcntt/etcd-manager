@@ -1,5 +1,5 @@
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
-import { Component, OnInit, inject, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, output, signal } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { patchState } from '@ngrx/signals';
 import { Guid } from 'guid-ts';
@@ -18,7 +18,8 @@ import { InputSwitchModule } from 'primeng/inputswitch';
   styles: [``],
   standalone: true,
   imports: [...commonLayoutImport, MessagesModule, TableModule, DatePipe,
-    NgTemplateOutlet, InputTextModule, InputSwitchModule]
+    NgTemplateOutlet, InputTextModule, InputSwitchModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ConnectionManagerComponent extends BaseComponent implements OnInit {
 

@@ -221,7 +221,7 @@ namespace EtcdManager.API.Infrastructure.Etcd
                 });
         }
 
-        public async Task<List<KeyVersion>> GetRevisionOfKey(string key, EtcdConnection etcdConnection)
+        public async Task<List<KeyVersion>> GetRevisions(string key, EtcdConnection etcdConnection)
         {
             var client = await GetEtcdToken(etcdConnection);
             var keyResult = await client.Instance.GetAsync(key, new Grpc.Core.Metadata() {
@@ -231,6 +231,74 @@ namespace EtcdManager.API.Infrastructure.Etcd
             var op = await GetAllRevisions(client, key, keyResult.Kvs[0].Version);
             return op;
         }
+
+        public async Task<KeyVersion?> GetRevision(string key, long revision, EtcdConnection etcdConnection)
+        {
+            var client = await GetEtcdToken(etcdConnection);
+            var keyResult = await client.Instance.GetValAsync(key, new Grpc.Core.Metadata() {
+                new Grpc.Core.Metadata.Entry("token",client.Token)
+            });
+            KeyVersion? op = null;
+            bool done = false;
+            var cancelTokenSource = new CancellationTokenSource();
+
+            // nếu chưa khởi tạo thì khởi tạo 1 lần
+            client.Instance.Watch(new WatchRequest()
+            {
+                CreateRequest = new WatchCreateRequest()
+                {
+                    Key = ByteString.CopyFromUtf8(key),
+                    StartRevision = revision
+                }
+            }, (WatchResponse watchEvent) =>
+            {
+                if (!watchEvent.Created)
+                {
+                    foreach (var evt in watchEvent.Events)
+                    {
+                        var newObj = new KeyVersion();
+                        newObj.Key = evt.Kv.Key.ToStringUtf8();
+                        newObj.CreateRevision = evt.Kv.CreateRevision;
+                        newObj.ModRevision = evt.Kv.ModRevision;
+                        newObj.Version = evt.Kv.Version;
+                        newObj.Value = evt.Kv.Value.ToStringUtf8();
+                        newObj.EventType = evt.Type;
+                        newObj.Prev =
+                            evt.PrevKv == null ?
+                            null :
+                         new KeyVersion()
+                         {
+                             Key = evt.PrevKv.Key.ToStringUtf8(),
+                             CreateRevision = evt.PrevKv.CreateRevision,
+                             ModRevision = evt.PrevKv.ModRevision,
+                             Version = evt.PrevKv.Version,
+                             Value = evt.PrevKv.Value.ToStringUtf8(),
+                         };
+                        op = newObj;
+                        done = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    _watchs.Add(key, watchEvent.WatchId);
+                }
+            }, new Grpc.Core.Metadata() { new Grpc.Core.Metadata.Entry("token", client.Token) }, null, cancelTokenSource.Token);
+
+            var policy = Policy.HandleResult<bool>(x => !x).WaitAndRetryAsync(5, retry => TimeSpan.FromSeconds(retry));
+            await policy.ExecuteAsync(() =>
+            {
+                if (done)
+                {
+                    cancelTokenSource.Cancel();
+                    return Task.FromResult(true);
+                }
+                return Task.FromResult(false);
+            });
+
+            return op;
+        }
+
         public async Task<List<KeyVersion>> GetByKeyPrefix(string keyPrefix, EtcdConnection etcdConnection)
         {
             var client = await GetEtcdToken(etcdConnection);

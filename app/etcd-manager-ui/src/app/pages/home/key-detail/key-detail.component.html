@@ -3,40 +3,41 @@
   <div class="p-toolbar-group-left">
     <div class="left-side">
       <i aria-hidden="true" class="pi pi-file"></i>
-      @if (keyDetail && !editing) {
+      @if (keyDetail() && !editing()) {
       <span class="key-detail-path">
-        {{keyDetail.key}}
+        {{keyDetail.key()}}
       </span>
       }
     </div>
-    <p-inplace [ngClass]="{'hidden': !editing}" #renameKeyInplace>
+    <p-inplace [ngClass]="{'hidden': !editing()}" #renameKeyInplace>
       <ng-template pTemplate="content">
-        <input placeholder="key name" type="text" pInputText [(ngModel)]="inplaceRenameValue">
+        <input placeholder="key name" class="inplace-text" type="text" pAutoFocus [autofocus]="true" pInputText
+          [(ngModel)]="inplaceRenameValue">
       </ng-template>
     </p-inplace>
-    @if (editing) {
+    @if (editing() && !isNewState()) {
     <button pButton aria-label="button" type="button" icon="pi pi-save"
-      class="p-button-rounded p-button-text p-button-icon-only" (click)="saveRenameKey(renameKeyInplace)"
-      pTooltip="Save rename key" tooltipPosition="top"></button>
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="saveRenameKey()" pTooltip="Save rename key"
+      tooltipPosition="top"></button>
     }
-    @if (editing) {
+    @if (editing() && !isNewState()) {
     <button pButton aria-label="button" type="button" icon="pi pi-times"
       class="p-button-rounded p-button-text p-button-icon-only" (click)="cancelRenameKey(renameKeyInplace)"
       pTooltip="Cancel rename key" tooltipPosition="top"></button>
     }
-    @if (keyDetail && !_keyValueService.isRootKey(keyDetail.key) && !editing) {
+    @if (!_keyValueService.isRootKey(keyDetail.key()) && !editing() && !isNewState()) {
     <button pButton aria-label="button" type="button" icon="pi pi-pencil"
       class="p-button-rounded p-button-text p-button-icon-only" (click)="renameKey(renameKeyInplace)"
       pTooltip="Rename key" tooltipPosition="top"></button>
     }
-    @if (keyDetail && !_keyValueService.isRootKey(keyDetail.key)) {
+    @if (!_keyValueService.isRootKey(keyDetail.key()) && !isNewState()) {
     <button pButton aria-label="button" type="button" icon="pi pi-trash"
-      class="p-button-rounded p-button-text p-button-danger p-button-icon-only" (click)="deleteKey()"
+      class="p-button-rounded p-button-text p-button-danger p-button-icon-only" (click)="deleteKey($event)"
       pTooltip="Delete key" tooltipPosition="top"></button>
     }
-    <div class="more-info">
+    <!-- <div class="more-info">
       <span>Last Modifed By: NamNH</span>
-    </div>
+    </div> -->
     <div class="dropdown-language">
       <p-dropdown [options]="languages" [style]="{'width': '150px'}" optionLabel="value"
         (onChange)="changeLanguage($event)"></p-dropdown>

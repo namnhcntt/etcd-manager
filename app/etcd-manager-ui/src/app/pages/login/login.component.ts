@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, model } from '@angular/core';
 import { Router } from '@angular/router';
 import { Message } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
@@ -31,7 +31,8 @@ import { AuthService } from '../service/auth.service';
   `],
   standalone: true,
   imports: [...commonLayoutImport, MessagesModule, PasswordModule],
-  providers: []
+  providers: [],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginComponent extends BaseComponent implements OnInit {
 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { commonLayoutImport } from '../../layout/common-layout-import';
 import { BaseComponent } from '../../base.component';
 
@@ -7,7 +7,8 @@ import { BaseComponent } from '../../base.component';
   templateUrl: './not-found.component.html',
   styles: [``],
   standalone: true,
-  imports: [...commonLayoutImport]
+  imports: [...commonLayoutImport],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotFoundComponent extends BaseComponent implements OnInit {
 

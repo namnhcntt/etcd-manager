@@ -1,4 +1,5 @@
-import { Component, OnInit, ViewChild, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, ViewChild, effect, inject, signal, untracked } from '@angular/core';
+import { patchState } from '@ngrx/signals';
 import { MenuItem, Message, MessageService, PrimeIcons, TreeNode } from 'primeng/api';
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { DialogModule } from 'primeng/dialog';
@@ -9,7 +10,6 @@ import { Tree, TreeModule } from 'primeng/tree';
 import { BaseComponent } from '../../../base.component';
 import { commonLayoutImport } from '../../../layout/common-layout-import';
 import { KeyValueService } from '../../service/key-value.service';
-import { patchState } from '@ngrx/signals';
 import { LocalCacheService } from '../../service/local-cache.service';
 
 @Component({
@@ -36,7 +36,8 @@ import { LocalCacheService } from '../../service/local-cache.service';
   standalone: true,
   imports: [...commonLayoutImport, ContextMenuModule, ToolbarModule, ListboxModule, TreeModule,
     DialogModule, FileUploadModule,
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KeyListComponent extends BaseComponent implements OnInit {
 
@@ -61,6 +62,43 @@ export class KeyListComponent extends BaseComponent implements OnInit {
 
   constructor() {
     super();
+    this.handleOnSelectEtcdConnection();
+    this.handleOnNewKeySucceeded();
+    this.handleOnRenameKeySucceeded();
+    this.handleOneDeleteKeySucceeded();
+  }
+
+  private handleOneDeleteKeySucceeded() {
+    effect(() => {
+      if (this.globalStore.keyValues.deleteSuccessAt()) {
+        untracked(() => {
+          this.refreshList();
+        });
+      }
+    });
+  }
+
+  private handleOnRenameKeySucceeded() {
+    effect(() => {
+      if (this.globalStore.keyValues.renameKeySuccessAt()) {
+        untracked(() => {
+          this.refreshList();
+        });
+      }
+    });
+  }
+
+  private handleOnNewKeySucceeded() {
+    effect(() => {
+      if (this.globalStore.keyValues.newKeySuccessAt()) {
+        untracked(() => {
+          this.refreshList();
+        });
+      }
+    });
+  }
+
+  private handleOnSelectEtcdConnection() {
     effect(() => {
       const selectedConnection = this.globalStore.connections.selectedEtcdConnection();
       if (selectedConnection && selectedConnection.id > 0) {
@@ -69,15 +107,19 @@ export class KeyListComponent extends BaseComponent implements OnInit {
           selectedKey = this._localCacheService.get('selectedKey');
           this.firstLoad = false;
         }
-        this.bindData(selectedConnection.id, selectedKey).then(rs => {
-          if (this.selectedItem != null) {
-            if (this.viewMode == 'tree') {
-              this.onNodeSelect({ node: this.selectedItem });
-            } else {
-              console.log('support listbox pre select item later');
-            }
-          }
-        });
+        this.bindDataAndSelectExistItem(selectedConnection, selectedKey);
+      }
+    });
+  }
+
+  private bindDataAndSelectExistItem(selectedConnection: { id: number; name: string; }, selectedKey: string | null) {
+    this.bindData(selectedConnection.id, selectedKey).then(rs => {
+      if (this.selectedItem != null) {
+        if (this.viewMode == 'tree') {
+          this.onNodeSelect({ node: this.selectedItem });
+        } else {
+          console.log('support listbox pre select item later');
+        }
       }
     });
   }
@@ -195,11 +237,13 @@ export class KeyListComponent extends BaseComponent implements OnInit {
     // this.rootCtx.dispatchEvent('changeSelectedKey', evt.value);
   }
 
-  refreshList() {
+  refreshList(showMessage: boolean = false) {
     const id = this.globalStore.connections.selectedEtcdConnection.id();
     if (id > 0) {
-      this.bindData(this.globalStore.connections.selectedEtcdConnection.id());
-      this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Refresh success' });
+      this.bindDataAndSelectExistItem(this.globalStore.connections.selectedEtcdConnection(), this.globalStore.keyValues.selectedKey());
+      if (showMessage) {
+        this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Refresh success' });
+      }
     }
   }
 
@@ -267,8 +311,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   newKey() {
-    console.log('newkey');
-    this.showNewKeyForm = true;
+    patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), isNewState: true } });
   }
 
   onSaveNewKey(evt: any) {

@@ -1,4 +1,4 @@
-import { Component, Renderer2, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Renderer2, ViewChild, inject } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { BaseComponent } from '../base.component';
@@ -12,7 +12,8 @@ import { LayoutService } from "./service/app.layout.service";
   selector: 'app-layout',
   templateUrl: './app.layout.component.html',
   standalone: true,
-  imports: [...commonLayoutImport, AppTopBarComponent, AppFooterComponent, AppConfigComponent]
+  imports: [...commonLayoutImport, AppTopBarComponent, AppFooterComponent, AppConfigComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppLayoutComponent extends BaseComponent {
 

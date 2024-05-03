@@ -7,8 +7,6 @@ export class LocalCacheService {
   // using localStorage as a cache store
   private cache = window.localStorage;
 
-  constructor() { }
-
   set(key: string, value: any): void {
     this.cache.setItem(key, JSON.stringify(value));
   }
