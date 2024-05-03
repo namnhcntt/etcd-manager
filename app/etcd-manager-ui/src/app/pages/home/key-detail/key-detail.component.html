@@ -40,7 +40,7 @@
     </div> -->
     <div class="dropdown-language">
       <p-dropdown [options]="languages" [style]="{'width': '150px'}" optionLabel="value"
-        (onChange)="changeLanguage($event)"></p-dropdown>
+        (onChange)="changeLanguage($event.value)"></p-dropdown>
     </div>
   </div>
   <div class="p-toolbar-group-right">
@@ -62,25 +62,23 @@
   </div>
 </p-toolbar>
 @if (editorLoaded()) {
-<ngs-code-editor #codeEditor [theme]="codeEditorConstant.DEFAULT_THEME" [codeModel]="codeModel"
+<ngs-code-editor #codeEditor [theme]="codeEditorConstant.DEFAULT_THEME" [codeModel]="codeModel()"
   [options]="codeEditorConstant.DEFAULT_OPTIONS" [style]="{'height':'calc(100vh - 270px)','overflow':'auto'}"
   (valueChanged)="onCodeChanged($event)">
 </ngs-code-editor>
 }
 }
 
-@if (showKeyVersion) {
-<p-dialog header="Revision of key {{keyDetail.key}}" [(visible)]="showKeyVersion"
-  [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
+@if (showKeyVersion()) {
+<p-dialog header="Revision of key {{keyDetail.key()}}" [(visible)]="showKeyVersion"
+  [style]="{'min-with': '950px', 'min-height': '650px', width: '950px', height: '650px' }" [closeOnEscape]="true"
   [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="true"
   [autoZIndex]="true" #dialog>
-  <!-- <app-key-version-list #keyVersionList [key]="keyDetail.key" [dialog]="dialog"
-    (onUseValue)="useValueFromOldVersion($event)"></app-key-version-list> -->
+  <app-key-version-list #keyVersionList [key]="keyDetail.key()!" [dialog]="dialog"
+    (onUseValue)="useValueFromOldVersion($event)"></app-key-version-list>
   <ng-template pTemplate="footer">
-    <!-- @for (button of keyVersionList.buttons; track button) {
-    <button pButton aria-label="button" [class]="button.styleClass" [disabled]="button.disabled" type="button"
-      [icon]="button.icon" (click)="button.command($event)" [label]="button.label"></button>
-    } -->
+    <button pButton aria-label="button" type="button" icon="pi pi-times"
+      class="p-button-raised p-button-secondary p-button-text" label="Cancel" (click)="closeDialogRevisions()"></button>
   </ng-template>
 </p-dialog>
 }

@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, ViewChild, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild, effect, inject, model, signal, untracked } from '@angular/core';
 import { patchState, signalState } from '@ngrx/signals';
-import { CodeEditorComponent, CodeEditorModule } from '@ngstack/code-editor';
+import { CodeEditorComponent, CodeEditorModule, CodeModel, CodeModelChangedEvent } from '@ngstack/code-editor';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { AutoFocusModule } from 'primeng/autofocus';
 import { DialogModule } from 'primeng/dialog';
@@ -13,6 +13,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { BaseComponent } from '../../../base.component';
 import { commonLayoutImport } from '../../../layout/common-layout-import';
 import { CodeEditorConstant } from '../../constants/code-editor.constant';
+import { KeyVersionListComponent } from '../../key-version-list/key-version-list.component';
 import { KeyValueService } from '../../service/key-value.service';
 
 @Component({
@@ -38,11 +39,11 @@ import { KeyValueService } from '../../service/key-value.service';
   standalone: true,
   imports: [...commonLayoutImport, ToolbarModule, DropdownModule, DialogModule,
     FileUploadModule, CodeEditorModule, InplaceModule, TooltipModule,
-    InputTextModule, AutoFocusModule],
+    InputTextModule, AutoFocusModule, KeyVersionListComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KeyDetailComponent extends BaseComponent {
-  showKeyVersion = false;
+  showKeyVersion = model(false);
   loaded = signal(false);
   editorLoaded = signal(false);
   isNewState = signal(false);
@@ -50,10 +51,9 @@ export class KeyDetailComponent extends BaseComponent {
   keyDetail = signalState({ key: null as string | null, value: null as string | null });
   showCodeEditor = true;
   codeEditorConstant = CodeEditorConstant;
-  codeModel = CodeEditorConstant.DEFAULT_CODE_MODEL;
+  codeModel = signal<CodeModel>(CodeEditorConstant.DEFAULT_CODE_MODEL);
   inplaceRenameValue?: string | null;
   editing = signal(false);
-  //  TODO: Error on change language but syntax highlight not changed
   languages = [
     { value: 'yaml' },
     { value: 'json' },
@@ -129,9 +129,7 @@ export class KeyDetailComponent extends BaseComponent {
           const defaultNewKeyValue = this.globalStore.keyValues.defaultNewKey() ?? 'key1';
           patchState(this.keyDetail, { key: defaultNewKeyValue, value: null });
           patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), selectedKey: '' } });
-          // content
-          this.codeModel.value = '';
-          this.codeModel = { ...this.codeModel };
+          this.codeModel.update(() => ({ ...this.codeModel(), value: '' }));
           this.isNewState.update(() => true);
           this.loaded.update(() => true);
           this.editorLoaded.update(() => true);
@@ -152,9 +150,9 @@ export class KeyDetailComponent extends BaseComponent {
     effect(() => {
       const selectedKeyChanged = this.globalStore.keyValues.selectedKey();
       if (selectedKeyChanged) {
-        untracked(() => {
+        untracked(async () => {
           patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), isNewState: false } });
-          this.getByKey(selectedKeyChanged);
+          await this.getByKey(selectedKeyChanged);
         });
       }
     });
@@ -169,8 +167,7 @@ export class KeyDetailComponent extends BaseComponent {
     }
 
     patchState(this.keyDetail, keyDetail);
-    this.codeModel.value = keyDetail.value;
-    this.codeModel = { ...this.codeModel };
+    this.codeModel.update(() => ({ ...this.codeModel(), value: keyDetail.value }));
     this.loaded.update(() => true);
     this.editorLoaded.update(() => true);
   }
@@ -213,12 +210,8 @@ export class KeyDetailComponent extends BaseComponent {
   }
 
   changeLanguage(evt: any) {
-    this.codeModel.language = evt.value;
-    this.codeModel = { ...this.codeModel };
-    this.editorLoaded.update(() => false);
-    setTimeout(() => {
-      this.editorLoaded.update(() => true);
-    }, 100);
+    this.codeModel.update(() => ({ ...this.codeModel(), language: evt.value }));
+
   }
 
   onCodeChanged(evt: any) {
@@ -245,12 +238,12 @@ export class KeyDetailComponent extends BaseComponent {
   }
 
   viewAllVersion() {
-
+    this.showKeyVersion.update(() => true);
   }
 
   save() {
     const key = this.isNewState() ? this.inplaceRenameValue : this.keyDetail.key();
-    this._keyValueService.save(this.globalStore.connections.selectedEtcdConnection.id(), key!, this.codeModel.value)
+    this._keyValueService.save(this.globalStore.connections.selectedEtcdConnection.id(), key!, this.codeModel().value)
       .then(() => {
         patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), selectedKey: key!, newKeySuccessAt: new Date() } });
         this.isNewState.update(() => false);
@@ -258,5 +251,14 @@ export class KeyDetailComponent extends BaseComponent {
       .catch((err: any) => {
         this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
       });
+  }
+
+  useValueFromOldVersion(evt: string) {
+    this.codeModel.update(() => ({ ...this.codeModel(), value: evt }));
+    this.closeDialogRevisions();
+  }
+
+  closeDialogRevisions() {
+    this.showKeyVersion.update(() => false);
   }
 }

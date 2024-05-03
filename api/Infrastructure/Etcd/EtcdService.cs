@@ -12,7 +12,6 @@ namespace EtcdManager.API.Infrastructure.Etcd
     {
         private readonly ICacheService _cacheService;
         private readonly ILogger<EtcdService> _logger;
-        private Dictionary<string, long> _watchs = new Dictionary<string, long>();
         
         public EtcdService(ICacheService cacheService, ILogger<EtcdService> logger)
         {
@@ -279,10 +278,6 @@ namespace EtcdManager.API.Infrastructure.Etcd
                         break;
                     }
                 }
-                else
-                {
-                    _watchs.Add(key, watchEvent.WatchId);
-                }
             }, new Grpc.Core.Metadata() { new Grpc.Core.Metadata.Entry("token", client.Token) }, null, cancelTokenSource.Token);
 
             var policy = Policy.HandleResult<bool>(x => !x).WaitAndRetryAsync(5, retry => TimeSpan.FromSeconds(retry));
@@ -336,9 +331,8 @@ namespace EtcdManager.API.Infrastructure.Etcd
             var op = new List<KeyVersion>();
             bool done = false;
             var cancelTokenSource = new CancellationTokenSource();
-
             // nếu chưa khởi tạo thì khởi tạo 1 lần
-            client.Instance.Watch(new WatchRequest()
+            _ = client.Instance.WatchAsync(new WatchRequest()
             {
                 CreateRequest = new WatchCreateRequest()
                 {
@@ -372,10 +366,6 @@ namespace EtcdManager.API.Infrastructure.Etcd
                         op.Add(newObj);
                     }
                     done = true;
-                }
-                else
-                {
-                    _watchs.Add(key, watchEvent.WatchId);
                 }
             }, new Grpc.Core.Metadata() { new Grpc.Core.Metadata.Entry("token", client.Token) }, null, cancelTokenSource.Token);
 

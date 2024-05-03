@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { commonLayoutImport } from '../../layout/common-layout-import';
+import { ChangeDetectionStrategy, Component, ElementRef, NgZone, ViewChild, inject, input, output } from '@angular/core';
+import { Dialog, DialogModule } from 'primeng/dialog';
 import { BaseComponent } from '../../base.component';
+import { commonLayoutImport } from '../../layout/common-layout-import';
 
 declare var monaco: any;
 
@@ -9,59 +10,41 @@ declare var monaco: any;
   templateUrl: './diff-text.component.html',
   styles: [``],
   standalone: true,
-  imports: [...commonLayoutImport],
+  imports: [...commonLayoutImport, DialogModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DiffTextComponent extends BaseComponent {
-  @Input() dialog = input<Dialog>();
-  @Input() key = input<string>();
-  @Input() left = input<any>({});
-  @Input() right: any = {};
-  @Input() revision = 0;
+  dialog = input.required<Dialog>();
+  left = input<any>({});
+  right = input<any>({});
+  revision = input<number>(0);
 
-  @Output() onClose = new EventEmitter<any>();
+  onClose = output<any>();
 
-  @ViewChild('containerElement', { static: true }) containerElement: ElementRef;
+  @ViewChild('containerElement', { static: true }) containerElement!: ElementRef;
 
-  public buttons: MenuItem[] = [];
-  constructor(private _ngZone: NgZone) { }
-  ngOnInit() {
-    this.buttons = [
-      {
-        label: 'Cancel', icon: 'pi pi-times', command: (event) => {
-          this.dialog.close({} as Event);
-        },
-        styleClass: 'p-ripple p-button-raised p-button-secondary p-button-text'
-      }
-    ]
-  }
+  private _ngZone = inject(NgZone);
 
   ngAfterViewInit(): void {
     this._ngZone.runOutsideAngular(() => {
       const originalModel = monaco.editor.createModel(
-        this.left.value,
+        this.left().value,
         'yaml'
       );
       const modifiedModel = monaco.editor.createModel(
-        this.right.value,
+        this.right().value,
         'yaml'
       );
 
-      console.log('container', document.getElementById('container'));
-      const diffEditor = monaco.editor.createDiffEditor(document.getElementById('container'));
+      const diffEditor = monaco.editor.createDiffEditor(document.getElementById('container'), {
+        readOnly: true,
+        originalEditable: false,
+        automaticLayout: true,
+      });
       diffEditor.setModel({
         original: originalModel,
         modified: modifiedModel
       });
-
-      const navi = monaco.editor.createDiffNavigator(diffEditor, {
-        followsCaret: true, // resets the navigator state when the user selects something in the editor
-        ignoreCharChanges: true // jump from line to line
-      });
-
-      // window.setInterval(function () {
-      //     navi.next();
-      // }, 2000);
     });
   }
 
