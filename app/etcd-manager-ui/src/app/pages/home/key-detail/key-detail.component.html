@@ -44,6 +44,7 @@
     </div>
   </div>
   <div class="p-toolbar-group-right">
+    @if (!isNewState()) {
     <button pButton aria-label="button" icon="pi pi-refresh button-header"
       class="p-button-rounded p-button-text p-button-icon-only" (click)="refresh()" pTooltip="Refresh"
       tooltipPosition="top"></button>
@@ -56,6 +57,7 @@
     <button pButton aria-label="button" icon="pi pi-book button-header"
       class="p-button-rounded p-button-text p-button-icon-only" (click)="viewAllVersion()" pTooltip="View all version"
       tooltipPosition="top"></button>
+    }
     <button pButton aria-label="button" icon="pi pi-save button-header"
       class="p-button-rounded p-button-text p-button-icon-only" (click)="save()" pTooltip="Save"
       tooltipPosition="top"></button>
