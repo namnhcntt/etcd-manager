@@ -1,4 +1,4 @@
-import { Component, ViewChild, effect, inject } from '@angular/core';
+import { Component, ViewChild, effect, inject, signal } from '@angular/core';
 import { CodeEditorComponent, CodeEditorModule } from '@ngstack/code-editor';
 import { MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
@@ -10,6 +10,7 @@ import { BaseComponent } from '../../../base.component';
 import { commonLayoutImport } from '../../../layout/common-layout-import';
 import { CodeEditorConstant } from '../../constants/code-editor.constant';
 import { KeyValueService } from '../../service/key-value.service';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-key-detail',
@@ -32,11 +33,12 @@ import { KeyValueService } from '../../service/key-value.service';
 
 `],
   standalone: true,
-  imports: [...commonLayoutImport, ToolbarModule, DropdownModule, DialogModule, FileUploadModule, CodeEditorModule, InplaceModule]
+  imports: [...commonLayoutImport, ToolbarModule, DropdownModule, DialogModule, FileUploadModule, CodeEditorModule, InplaceModule, TooltipModule]
 })
 export class KeyDetailComponent extends BaseComponent {
   showKeyVersion = false;
-  loaded = false;
+  loaded = signal(false);
+  editorLoaded = signal(false);
   connection: any;
   keyDetail: any;
   showCodeEditor = true;
@@ -64,7 +66,6 @@ export class KeyDetailComponent extends BaseComponent {
 
     effect(() => {
       const selectedKeyChanged = this.globalStore.keyValues.selectedKey();
-      console.log('selectedKeyChanged', selectedKeyChanged);
       if (selectedKeyChanged) {
         this.getByKey(selectedKeyChanged);
       }
@@ -77,14 +78,22 @@ export class KeyDetailComponent extends BaseComponent {
       this.keyDetail = keyDetail;
       this.codeModel.value = keyDetail.value;
       this.codeModel = { ...this.codeModel };
-      this.loaded = true;
+      this.loaded.update(() => true);
+      this.editorLoaded.update(() => true);
     } catch (err: any) {
       this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
     }
   }
 
   saveRenameKey(renameKeyInplace: Inplace) {
-    console.log('saveRenameKey', renameKeyInplace);
+    this._keyValueService.renameKey(this.globalStore.connections.selectedEtcdConnection.id(), this.keyDetail.key, this.inplaceRenameValue!)
+      .then(() => {
+        this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Renamed' });
+        renameKeyInplace.deactivate();
+      })
+      .catch((err: any) => {
+        this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
+      });
   }
 
   cancelRenameKey(renameKeyInplace: Inplace) {
@@ -92,7 +101,7 @@ export class KeyDetailComponent extends BaseComponent {
   }
 
   renameKey(renameKeyInplace: Inplace) {
-    console.log('renameKey', renameKeyInplace);
+    renameKeyInplace.activate();
   }
 
   deleteKey() {
@@ -100,7 +109,12 @@ export class KeyDetailComponent extends BaseComponent {
   }
 
   changeLanguage(evt: any) {
-    console.log('changeLanguage', evt);
+    this.codeModel.language = evt.value;
+    this.codeModel = { ...this.codeModel };
+    this.editorLoaded.update(() => false);
+    setTimeout(() => {
+      this.editorLoaded.update(() => true);
+    }, 100);
   }
 
   onCodeChanged(evt: any) {
@@ -112,7 +126,10 @@ export class KeyDetailComponent extends BaseComponent {
   }
 
   refresh() {
-
+    if (this.globalStore.keyValues.selectedKey()) {
+      this.getByKey(this.globalStore.keyValues.selectedKey());
+      this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Refreshed' });
+    }
   }
 
   export() {
@@ -128,6 +145,12 @@ export class KeyDetailComponent extends BaseComponent {
   }
 
   save() {
-
+    this._keyValueService.save(this.globalStore.connections.selectedEtcdConnection.id(), this.keyDetail.key, this.codeModel.value)
+      .then(() => {
+        this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Saved' });
+      })
+      .catch((err: any) => {
+        this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
+      });
   }
 }

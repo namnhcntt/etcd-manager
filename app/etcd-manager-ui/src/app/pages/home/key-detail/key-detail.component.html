@@ -1,4 +1,4 @@
-@if (loaded) {
+@if (loaded()) {
 <p-toolbar styleClass="p-custom-toolbar">
   <div class="p-toolbar-group-left">
     <div class="left-side">
@@ -60,10 +60,12 @@
       tooltipPosition="top"></button>
   </div>
 </p-toolbar>
+@if (editorLoaded()) {
 <ngs-code-editor #codeEditor [theme]="codeEditorConstant.DEFAULT_THEME" [codeModel]="codeModel"
   [options]="codeEditorConstant.DEFAULT_OPTIONS" [style]="{'height':'calc(100vh - 270px)','overflow':'auto'}"
   (valueChanged)="onCodeChanged($event)">
 </ngs-code-editor>
+}
 }
 
 @if (showKeyVersion) {

@@ -13,7 +13,7 @@ namespace EtcdManager.API.Infrastructure.Etcd
         Task<List<KeyVersion>> GetRevisionOfKey(string key, EtcdConnection etcdConnection);
         Task ImportNodes(KeyValue[] keyModels, EtcdConnection etcdConnection);
         Task RenameKey(string oldKey, string newKey, EtcdConnection etcdConnection);
-        Task Save(SaveKeyValue saveKeyValue, EtcdConnection etcdConnection);
+        Task Save(KeyValue saveKeyValue, EtcdConnection etcdConnection);
         Task<bool> TestConnection(string host, string port, string username, string password);
     }
 }

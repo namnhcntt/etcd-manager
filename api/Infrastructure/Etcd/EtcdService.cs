@@ -1,10 +1,8 @@
 ﻿using dotnet_etcd;
-using EtcdManager.API.Core.Models;
 using EtcdManager.API.Domain;
 using EtcdManager.API.Infrastructure.Cache;
 using Etcdserverpb;
 using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 using Polly;
 using System.Collections.Concurrent;
 
@@ -181,7 +179,7 @@ namespace EtcdManager.API.Infrastructure.Etcd
             throw new Exception($"Cannot get key {key}");
         }
 
-        public async Task Save(SaveKeyValue saveKeyValue, EtcdConnection etcdConnection)
+        public async Task Save(KeyValue saveKeyValue, EtcdConnection etcdConnection)
         {
             var client = await GetEtcdToken(etcdConnection);
             if (!saveKeyValue.Key.StartsWith("/"))
@@ -189,16 +187,6 @@ namespace EtcdManager.API.Infrastructure.Etcd
                 saveKeyValue.Key = "/" + saveKeyValue.Key;
             }
 
-            if (saveKeyValue.IsInsert.HasValue && saveKeyValue.IsInsert.Value)
-            {
-                var existKey = await client.Instance.GetAsync(saveKeyValue.Key, new Grpc.Core.Metadata() {
-                    new Grpc.Core.Metadata.Entry("token",client.Token)
-                });
-                if (existKey?.Kvs.Count > 0)
-                {
-                    throw new Exception($"Key {saveKeyValue.Key} already exists");
-                }
-            }
             await client.Instance.PutAsync(saveKeyValue.Key, saveKeyValue.Value, new Grpc.Core.Metadata() {
                     new Grpc.Core.Metadata.Entry("token",client.Token)
                 });

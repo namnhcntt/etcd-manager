@@ -1,6 +1,8 @@
-﻿using EtcdManager.API.ApplicationService.Queries.KeyValues;
+﻿using EtcdManager.API.ApplicationService.Commands.KeyValues;
+using EtcdManager.API.ApplicationService.Queries.KeyValues;
 using EtcdManager.API.Controllers.KeyValues.Post;
 using EtcdManager.API.Core.Abstract;
+using Mapster;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,9 +55,12 @@ namespace EtcdManager.API.Controllers.KeyValues
         }
 
         [HttpPost("Save")]
-        public async Task<IActionResult> Save([FromBody] SaveKeyValueModel model)
+        public async Task<IActionResult> Save([FromBody] SaveKeyValueModel model, [FromQuery] int selectedEtcdConnectionId)
         {
-            return Ok();
+            var command = model.Adapt<SaveCommand>();
+            command.EtcdConnectionId = selectedEtcdConnectionId;
+            var result = await _mediator.Send(command);
+            return Ok(result);
         }
 
         [HttpDelete("{key}")]
@@ -65,9 +70,12 @@ namespace EtcdManager.API.Controllers.KeyValues
         }
 
         [HttpPost("RenameKey")]
-        public async Task<IActionResult> RenameKey([FromBody] RenameKeyModel model)
+        public async Task<IActionResult> RenameKey([FromBody] RenameKeyModel model, [FromQuery] int selectedEtcdConnectionId)
         {
-            return Ok();
+            var command = model.Adapt<RenameKeyCommand>();
+            command.EtcdConnectionId = selectedEtcdConnectionId;
+            var result = await _mediator.Send(command);
+            return Ok(result);
         }
 
         [HttpPost("GetRevision/{key}")]

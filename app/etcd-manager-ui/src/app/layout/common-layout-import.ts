@@ -1,7 +1,7 @@
-import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
+import { JsonPipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterLink, RouterModule } from '@angular/router';
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
@@ -17,5 +17,7 @@ export const commonLayoutImport = [
   NgClass,
   NgIf,
   NgFor,
-  NgStyle
+  NgStyle,
+  RouterLink,
+  JsonPipe
 ];

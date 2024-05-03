@@ -38,8 +38,9 @@ empty node value, If user fill value and save, the new node should be created
   </div>
 </p-toolbar>
 @if (viewMode == 'list') {
-<p-listbox [options]="globalStore.keyValues.dataSource()" [(ngModel)]="selectedKey" optionLabel="key" [filter]="true"
-  (onChange)="onChangeSelectedKey($event)" [listStyle]="{'height':'calc(100vh - 330px)','overflow':'auto'}">
+<p-listbox #mainList [options]="globalStore.keyValues.dataSource()" [(ngModel)]="selectedItem" optionLabel="key"
+  [filter]="true" (onChange)="onChangeSelectedKey($event)"
+  [listStyle]="{'height':'calc(100vh - 330px)','overflow':'auto'}">
   <ng-template let-item pTemplate="item">
     <div class="key-list-item" (contextmenu)="showContextMenuViewModeList(contextMenuViewModeListControl, $event, item)"
       (mousedown)="preventMouseDown($event)">
@@ -50,7 +51,7 @@ empty node value, If user fill value and save, the new node should be created
 </p-listbox>
 }
 @if (viewMode == 'tree') {
-<p-tree #mainTree [value]="globalStore.keyValues.treeDataSource()" [(selection)]="selectedKey" [filter]="true"
+<p-tree #mainTree [value]="globalStore.keyValues.treeDataSource()" [(selection)]="selectedItem" [filter]="true"
   selectionMode="single" [contextMenu]="contextMenuViewModeTreeControl" scrollHeight="calc(100vh - 350px)"
   (onNodeContextMenuSelect)="contextMenuViewModeTreeSelect($event)" (onNodeSelect)="onNodeSelect($event)">
 </p-tree>

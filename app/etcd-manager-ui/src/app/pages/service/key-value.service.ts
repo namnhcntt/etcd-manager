@@ -27,4 +27,14 @@ export class KeyValueService extends BaseService {
   isRootKey(key: string): boolean {
     return key === '/';
   }
+
+  save(selectedConnectionId: number, key: string, value: string) {
+    const url = `${environment.apiEndpoint}/${this.ENDPOINT_KEYVALUE}/Save?selectedEtcdConnectionId=${selectedConnectionId}`;
+    return firstValueFrom(this.httpClient.post<any>(url, { key, value }));
+  }
+
+  renameKey(selectedConnectionId: number, oldKey: string, newKey: string) {
+    const url = `${environment.apiEndpoint}/${this.ENDPOINT_KEYVALUE}/RenameKey?selectedEtcdConnectionId=${selectedConnectionId}`;
+    return firstValueFrom(this.httpClient.post<any>(url, { oldKey, newKey }));
+  }
 }

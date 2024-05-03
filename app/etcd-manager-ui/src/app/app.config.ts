@@ -22,9 +22,7 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(ToastModule),
     importProvidersFrom(ConfirmPopupModule),
     importProvidersFrom(ConfirmDialogModule),
-    importProvidersFrom(CodeEditorModule.forRoot({
-
-    })),
+    importProvidersFrom(CodeEditorModule.forRoot({})),
     MessageService, ConfirmationService,
   ]
 };

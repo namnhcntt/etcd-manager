@@ -3,13 +3,14 @@ import { MenuItem, Message, MessageService, PrimeIcons, TreeNode } from 'primeng
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { DialogModule } from 'primeng/dialog';
 import { FileUpload, FileUploadModule } from 'primeng/fileupload';
-import { ListboxModule } from 'primeng/listbox';
+import { Listbox, ListboxModule } from 'primeng/listbox';
 import { ToolbarModule } from 'primeng/toolbar';
 import { Tree, TreeModule } from 'primeng/tree';
 import { BaseComponent } from '../../../base.component';
 import { commonLayoutImport } from '../../../layout/common-layout-import';
 import { KeyValueService } from '../../service/key-value.service';
 import { patchState } from '@ngrx/signals';
+import { LocalCacheService } from '../../service/local-cache.service';
 
 @Component({
   selector: 'app-key-list',
@@ -48,24 +49,41 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   treeIsExpandAll = false;
   contextMenuModel: MenuItem[] = this.getContextMenu();
   msgs: Message[] = [];
-  selectedKey?: string;
-  @ViewChild('mainTree') mainTree!: Tree;
+  selectedItem?: any;
+  firstLoad = true;
+  @ViewChild('mainTree', { static: false }) mainTree?: Tree;
   @ViewChild('fileControl') fileControl!: FileUpload;
+  @ViewChild('mainList', { static: false }) mainList!: Listbox;
 
   private _messageService = inject(MessageService);
   private _keyValueService = inject(KeyValueService);
+  private _localCacheService = inject(LocalCacheService);
 
   constructor() {
     super();
     effect(() => {
       const selectedConnection = this.globalStore.connections.selectedEtcdConnection();
       if (selectedConnection && selectedConnection.id > 0) {
-        this.bindData(selectedConnection.id);
+        let selectedKey: string | null = null;
+        if (this.firstLoad) {
+          selectedKey = this._localCacheService.get('selectedKey');
+          this.firstLoad = false;
+        }
+        this.bindData(selectedConnection.id, selectedKey).then(rs => {
+          if (this.selectedItem != null) {
+            if (this.viewMode == 'tree') {
+              this.onNodeSelect({ node: this.selectedItem });
+            } else {
+              console.log('support listbox pre select item later');
+            }
+          }
+        });
       }
     });
   }
 
   ngOnInit() {
+
   }
 
   getContextMenu() {
@@ -153,10 +171,9 @@ export class KeyListComponent extends BaseComponent implements OnInit {
     console.log('rename');
   }
 
-  async bindData(selectedConnectionId: number) {
+  async bindData(selectedConnectionId: number, selectedKey?: string | null) {
     try {
       const ds = await this._keyValueService.getAllKeys(selectedConnectionId);
-      console.log('all keys', ds);
       const dataSource = ds.map((x: any) => {
         return { key: x };
       });
@@ -164,7 +181,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
       patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), dataSource } });
 
       if (this.viewMode == 'tree') {
-        this.bindDataSourceTree(dataSource);
+        this.bindDataSourceTree(dataSource, selectedKey);
       }
       this.loaded.update(() => true);
     } catch (err: any) {
@@ -189,7 +206,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   switchViewMode() {
     if (this.viewMode == 'list') {
       // list
-      this.bindDataSourceTree(this.globalStore.keyValues.dataSource());
+      this.bindDataSourceTree(this.globalStore.keyValues.dataSource(), null);
       this.viewMode = 'tree';
     } else {
       // tree
@@ -198,7 +215,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
     console.log('switch view mode');
   }
 
-  bindDataSourceTree(dataSource: any[]) {
+  bindDataSourceTree(dataSource: any[], selectedKey?: string | null) {
     const paths = dataSource.map(x => x.key);
     const root: TreeNode<string> = {};
     for (let path of paths) {
@@ -212,6 +229,10 @@ export class KeyListComponent extends BaseComponent implements OnInit {
           let childNode = currentNode.children.find(node => node.label === part);
           if (!childNode) {
             childNode = { label: part, data: pathParts.slice(0, pathParts.indexOf(part) + 1).join('/'), expanded: true, expandedIcon: PrimeIcons.FOLDER_OPEN, icon: PrimeIcons.FOLDER } as TreeNode;
+            // pre-selected node
+            if (selectedKey && selectedKey === childNode.data) {
+              this.selectedItem = childNode;
+            }
             currentNode.children.push(childNode);
           }
           currentNode = childNode;
@@ -280,6 +301,8 @@ export class KeyListComponent extends BaseComponent implements OnInit {
 
   onNodeSelect(evt: any) {
     patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), selectedKey: evt.node.data } });
+    // save to cache
+    this._localCacheService.set('selectedKey', evt.node.data);
   }
 
   toggleExpandTree(isExpand: boolean) {
