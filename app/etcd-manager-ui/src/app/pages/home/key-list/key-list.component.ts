@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, ViewChild, effect, inject, signal, untracked } from '@angular/core';
 import { patchState } from '@ngrx/signals';
-import { MenuItem, Message, MessageService, PrimeIcons, TreeNode } from 'primeng/api';
+import { ConfirmationService, MenuItem, Message, MessageService, PrimeIcons, TreeNode } from 'primeng/api';
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { DialogModule } from 'primeng/dialog';
 import { FileUpload, FileUploadModule } from 'primeng/fileupload';
@@ -59,20 +59,29 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   private _messageService = inject(MessageService);
   private _keyValueService = inject(KeyValueService);
   private _localCacheService = inject(LocalCacheService);
-
+  private _confirmationService = inject(ConfirmationService);
   constructor() {
     super();
     this.handleOnSelectEtcdConnection();
     this.handleOnNewKeySucceeded();
     this.handleOnRenameKeySucceeded();
     this.handleOneDeleteKeySucceeded();
+    this.handleOnRequestFormNewKey();
+  }
+
+  private handleOnRequestFormNewKey() {
+    effect(() => {
+      if (this.globalStore.keyValues.isNewState()) {
+        this.selectedItem = null;
+      }
+    });
   }
 
   private handleOneDeleteKeySucceeded() {
     effect(() => {
       if (this.globalStore.keyValues.deleteSuccessAt()) {
         untracked(() => {
-          this.refreshList();
+          this.refreshList(false, false);
         });
       }
     });
@@ -113,14 +122,20 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   private bindDataAndSelectExistItem(selectedConnection: { id: number; name: string; }, selectedKey: string | null) {
-    this.bindData(selectedConnection.id, selectedKey).then(rs => {
-      if (this.selectedItem != null) {
-        if (this.viewMode == 'tree') {
-          this.onNodeSelect({ node: this.selectedItem });
-        } else {
-          console.log('support listbox pre select item later');
+    return new Promise(resolve => {
+      this.bindData(selectedConnection.id, selectedKey).then(rs => {
+        if (this.selectedItem != null) {
+          if (this.viewMode == 'tree') {
+            this.onNodeSelect({ node: this.selectedItem });
+          } else {
+            console.log('support listbox pre select item later');
+          }
         }
-      }
+        resolve(rs);
+      }).catch(err => {
+        console.error(err);
+        resolve(false);
+      });
     });
   }
 
@@ -169,12 +184,18 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   menuDelete() {
-    // if in tree view mode, enable delete recursive option
-    // this._keyValueService.onDelete(this.contextMenuSelectedKey, this.viewMode == 'tree').then(rs => {
-    //   if (rs) {
-    //     this.refreshList();
-    //   }
-    // });
+    if (this.selectedItem) {
+      this._confirmationService.confirm({
+        message: 'Are you sure that you want to delete this key?',
+        accept: () => {
+          this._keyValueService.deleteKey(this.globalStore.connections.selectedEtcdConnection.id(), this.selectedItem.data).then(rs => {
+            this.refreshList(false, false);
+          }).catch(err => {
+            this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
+          });
+        }
+      });
+    }
   }
 
   exportAllNodeAndChilds() {
@@ -200,13 +221,10 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   createChildNode() {
-    // if (this.currentSelectRow) {
-    //   this.parentKeyOnNew = this.currentSelectRow.key + '/';
-    // } else if (this.viewMode == 'tree' && this.treeSelectedItem) {
-    //   this.parentKeyOnNew = this.treeSelectedItem.data + '/';
-    // }
-
-    // this.showNewKeyForm = true;
+    if (this.selectedItem) {
+      const newKey = this.selectedItem.data + '/new_key';
+      patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), isNewState: true, defaultNewKey: newKey } });
+    }
   }
 
   menuRename() {
@@ -237,13 +255,17 @@ export class KeyListComponent extends BaseComponent implements OnInit {
     // this.rootCtx.dispatchEvent('changeSelectedKey', evt.value);
   }
 
-  refreshList(showMessage: boolean = false) {
+  async refreshList(showMessage: boolean = false, selectExistItem: boolean = true) {
+    patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), treeLoading: true } });
     const id = this.globalStore.connections.selectedEtcdConnection.id();
     if (id > 0) {
-      this.bindDataAndSelectExistItem(this.globalStore.connections.selectedEtcdConnection(), this.globalStore.keyValues.selectedKey());
+      const selectedKey = selectExistItem ? this.globalStore.keyValues.selectedKey() : null;
+      this.selectedItem = null;
+      await this.bindDataAndSelectExistItem(this.globalStore.connections.selectedEtcdConnection(), selectedKey);
       if (showMessage) {
         this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Refresh success' });
       }
+      patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), treeLoading: false } });
     }
   }
 

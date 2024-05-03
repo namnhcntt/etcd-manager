@@ -82,6 +82,19 @@ export class KeyDetailComponent extends BaseComponent {
     this.handleOnRenameKeySucceed();
     // delete key success
     this.handleOnDeleteKeySucceed();
+    // add new key success
+    this.handleOnNewKeySucceed();
+  }
+
+  private handleOnNewKeySucceed() {
+    effect(() => {
+      if (this.globalStore.keyValues.newKeySuccessAt()) {
+        this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Saved' });
+        untracked(() => {
+          patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), isNewState: false } });
+        });
+      }
+    });
   }
 
   private handleOnDeleteKeySucceed() {
@@ -113,16 +126,24 @@ export class KeyDetailComponent extends BaseComponent {
       if (this.globalStore.keyValues.isNewState()) {
         untracked(() => {
           // init data
-          patchState(this.keyDetail, { key: 'key1', value: null });
+          const defaultNewKeyValue = this.globalStore.keyValues.defaultNewKey() ?? 'key1';
+          patchState(this.keyDetail, { key: defaultNewKeyValue, value: null });
+          patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), selectedKey: '' } });
           // content
           this.codeModel.value = '';
           this.codeModel = { ...this.codeModel };
           this.isNewState.update(() => true);
           this.loaded.update(() => true);
           this.editorLoaded.update(() => true);
+          // title
+          this.renameKey(this.renameKeyInplace!);
         });
-        // title
-        this.renameKey(this.renameKeyInplace!);
+      } else {
+        untracked(() => {
+          this.isNewState.update(() => false);
+          this.editing.update(() => false);
+          patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), defaultNewKey: null } });
+        });
       }
     });
   }
@@ -132,7 +153,7 @@ export class KeyDetailComponent extends BaseComponent {
       const selectedKeyChanged = this.globalStore.keyValues.selectedKey();
       if (selectedKeyChanged) {
         untracked(() => {
-          this.isNewState.update(() => false);
+          patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), isNewState: false } });
           this.getByKey(selectedKeyChanged);
         });
       }
@@ -231,7 +252,6 @@ export class KeyDetailComponent extends BaseComponent {
     const key = this.isNewState() ? this.inplaceRenameValue : this.keyDetail.key();
     this._keyValueService.save(this.globalStore.connections.selectedEtcdConnection.id(), key!, this.codeModel.value)
       .then(() => {
-        this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Saved' });
         patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), selectedKey: key!, newKeySuccessAt: new Date() } });
         this.isNewState.update(() => false);
       })
