@@ -25,17 +25,11 @@ namespace EtcdManager.API.ApplicationService.Queries.EtcdConnections
             public DateTime CreatedAt { get; set; }
         }
 
-        public class GetConnectionByIdQueryHandler : IRequestHandler<GetConnectionByIdQuery, GetConnectionByIdQueryResult>
+        public class GetConnectionByIdQueryHandler(
+            EtcdManagerDataContext _dataContext,
+            IUserPrincipalService _userPrincipalService
+            ): IRequestHandler<GetConnectionByIdQuery, GetConnectionByIdQueryResult>
         {
-            private readonly EtcdManagerDataContext _dataContext;
-            private readonly IUserPrincipalService _userPrincipalService;
-
-            public GetConnectionByIdQueryHandler(EtcdManagerDataContext dataContext, IUserPrincipalService userPrincipalService)
-            {
-                _dataContext = dataContext;
-                _userPrincipalService = userPrincipalService;
-            }
-
             public async Task<GetConnectionByIdQueryResult> Handle(GetConnectionByIdQuery request, CancellationToken cancellationToken)
             {
                 var ownerId = _userPrincipalService.Id;

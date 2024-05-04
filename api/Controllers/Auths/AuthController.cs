@@ -10,12 +10,8 @@ namespace EtcdManager.API.Controllers.Auth
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : CoreController
+    public class AuthController(ISender mediator) : CoreController(mediator)
     {
-        public AuthController(ISender mediator) : base(mediator)
-        {
-        }
-
         [HttpPost("Login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginModel model)

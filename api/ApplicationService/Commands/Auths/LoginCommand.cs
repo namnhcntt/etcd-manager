@@ -20,17 +20,11 @@ namespace EtcdManager.API.ApplicationService.Commands.Auths
             public string RefreshToken { get; set; } = null!;
             public int ExpiresIn { get; set; }
 
-            public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginCommandResult>
+            public class LoginCommandHandler(
+                ITokenService _tokenService,
+                EtcdManagerDataContext _dataContext
+                ) : IRequestHandler<LoginCommand, LoginCommandResult>
             {
-                private readonly ITokenService _tokenService;
-                private readonly EtcdManagerDataContext _dataContext;
-
-                public LoginCommandHandler(ITokenService tokenService, EtcdManagerDataContext dataContext)
-                {
-                    _tokenService = tokenService;
-                    _dataContext = dataContext;
-                }
-
                 public async Task<LoginCommandResult> Handle(LoginCommand request, CancellationToken cancellationToken)
                 {
                     // validate user

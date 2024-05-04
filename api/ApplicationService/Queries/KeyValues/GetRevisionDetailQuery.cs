@@ -14,19 +14,12 @@ namespace EtcdManager.API.ApplicationService.Queries.KeyValues
         public long Revision { get; set; }
         public int EtcdConnectionId { get; set; }
 
-        public class GetRevisionDetailQueryHandler: IRequestHandler<GetRevisionDetailQuery, KeyVersion?>
+        public class GetRevisionDetailQueryHandler(
+            IEtcdService _etcdService,
+            EtcdManagerDataContext _dataContext,
+            IUserPrincipalService _userPrincipalService
+            ): IRequestHandler<GetRevisionDetailQuery, KeyVersion?>
         {
-            private readonly IEtcdService _etcdService;
-            private readonly EtcdManagerDataContext _dataContext;
-            private readonly IUserPrincipalService _userPrincipalService;
-
-            public GetRevisionDetailQueryHandler(IEtcdService etcdService, EtcdManagerDataContext dataContext, IUserPrincipalService userPrincipalService)
-            {
-                _etcdService = etcdService;
-                _dataContext = dataContext;
-                _userPrincipalService = userPrincipalService;
-            }
-
             public async Task<KeyVersion?> Handle(GetRevisionDetailQuery request, CancellationToken cancellationToken)
             {
                 var currentUserId = _userPrincipalService.Id;

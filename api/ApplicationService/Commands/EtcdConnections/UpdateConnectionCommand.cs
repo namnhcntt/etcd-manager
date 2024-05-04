@@ -18,17 +18,11 @@ namespace EtcdManager.API.ApplicationService.Commands.EtcdConnections
         public bool Insecure { get; set; }
         public string? AgentDomain { get; set; }
 
-        public class UpdateConnectionCommandHandler : IRequestHandler<UpdateConnectionCommand, bool>
+        public class UpdateConnectionCommandHandler(
+            EtcdManagerDataContext _dataContext,
+            IUserPrincipalService _userPrincipalService
+            ) : IRequestHandler<UpdateConnectionCommand, bool>
         {
-            private readonly EtcdManagerDataContext _dataContext;
-            private readonly IUserPrincipalService _userPrincipalService;
-
-            public UpdateConnectionCommandHandler(EtcdManagerDataContext dataContext, IUserPrincipalService userPrincipalService)
-            {
-                _dataContext = dataContext;
-                _userPrincipalService = userPrincipalService;
-            }
-
             public async Task<bool> Handle(UpdateConnectionCommand request, CancellationToken cancellationToken)
             {
                 var ownerId = _userPrincipalService.Id;

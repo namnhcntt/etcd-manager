@@ -10,17 +10,11 @@ namespace EtcdManager.API.ApplicationService.Commands.EtcdConnections
     {
         public int Id { get; set; }
 
-        public class DeleteconnectionCommandHandler : IRequestHandler<DeleteConnectionCommand, bool>
+        public class DeleteconnectionCommandHandler(
+            EtcdManagerDataContext _dataContext,
+            IUserPrincipalService _userPrincipalService
+            ) : IRequestHandler<DeleteConnectionCommand, bool>
         {
-            private readonly EtcdManagerDataContext _dataContext;
-            private readonly IUserPrincipalService _userPrincipalService;
-
-            public DeleteconnectionCommandHandler(EtcdManagerDataContext dataContext, IUserPrincipalService userPrincipalService)
-            {
-                _dataContext = dataContext;
-                _userPrincipalService = userPrincipalService;
-            }
-
             public async Task<bool> Handle(DeleteConnectionCommand request, CancellationToken cancellationToken)
             {
                 var ownerId = _userPrincipalService.Id;   

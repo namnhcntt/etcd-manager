@@ -13,23 +13,12 @@ namespace EtcdManager.API.ApplicationService.Commands.KeyValues
         public bool DeleteRecursive { get; set; }
         public int EtcdConnectionId { get; set; }
 
-        public class DeleteKeyCommandHandler : IRequestHandler<DeleteKeyCommand, bool>
+        public class DeleteKeyCommandHandler(
+            EtcdManagerDataContext _dataContext,
+            IUserPrincipalService _userPrincipalService,
+            IEtcdService _etcdService
+            ) : IRequestHandler<DeleteKeyCommand, bool>
         {
-            private readonly EtcdManagerDataContext _dataContext;
-            private readonly IUserPrincipalService _userPrincipalService;
-            private readonly IEtcdService _etcdService;
-
-            public DeleteKeyCommandHandler(
-                EtcdManagerDataContext dataContext,
-                IUserPrincipalService userPrincipalService,
-                IEtcdService etcdService
-                )
-            {
-                _dataContext = dataContext;
-                _userPrincipalService = userPrincipalService;
-                _etcdService = etcdService;
-            }
-
             public async Task<bool> Handle(DeleteKeyCommand request, CancellationToken cancellationToken)
             {
                 var currentUserId = _userPrincipalService.Id;

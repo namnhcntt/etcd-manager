@@ -7,19 +7,12 @@ namespace EtcdManager.API.ApplicationService.Commands.Auths
 {
     public class RefreshTokenCommand: IRequest<LoginCommandResult>
     {
-        public string RefreshToken { get; set; }
+        public string RefreshToken { get; set; } = null!;
 
-        public class RefreshTokenCommandHandler: IRequestHandler<RefreshTokenCommand, LoginCommandResult>
+        public class RefreshTokenCommandHandler(
+            ITokenService _tokenService
+            ): IRequestHandler<RefreshTokenCommand, LoginCommandResult>
         {
-            private readonly IConfiguration _configuration;
-            private readonly ITokenService _tokenService;
-
-            public RefreshTokenCommandHandler(IConfiguration configuration, ITokenService tokenService)
-            {
-                _configuration = configuration;
-                _tokenService = tokenService;
-            }
-
             public async Task<LoginCommandResult> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
             {
                 var tokenData = await _tokenService.RefreshToken(request.RefreshToken);

@@ -50,15 +50,8 @@ namespace EtcdManager.API.ApplicationService.Commands.EtcdConnections
                 return arr.Length > 1 ? arr[1] : "2379";
             }
         }
-        public class TestConnectionCommandHandler : IRequestHandler<TestConnectionCommand, bool>
+        public class TestConnectionCommandHandler(IEtcdService _etcdService) : IRequestHandler<TestConnectionCommand, bool>
         {
-            private readonly IEtcdService _etcdService;
-
-            public TestConnectionCommandHandler(IEtcdService etcdService)
-            {
-                _etcdService = etcdService;
-            }
-
             public Task<bool> Handle(TestConnectionCommand request, CancellationToken cancellationToken)
             {
                return  _etcdService.TestConnection(request.Host, request.Port, request.Username, request.Password);

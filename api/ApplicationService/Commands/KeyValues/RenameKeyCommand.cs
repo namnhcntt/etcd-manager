@@ -13,23 +13,12 @@ namespace EtcdManager.API.ApplicationService.Commands.KeyValues
         public string NewKey { get; set; } = null!;
         public int EtcdConnectionId { get; set; }
 
-        public class RenameKeyCommandHandler : IRequestHandler<RenameKeyCommand, bool>
+        public class RenameKeyCommandHandler(
+            IEtcdService _etcdService,
+            EtcdManagerDataContext _dataContext,
+            IUserPrincipalService _userPrincipalService
+            ): IRequestHandler<RenameKeyCommand, bool>
         {
-            private readonly EtcdManagerDataContext _dataContext;
-            private readonly IUserPrincipalService _userPrincipalService;
-            private readonly IEtcdService _etcdService;
-
-            public RenameKeyCommandHandler(
-                EtcdManagerDataContext dataContext,
-                IUserPrincipalService userPrincipalService,
-                IEtcdService etcdService
-                )
-            {
-                _dataContext = dataContext;
-                _userPrincipalService = userPrincipalService;
-                _etcdService = etcdService;
-            }
-
             public async Task<bool> Handle(RenameKeyCommand request, CancellationToken cancellationToken)
             {
                 var currentUserId = _userPrincipalService.Id;

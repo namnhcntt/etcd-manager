@@ -12,19 +12,12 @@ namespace EtcdManager.API.ApplicationService.Queries.KeyValues
     {
         public int EtcdConnectionId { get; set; }
 
-        public class GetAllQueryHandler : IRequestHandler<GetAllQuery, List<KeyValueResult>>
+        public class GetAllQueryHandler(
+            IEtcdService _etcdService,
+            EtcdManagerDataContext _etcdManagerDataContext,
+            IUserPrincipalService _userPrincipalService
+        ) : IRequestHandler<GetAllQuery, List<KeyValueResult>>
         {
-            private readonly IEtcdService _etcdService;
-            private readonly EtcdManagerDataContext _etcdManagerDataContext;
-            private readonly IUserPrincipalService _userPrincipalService;
-
-            public GetAllQueryHandler(IEtcdService etcdService, EtcdManagerDataContext etcdManagerDataContext, IUserPrincipalService userPrincipalService)
-            {
-                _etcdService = etcdService;
-                _etcdManagerDataContext = etcdManagerDataContext;
-                _userPrincipalService = userPrincipalService;
-            }
-
             public async Task<List<KeyValueResult>> Handle(GetAllQuery request, CancellationToken cancellationToken)
             {
                 var currentUserId = _userPrincipalService.Id;

@@ -22,17 +22,11 @@ namespace EtcdManager.API.ApplicationService.Queries.EtcdConnections
             }
         }
 
-        public class GetConnectionsQueryHandler : IRequestHandler<GetConnectionsQuery, GetConnectionsQueryResult>
+        public class GetConnectionsQueryHandler(
+            EtcdManagerDataContext _dataContext,
+            IUserPrincipalService _userPrincipalService
+            ): IRequestHandler<GetConnectionsQuery, GetConnectionsQueryResult>
         {
-            private readonly EtcdManagerDataContext _dataContext;
-            private readonly IUserPrincipalService _userPrincipalService;
-
-            public GetConnectionsQueryHandler(EtcdManagerDataContext dataContext, IUserPrincipalService userPrincipalService)
-            {
-                _dataContext = dataContext;
-                _userPrincipalService = userPrincipalService;
-            }
-
             public async Task<GetConnectionsQueryResult> Handle(GetConnectionsQuery request, CancellationToken cancellationToken)
             {
                 var ownerId = _userPrincipalService.Id;

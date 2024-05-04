@@ -15,19 +15,12 @@ namespace EtcdManager.API.ApplicationService.Commands.KeyValues
         public string Value { get; set; } = null!;
         public int EtcdConnectionId { get; set; }
 
-        public class SaveCommandHandler : IRequestHandler<SaveCommand, bool>
+        public class SaveCommandHandler(
+            EtcdManagerDataContext _dataContext,
+            IEtcdService _etcdService,
+            IUserPrincipalService _userPrincipalService
+            ) : IRequestHandler<SaveCommand, bool>
         {
-            private readonly EtcdManagerDataContext _dataContext;
-            private readonly IEtcdService _etcdService;
-            private readonly IUserPrincipalService _userPrincipalService;
-
-            public SaveCommandHandler(EtcdManagerDataContext dataContext, IEtcdService etcdService, IUserPrincipalService userPrincipalService)
-            {
-                _dataContext = dataContext;
-                _etcdService = etcdService;
-                _userPrincipalService = userPrincipalService;
-            }
-
             public async Task<bool> Handle(SaveCommand request, CancellationToken cancellationToken)
             {
                 var currentUserId = _userPrincipalService.Id;
