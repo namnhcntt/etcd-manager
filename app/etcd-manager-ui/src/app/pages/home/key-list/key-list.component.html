@@ -38,20 +38,20 @@ empty node value, If user fill value and save, the new node should be created
   </div>
 </p-toolbar>
 @if (viewMode == 'list') {
-<p-listbox #mainList [options]="globalStore.keyValues.dataSource()" [(ngModel)]="selectedItem" optionLabel="key"
+<p-listbox #mainList [options]="globalStore.keyValues.dataSource()" [(ngModel)]="listSelectedItem" optionLabel="key"
   [filter]="true" (onChange)="onChangeSelectedKey($event)"
-  [listStyle]="{'height':'calc(100vh - 330px)','overflow':'auto'}">
+  [listStyle]="{'max-height': 'calc(100vh - 330px)', 'height':'calc(100vh)','overflow':'auto'}">
   <ng-template let-item pTemplate="item">
     <div class="key-list-item" (contextmenu)="showContextMenuViewModeList(contextMenuViewModeListControl, $event, item)"
       (mousedown)="preventMouseDown($event)">
-      <i aria-hidden="true" class="pi pi-file"></i>
+      <i aria-hidden="true" [class]="primeIcons.FILE"></i>
       <span>{{item.key}}</span>
     </div>
   </ng-template>
 </p-listbox>
 }
 @if (viewMode == 'tree') {
-<p-tree #mainTree [value]="globalStore.keyValues.treeDataSource()" [(selection)]="selectedItem" [filter]="true"
+<p-tree #mainTree [value]="globalStore.keyValues.treeDataSource()" [(selection)]="treeSelectedItem" [filter]="true"
   [loading]="globalStore.keyValues.treeLoading()" selectionMode="single" [contextMenu]="contextMenuViewModeTreeControl"
   scrollHeight="calc(100vh - 350px)" (onNodeContextMenuSelect)="contextMenuViewModeTreeSelect($event)"
   (onNodeSelect)="onNodeSelect($event)">

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { SplitterModule } from 'primeng/splitter';
 import { BaseComponent } from '../../base.component';
 import { commonLayoutImport } from '../../layout/common-layout-import';

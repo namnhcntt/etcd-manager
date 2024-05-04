@@ -8,7 +8,9 @@ export class LocalCacheService {
   private cache = window.localStorage;
 
   set(key: string, value: any): void {
-    this.cache.setItem(key, JSON.stringify(value));
+    if (value !== null && value !== undefined) {
+      this.cache.setItem(key, JSON.stringify(value));
+    }
   }
 
   get(key: string): any {

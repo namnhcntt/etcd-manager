@@ -44,15 +44,17 @@ import { LocalCacheService } from '../../service/local-cache.service';
 export class KeyListComponent extends BaseComponent implements OnInit {
 
   loaded = signal(false);
-  viewMode: 'tree' | 'list' = 'tree';
+  viewMode: string = 'tree';
   showImportNodes = model(false);
   currentSelectRow?: any;
   contextMenuSelectedKey?: string;
   treeIsExpandAll = false;
   contextMenuModel: MenuItem[] = this.getContextMenu();
   msgs: Message[] = [];
-  selectedItem?: any;
+  listSelectedItem = model<any>(null);
+  treeSelectedItem = model<any>(null);
   firstLoad = true;
+  primeIcons = PrimeIcons;
   @ViewChild('mainTree', { static: false }) mainTree?: Tree;
   @ViewChild('fileControl') fileControl!: FileUpload;
   @ViewChild('mainList', { static: false }) mainList!: Listbox;
@@ -75,7 +77,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   private handleOnRequestFormNewKey() {
     effect(() => {
       if (this.globalStore.keyValues.isNewState()) {
-        this.selectedItem = null;
+        this.treeSelectedItem.update(() => null);
       }
     });
   }
@@ -117,6 +119,8 @@ export class KeyListComponent extends BaseComponent implements OnInit {
         let selectedKey: string | null = null;
         if (this.firstLoad) {
           selectedKey = this._localCacheService.get('selectedKey');
+          const viewMode = this._localCacheService.get('viewMode') || 'tree';
+          this.switchViewMode(viewMode);
           this.firstLoad = false;
         }
         this.bindDataAndSelectExistItem(selectedConnection, selectedKey);
@@ -127,12 +131,10 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   private bindDataAndSelectExistItem(selectedConnection: { id: number; name: string; }, selectedKey: string | null) {
     return new Promise(resolve => {
       this.bindData(selectedConnection.id, selectedKey).then(rs => {
-        if (this.selectedItem != null) {
-          if (this.viewMode == 'tree') {
-            this.onNodeSelect({ node: this.selectedItem });
-          } else {
-            console.log('support listbox pre select item later');
-          }
+        if (this.treeSelectedItem() != null && this.viewMode == 'tree') {
+          this.onNodeSelect({ node: this.treeSelectedItem() });
+        } else if (this.listSelectedItem() != null && this.viewMode == 'list') {
+          this.onNodeSelect({ node: { data: this.listSelectedItem().key } });
         }
         resolve(rs);
       }).catch(err => {
@@ -167,9 +169,9 @@ export class KeyListComponent extends BaseComponent implements OnInit {
     if (this.currentSelectRow) {
       menu.push(
         {
-          label: 'Export current node',
+          label: 'Export node',
           icon: 'pi pi-download',
-          command: this.exportCurrentNode.bind(this)
+          command: this.exportSelectedNode.bind(this)
         },
       );
     }
@@ -186,11 +188,11 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   menuDelete() {
-    if (this.selectedItem) {
+    if (this.currentSelectRow) {
       this._confirmationService.confirm({
         message: 'Are you sure that you want to delete this key?',
         accept: () => {
-          this._keyValueService.deleteKey(this.globalStore.connections.selectedEtcdConnection.id(), this.selectedItem.data).then(rs => {
+          this._keyValueService.deleteKey(this.globalStore.connections.selectedEtcdConnection.id(), this.currentSelectRow.key).then(rs => {
             this.refreshList(false, false);
           }).catch(err => {
             this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
@@ -206,7 +208,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
     });
   }
 
-  exportCurrentNode() {
+  exportSelectedNode() {
     this._keyValueService.getByKey(this.globalStore.connections.selectedEtcdConnection.id(), this.currentSelectRow.key).then(rs => {
       this._exportService.exportJsonNode(rs);
     }).catch(err => {
@@ -215,8 +217,8 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   createChildNode() {
-    if (this.selectedItem) {
-      const newKey = this.selectedItem.data + '/new_key';
+    if (this.treeSelectedItem) {
+      const newKey = this.treeSelectedItem().data + '/new_key';
       patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), isNewState: true, defaultNewKey: newKey } });
     }
   }
@@ -229,14 +231,12 @@ export class KeyListComponent extends BaseComponent implements OnInit {
     try {
       const ds = await this._keyValueService.getAllKeys(selectedConnectionId);
       const dataSource = ds.map((x: any) => {
-        return { key: x };
+        return { data: x, key: x };
       });
 
+      this.listSelectedItem.update(() => dataSource.find(x => x.key == selectedKey));
       patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), dataSource } });
-
-      if (this.viewMode == 'tree') {
-        this.bindDataSourceTree(dataSource, selectedKey);
-      }
+      this.bindDataSourceTree(dataSource, selectedKey);
       this.loaded.update(() => true);
     } catch (err: any) {
       console.error(err);
@@ -246,7 +246,8 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   onChangeSelectedKey(evt: any) {
-    // this.rootCtx.dispatchEvent('changeSelectedKey', evt.value);
+    console.log('select key', evt);
+    this.onNodeSelect({ node: { data: evt.value.key } });
   }
 
   async refreshList(showMessage: boolean = false, selectExistItem: boolean = true) {
@@ -254,7 +255,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
     const id = this.globalStore.connections.selectedEtcdConnection.id();
     if (id > 0) {
       const selectedKey = selectExistItem ? this.globalStore.keyValues.selectedKey() : null;
-      this.selectedItem = null;
+      this.treeSelectedItem.update(() => null);
       await this.bindDataAndSelectExistItem(this.globalStore.connections.selectedEtcdConnection(), selectedKey);
       if (showMessage) {
         this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Refresh success' });
@@ -263,16 +264,24 @@ export class KeyListComponent extends BaseComponent implements OnInit {
     }
   }
 
-  switchViewMode() {
+  switchViewMode(viewMode?: string | null) {
+    this.viewMode = viewMode || (this.viewMode == 'tree' ? 'list' : 'tree');
     if (this.viewMode == 'list') {
       // list
-      this.bindDataSourceTree(this.globalStore.keyValues.dataSource(), null);
-      this.viewMode = 'tree';
+      if (this.treeSelectedItem()) {
+        const key = this.treeSelectedItem().data;
+        this.listSelectedItem.update(() => ({ key, data: key }));
+        this.currentSelectRow = this.listSelectedItem();
+      }
     } else {
       // tree
-      this.viewMode = 'list';
+      if (this.listSelectedItem()) {
+        this.treeSelectedItem.update(() => this.listSelectedItem());
+        this.currentSelectRow = this.treeSelectedItem();
+      }
     }
-    console.log('switch view mode');
+    this.contextMenuModel = this.getContextMenu();
+    this._localCacheService.set('viewMode', this.viewMode);
   }
 
   bindDataSourceTree(dataSource: any[], selectedKey?: string | null) {
@@ -289,9 +298,10 @@ export class KeyListComponent extends BaseComponent implements OnInit {
           let childNode = currentNode.children.find(node => node.label === part);
           if (!childNode) {
             childNode = { label: part, data: pathParts.slice(0, pathParts.indexOf(part) + 1).join('/'), expanded: true, expandedIcon: PrimeIcons.FOLDER_OPEN, icon: PrimeIcons.FOLDER } as TreeNode;
-            // pre-selected node
-            if (selectedKey && selectedKey === childNode.data) {
-              this.selectedItem = childNode;
+            childNode.key = childNode.data;
+            // pre-selected node if view mode is tree
+            if (this.viewMode === 'tree' && selectedKey && selectedKey === childNode.data) {
+              this.treeSelectedItem.update(() => childNode);
             }
             currentNode.children.push(childNode);
           }
@@ -329,14 +339,15 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   showContextMenuViewModeList(menu: ContextMenu, event: MouseEvent, item: any) {
-    // menu.hide();
-    // event.preventDefault();
-    // event.stopPropagation();
-    // setTimeout(() => {
-    //   this.currentSelectRow = item;
-    //   this.contextMenuSelectedKey = item.key;
-    //   menu.toggle(event);
-    // }, 1);
+    menu.hide();
+    event.preventDefault();
+    event.stopPropagation();
+    setTimeout(() => {
+      this.currentSelectRow = item;
+      this.contextMenuSelectedKey = item.key;
+      this.contextMenuModel = this.getContextMenu();
+      menu.toggle(event);
+    });
   }
 
   contextMenuViewModeTreeSelect(evt: any) {
