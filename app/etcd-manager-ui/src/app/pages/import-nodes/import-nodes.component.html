@@ -1,0 +1,89 @@
+<div class="flex align-items-center justify-content-center">
+  <p-fileUpload name="file" multiple="false" mode="basic" accept="application/json" chooseLabel="Select node json file"
+    (onSelect)="handleSelectFile($event)"></p-fileUpload>
+</div>
+<div class="p-fluid">
+  <p-table #dt1 [value]="dataSource()" dataKey="key" [rows]="10" [rowHover]="true" styleClass="p-datatable-gridlines"
+    selectionMode="multiple" [(selection)]="selectedItems" sortField="key" [sortOrder]="1"
+    [globalFilterFields]="['key', 'version']" responsiveLayout="scroll">
+    <ng-template pTemplate="caption">
+      <div class="flex justify-content-between flex-column sm:flex-row">
+        <span class="p-input-icon-left mb-2">
+          <i aria-hidden="true" class="pi pi-search"></i>
+          <input pInputText type="text" #filter (input)="dt1.filterGlobal($event.target, 'contains')"
+            placeholder="Search Keyword" class="w-full" />
+        </span>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 3rem">
+          <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+        </th>
+        <th scope="col">
+          <div class="flex justify-content-between align-items-center">
+            Key
+          </div>
+        </th>
+        <th scope="col">
+          <div class="flex justify-content-between align-items-center">
+            Version
+          </div>
+        </th>
+        <th scope="col">
+          <div class="flex justify-content-between align-items-center">
+            Value
+          </div>
+        </th>
+        <th scope="col" style="width:150px;">
+          Action
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+      <tr>
+        <td>
+          <p-tableCheckbox [value]="item"></p-tableCheckbox>
+        </td>
+        <td>{{item.key}}
+          @if (!item.exist) {
+          <p-badge value="New" severity="info" class="p-mr-2 p-mb-2"></p-badge>
+          } @else {
+          <p-badge value="Exist" severity="warning" class="p-mr-2 p-mb-2"></p-badge>
+          }
+        </td>
+        <td>{{item.version}}</td>
+        <td>{{item.shortValue}}</td>
+        <td>
+          <button pButton aria-label="button" type="button" [icon]="primeIcons.EYE"
+            class="p-button-rounded p-button-text p-button-icon-only" pTooltip="Preview change" tooltipPosition="top"
+            (click)="seeFullValue(item)"></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7">No keys found.</td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody">
+      <tr>
+        <td colspan="7">Loading keys. Please wait.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+@if(showDiffText()) {
+<p-dialog header="Diff text" [(visible)]="showDiffText"
+  [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
+  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="true"
+  [autoZIndex]="true" (onHide)="hideDialog()" #dialogDiffText>
+  <app-diff-text #importNodes [left]="leftDiffItem()" [right]="rightDiffItem()" [dialog]="dialogDiffText">
+  </app-diff-text>
+  <ng-template pTemplate="footer">
+    <button pButton aria-label="button" class="p-ripple p-button-raised p-button-secondary p-button-text" type="button"
+      [icon]="primeIcons.TIMES" (click)="hideDialog()" label="Close"></button>
+  </ng-template>
+</p-dialog>
+}

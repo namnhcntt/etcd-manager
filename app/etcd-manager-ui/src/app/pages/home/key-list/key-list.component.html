@@ -59,33 +59,20 @@ empty node value, If user fill value and save, the new node should be created
 }
 }
 
-@if (showNewKeyForm) {
-<p-dialog header="New key" [(visible)]="showNewKeyForm"
-  [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
-  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="true"
-  [autoZIndex]="true" #dialog>
-  <!-- <app-new-key #newKey [parentKey]="parentKeyOnNew" [dialog]="dialog" (onSave)="onSaveNewKey($event)">
-  </app-new-key> -->
-  <ng-template pTemplate="footer">
-    <!-- @for (button of newKey.buttons; track button) {
-    <button pButton aria-label="button" [class]="button.styleClass" [disabled]="button.disabled" type="button"
-      [icon]="button.icon" (click)="button.command($event)" [label]="button.label"></button>
-    } -->
-  </ng-template>
-</p-dialog>
-}
-
-@if (showImportNodes) {
+@if (showImportNodes()) {
 <p-dialog header="ImportNodes" [(visible)]="showImportNodes"
   [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
   [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="true"
   [autoZIndex]="true" #dialogImportNodes>
-  <!-- <app-import-nodes #importNodes [dialog]="dialogImportNodes" (importSuccess)="refreshList()"></app-import-nodes> -->
+  <app-import-nodes #importNodes [dialog]="dialogImportNodes" (importSuccess)="importSuccess()"></app-import-nodes>
   <ng-template pTemplate="footer">
-    <!-- @for (button of importNodes.buttons; track button) {
+    @for (button of importNodes.buttons; track button) {
     <button pButton aria-label="button" [class]="button.styleClass" [disabled]="button.disabled" type="button"
-      [icon]="button.icon" (click)="button.command($event)" [label]="button.label"></button>
-    } -->
+      [icon]="button.icon!" (click)="onCommandButton(button, $event)" [label]="button.label!"></button>
+    }
+    <button pButton aria-label="button" type="button" icon="pi pi-times"
+      class="p-button-raised p-button-secondary p-button-text" label="Cancel"
+      (click)="closeDialogImportNodes()"></button>
   </ng-template>
 </p-dialog>
 }

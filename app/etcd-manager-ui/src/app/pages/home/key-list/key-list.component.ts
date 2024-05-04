@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, ViewChild, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, ViewChild, effect, inject, model, signal, untracked } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { ConfirmationService, MenuItem, Message, MessageService, PrimeIcons, TreeNode } from 'primeng/api';
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
@@ -9,6 +9,8 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { Tree, TreeModule } from 'primeng/tree';
 import { BaseComponent } from '../../../base.component';
 import { commonLayoutImport } from '../../../layout/common-layout-import';
+import { ImportNodesComponent } from '../../import-nodes/import-nodes.component';
+import { ExportService } from '../../service/export.service';
 import { KeyValueService } from '../../service/key-value.service';
 import { LocalCacheService } from '../../service/local-cache.service';
 
@@ -35,7 +37,7 @@ import { LocalCacheService } from '../../service/local-cache.service';
   `],
   standalone: true,
   imports: [...commonLayoutImport, ContextMenuModule, ToolbarModule, ListboxModule, TreeModule,
-    DialogModule, FileUploadModule,
+    DialogModule, FileUploadModule, ImportNodesComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -43,9 +45,8 @@ export class KeyListComponent extends BaseComponent implements OnInit {
 
   loaded = signal(false);
   viewMode: 'tree' | 'list' = 'tree';
-  parentKeyOnNew = '';
-  showNewKeyForm = false;
-  showImportNodes = false;
+  showImportNodes = model(false);
+  currentSelectRow?: any;
   contextMenuSelectedKey?: string;
   treeIsExpandAll = false;
   contextMenuModel: MenuItem[] = this.getContextMenu();
@@ -60,6 +61,8 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   private _keyValueService = inject(KeyValueService);
   private _localCacheService = inject(LocalCacheService);
   private _confirmationService = inject(ConfirmationService);
+  private _exportService = inject(ExportService);
+
   constructor() {
     super();
     this.handleOnSelectEtcdConnection();
@@ -161,22 +164,21 @@ export class KeyListComponent extends BaseComponent implements OnInit {
         command: this.menuDelete.bind(this)
       },]);
 
-    // if (this.currentSelectRow) {
-    //   menu.push(
-    //     {
-    //       label: 'Export current node',
-    //       icon: 'pi pi-download',
-    //       command: this.exportCurrentNode.bind(this)
-    //     },
-    //   );
-
-    // }
+    if (this.currentSelectRow) {
+      menu.push(
+        {
+          label: 'Export current node',
+          icon: 'pi pi-download',
+          command: this.exportCurrentNode.bind(this)
+        },
+      );
+    }
 
     if (this.viewMode == 'tree') {
       menu.push({
-        label: 'Export node and all childs',
+        label: 'Export node and all children',
         icon: 'pi pi-download',
-        command: this.exportAllNodeAndChilds.bind(this)
+        command: this.exportAllNodeAndChildren.bind(this)
       });
     }
 
@@ -198,26 +200,18 @@ export class KeyListComponent extends BaseComponent implements OnInit {
     }
   }
 
-  exportAllNodeAndChilds() {
-    // this._keyValueService.getByKeyPrefix(this.contextMenuSelectedKey).then(rs => {
-    //   if (rs.success) {
-    //     this._exportService.exportNodes(rs.data);
-    //   } else {
-    //     this._messageService.add({ severity: 'error', summary: 'Error', detail: rs.message });
-    //   }
-    // });
+  exportAllNodeAndChildren() {
+    this._keyValueService.getByKeyPrefix(this.globalStore.connections.selectedEtcdConnection.id(), this.contextMenuSelectedKey!).then(rs => {
+      this._exportService.exportNodes(rs);
+    });
   }
 
   exportCurrentNode() {
-    // this._keyValueService.getByKey(this.currentSelectRow.key).then(rs => {
-    //   if (rs.success) {
-    //     this._exportService.exportJsonNode(rs.data);
-    //   } else {
-    //     this._messageService.add({ severity: 'error', summary: 'Error', detail: rs.message });
-    //   }
-    // }).catch(err => {
-    //   this._messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
-    // });
+    this._keyValueService.getByKey(this.globalStore.connections.selectedEtcdConnection.id(), this.currentSelectRow.key).then(rs => {
+      this._exportService.exportJsonNode(rs);
+    }).catch(err => {
+      this._messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
+    });
   }
 
   createChildNode() {
@@ -317,13 +311,11 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   export() {
-    // this._keyValueService.getAll().then(rs => {
-    //   if (rs.success) {
-    //     this._exportService.exportNodes(rs.data);
-    //   } else {
-    //     this._messageService.add({ severity: 'error', summary: 'Error', detail: rs.message });
-    //   }
-    // });
+    this._keyValueService.getAll(this.globalStore.connections.selectedEtcdConnection.id()).then(rs => {
+      this._exportService.exportNodes(rs);
+    }).catch(err => {
+      this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
+    });
   }
 
   import() {
@@ -336,17 +328,11 @@ export class KeyListComponent extends BaseComponent implements OnInit {
     patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), isNewState: true } });
   }
 
-  onSaveNewKey(evt: any) {
-    // this.bindData(this.rootCtx.data.connection);
-    this.showNewKeyForm = false;
-  }
-
   showContextMenuViewModeList(menu: ContextMenu, event: MouseEvent, item: any) {
     // menu.hide();
     // event.preventDefault();
     // event.stopPropagation();
     // setTimeout(() => {
-    //   console.log('context menu', menu, event, item);
     //   this.currentSelectRow = item;
     //   this.contextMenuSelectedKey = item.key;
     //   menu.toggle(event);
@@ -354,9 +340,9 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   contextMenuViewModeTreeSelect(evt: any) {
-    // this.currentSelectRow = this.globalStore.keyValues.dataSource().find(x => x.key == evt.node.data);
-    // this.contextMenuSelectedKey = evt.node.data;
-    // this.contextMenuModel = this.getContextMenu();
+    this.currentSelectRow = this.globalStore.keyValues.dataSource().find(x => x.key == evt.node.data);
+    this.contextMenuSelectedKey = evt.node.data;
+    this.contextMenuModel = this.getContextMenu();
   }
 
   preventMouseDown(event: any) {
@@ -386,7 +372,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   importNodes() {
-    this.showImportNodes = true;
+    this.showImportNodes.update(() => true);
   }
 
   private expandRecursive(node: TreeNode, isExpand: boolean) {
@@ -396,5 +382,20 @@ export class KeyListComponent extends BaseComponent implements OnInit {
         this.expandRecursive(childNode, isExpand);
       });
     }
+  }
+
+  closeDialogImportNodes() {
+    this.showImportNodes.update(() => false);
+  }
+
+  onCommandButton(button: MenuItem, evt: any) {
+    if (button.command) {
+      button.command(evt);
+    }
+  }
+
+  importSuccess() {
+    this.showImportNodes.update(() => false);
+    this.refreshList(false, true);
   }
 }

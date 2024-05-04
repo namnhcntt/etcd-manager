@@ -15,6 +15,7 @@ import { commonLayoutImport } from '../../../layout/common-layout-import';
 import { CodeEditorConstant } from '../../constants/code-editor.constant';
 import { KeyVersionListComponent } from '../../key-version-list/key-version-list.component';
 import { KeyValueService } from '../../service/key-value.service';
+import { ExportService } from '../../service/export.service';
 
 @Component({
   selector: 'app-key-detail',
@@ -69,6 +70,7 @@ export class KeyDetailComponent extends BaseComponent {
 
   public _keyValueService = inject(KeyValueService);
   private _messageService = inject(MessageService);
+  private _exportService = inject(ExportService);
   _confirmationService = inject(ConfirmationService);
 
   constructor() {
@@ -219,7 +221,20 @@ export class KeyDetailComponent extends BaseComponent {
   }
 
   handleSelectFile(evt: any) {
-    console.log('handleSelectFile', evt);
+    this._exportService.readDataFromFile(evt.currentFiles[0]).then(rs => {
+      if (rs && rs.value) {
+        patchState(this.keyDetail, { value: rs.value });
+        this.codeModel.update(() => ({ ...this.codeModel(), value: rs.value }));
+        this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Imported' });
+      } else {
+        this._messageService.add({ severity: 'error', summary: 'Error', detail: 'Invalid file. The file must have single node item and value must not be empty' });
+      }
+      this.fileControl.clear();
+    }).catch(err => {
+      console.error(err);
+      this._messageService.add({ severity: 'error', summary: 'Error', detail: err });
+      this.fileControl.clear();
+    });
   }
 
   refresh() {
@@ -230,11 +245,13 @@ export class KeyDetailComponent extends BaseComponent {
   }
 
   export() {
-
+    this._exportService.exportJsonNode(this.keyDetail());
   }
 
   import() {
-
+    if (this.fileControl.basicFileInput) {
+      this.fileControl.basicFileInput.nativeElement.click();
+    }
   }
 
   viewAllVersion() {

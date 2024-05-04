@@ -25,6 +25,11 @@ export class KeyValueService extends BaseService {
     return firstValueFrom(this.httpClient.get<any>(url));
   }
 
+  getByKeyPrefix(selectedConnectionId: number, keyPrefix: string) {
+    const url = `${environment.apiEndpoint}/${this.ENDPOINT_KEYVALUE}/GetByKeyPrefix?selectedEtcdConnectionId=${selectedConnectionId}&keyPrefix=${keyPrefix}`;
+    return firstValueFrom(this.httpClient.get<any[]>(url));
+  }
+
   isRootKey(key?: string | null): boolean {
     return key === '/';
   }
@@ -52,5 +57,10 @@ export class KeyValueService extends BaseService {
   getRevisionDetail(selectedConnectionId: number, key: string, revision: number) {
     const url = `${environment.apiEndpoint}/${this.ENDPOINT_KEYVALUE}/GetRevisionDetail?selectedEtcdConnectionId=${selectedConnectionId}&key=${key}&revision=${revision}`;
     return firstValueFrom(this.httpClient.get<any>(url));
+  }
+
+  importNodes(selectedConnectionId: number, nodes: any[]) {
+    const url = `${environment.apiEndpoint}/${this.ENDPOINT_KEYVALUE}/ImportNodes?selectedEtcdConnectionId=${selectedConnectionId}`;
+    return firstValueFrom(this.httpClient.post<any>(url, nodes));
   }
 }

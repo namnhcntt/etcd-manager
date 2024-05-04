@@ -12,7 +12,7 @@ namespace EtcdManager.API.Infrastructure.Etcd
     {
         private readonly ICacheService _cacheService;
         private readonly ILogger<EtcdService> _logger;
-        
+
         public EtcdService(ICacheService cacheService, ILogger<EtcdService> logger)
         {
             _cacheService = cacheService;
@@ -40,20 +40,82 @@ namespace EtcdManager.API.Infrastructure.Etcd
         public async Task<List<KeyVersion>> GetAll(EtcdConnection etcdConnection)
         {
             var client = await GetEtcdToken(etcdConnection);
-            var keys = await client.Instance.GetRangeAsync("/", new Grpc.Core.Metadata() { { "token", client.Token } });
-            var op = new List<KeyVersion>();
-            foreach (var key in keys.Kvs)
+            var userDetail = await client.Instance.UserGetAsync(new AuthUserGetRequest { Name = etcdConnection.Username }, new Grpc.Core.Metadata() {
+                new Grpc.Core.Metadata.Entry("token",client.Token)
+            });
+            if (userDetail == null)
             {
-                op.Add(new KeyVersion()
-                {
-                    Key = key.Key.ToStringUtf8(),
-                    Value = key.Value.ToStringUtf8(),
-                    Version = key.Version,
-                    CreateRevision = key.CreateRevision,
-                    ModRevision = key.ModRevision
-                });
+                throw new Exception("User not found");
             }
-            return op;
+            var roles = userDetail.Roles;
+            var hasRoot = roles.Any(x => x == "root");
+            if (!hasRoot)
+            {
+                var op = new ConcurrentBag<KeyVersion>();
+                // var result 
+                await Parallel.ForEachAsync(roles, async (string role, CancellationToken cancellation) =>
+                {
+                    try
+                    {
+                        var roleResult = await client.Instance.RoleGetASync(new AuthRoleGetRequest { Role = role }, new Grpc.Core.Metadata() {
+                            new Grpc.Core.Metadata.Entry("token",client.Token)
+                        });
+                        if (roleResult != null)
+                        {
+                            var rolePermissions = roleResult.Perm;
+                            foreach (var permission in rolePermissions)
+                            {
+                                var keyResult = await client.Instance.GetRangeAsync(permission.Key.ToStringUtf8(), new Grpc.Core.Metadata() {
+                                    new Grpc.Core.Metadata.Entry("token",client.Token)
+                                });
+
+                                if (keyResult != null)
+                                {
+                                    foreach (var key in keyResult.Kvs)
+                                    {
+                                        if (!op.Any(x => x.Key == key.Key.ToStringUtf8()))
+                                        {
+                                            op.Add(new KeyVersion()
+                                            {
+                                                Key = key.Key.ToStringUtf8(),
+                                                Value = key.Value.ToStringUtf8(),
+                                                CreateRevision = key.CreateRevision,
+                                                ModRevision = key.ModRevision,
+                                                Version = key.Version
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, ex.Message);
+                    }
+                });
+                return op.OrderBy(x => x.Key).ToList();
+            }
+            else
+            {
+                var keys = await client.Instance.GetRangeAsync("/", new Grpc.Core.Metadata() {
+                    new Grpc.Core.Metadata.Entry("token",client.Token)
+                });
+
+                var op = new List<KeyVersion>();
+                foreach (var key in keys.Kvs)
+                {
+                    op.Add(new KeyVersion()
+                    {
+                        Key = key.Key.ToStringUtf8(),
+                        Value = key.Value.ToStringUtf8(),
+                        CreateRevision = key.CreateRevision,
+                        ModRevision = key.ModRevision,
+                        Version = key.Version
+                    });
+                }
+                return op.OrderBy(x => x.Key).ToList();
+            }
         }
 
         public async Task<List<string>> GetAllKeys(EtcdConnection etcdConnection)
@@ -70,11 +132,9 @@ namespace EtcdManager.API.Infrastructure.Etcd
             var hasRoot = roles.Any(x => x == "root");
             if (!hasRoot)
             {
-                var lstStr = new ConcurrentBag<string>();
-                var ind = 0;
-                var count = roles.Count;
+                var op = new ConcurrentBag<string>();
                 // var result 
-                Parallel.ForEach(roles, async role =>
+                await Parallel.ForEachAsync(roles, async (string role, CancellationToken cancellation) =>
                 {
                     try
                     {
@@ -87,9 +147,25 @@ namespace EtcdManager.API.Infrastructure.Etcd
                             foreach (var permission in rolePermissions)
                             {
                                 var key = permission.Key.ToStringUtf8();
-                                if (!lstStr.Contains(key))
+                                if (!op.Contains(key))
                                 {
-                                    lstStr.Add(key);
+                                    op.Add(key);
+                                }
+
+                                var keyResult = await client.Instance.GetRangeAsync(key, new Grpc.Core.Metadata() {
+                                    new Grpc.Core.Metadata.Entry("token",client.Token)
+                                });
+                                if (keyResult != null)
+                                {
+                                    var keys = keyResult.Kvs;
+                                    foreach (var kv in keys)
+                                    {
+                                        var k = kv.Key.ToStringUtf8();
+                                        if (!op.Contains(k))
+                                        {
+                                            op.Add(k);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -98,49 +174,9 @@ namespace EtcdManager.API.Infrastructure.Etcd
                     {
                         _logger.LogError(ex, ex.Message);
                     }
-                    ind++;
                 });
 
-                var policy = Policy.HandleResult<bool>(x => !x).WaitAndRetryAsync(10, retry => TimeSpan.FromSeconds(retry));
-                await policy.ExecuteAsync(() =>
-                {
-                    return Task.FromResult(ind == count);
-                });
-                var op = new ConcurrentBag<string>();
-                var ind2 = 0;
-                var count2 = lstStr.Count;
-                foreach (var key in lstStr)
-                {
-                    try
-                    {
-                        var keyResult = await client.Instance.GetRangeAsync(key, new Grpc.Core.Metadata() {
-                            new Grpc.Core.Metadata.Entry("token",client.Token)
-                        });
-                        if (keyResult != null)
-                        {
-                            var keys = keyResult.Kvs;
-                            foreach (var kv in keys)
-                            {
-                                var k = kv.Key.ToStringUtf8();
-                                if (!op.Contains(k))
-                                {
-                                    op.Add(k);
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, ex.Message);
-                    }
-                    ind2++;
-                };
-                var policy2 = Policy.HandleResult<bool>(x => !x).WaitAndRetryAsync(10, retry => TimeSpan.FromSeconds(retry));
-                await policy2.ExecuteAsync(() =>
-                {
-                    return Task.FromResult(ind2 == count2);
-                });
-                return op.ToList();
+                return op.OrderBy(x => x).ToList();
             }
             else
             {
@@ -153,7 +189,7 @@ namespace EtcdManager.API.Infrastructure.Etcd
                 {
                     op.Add(key.Key.ToStringUtf8());
                 }
-                return op;
+                return op.OrderBy(x => x).ToList();
             }
         }
         public async Task<KeyVersion> GetByKey(string key, EtcdConnection etcdConnection)
@@ -242,7 +278,7 @@ namespace EtcdManager.API.Infrastructure.Etcd
             var cancelTokenSource = new CancellationTokenSource();
 
             // nếu chưa khởi tạo thì khởi tạo 1 lần
-            client.Instance.Watch(new WatchRequest()
+            _ = client.Instance.WatchAsync(new WatchRequest()
             {
                 CreateRequest = new WatchCreateRequest()
                 {

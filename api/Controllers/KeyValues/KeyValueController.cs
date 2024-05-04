@@ -2,6 +2,7 @@
 using EtcdManager.API.ApplicationService.Queries.KeyValues;
 using EtcdManager.API.Controllers.KeyValues.Post;
 using EtcdManager.API.Core.Abstract;
+using EtcdManager.API.Domain;
 using Mapster;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -17,18 +18,12 @@ namespace EtcdManager.API.Controllers.KeyValues
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int selectedEtcdConnectionId)
         {
-            var query = new GetAllKeysQuery()
+            var query = new GetAllQuery()
             {
                 EtcdConnectionId = selectedEtcdConnectionId
             };
             var result = await _mediator.Send(query);
             return Ok(result);
-        }
-
-        [HttpGet("GetByKeyPrefix")]
-        public async Task<IActionResult> GetByKeyPrefix([FromQuery] string keyPrefix)
-        {
-            return Ok();
         }
 
         [HttpGet("GetAllKeys")]
@@ -48,6 +43,18 @@ namespace EtcdManager.API.Controllers.KeyValues
             var query = new GetByKeyQuery()
             {
                 Key = key,
+                EtcdConnectionId = selectedEtcdConnectionId
+            };
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        [HttpGet("GetByKeyPrefix")]
+        public async Task<IActionResult> GetByKeyPrefix([FromQuery] string keyPrefix, [FromQuery] int selectedEtcdConnectionId)
+        {
+            var query = new GetByKeyPrefixQuery()
+            {
+                Prefix = keyPrefix,
                 EtcdConnectionId = selectedEtcdConnectionId
             };
             var result = await _mediator.Send(query);
@@ -111,9 +118,15 @@ namespace EtcdManager.API.Controllers.KeyValues
         }
 
         [HttpPost("ImportNodes")]
-        public async Task<IActionResult> ImportNodes([FromBody] ImportNodesModel model)
+        public async Task<IActionResult> ImportNodes([FromBody] KeyValue[] KeyValues, [FromQuery] int selectedEtcdConnectionId)
         {
-            return Ok();
+            var command = new ImportNodesCommand
+            {
+                KeyValues = KeyValues,
+                EtcdConnectionId = selectedEtcdConnectionId
+            };
+            var result = await _mediator.Send(command);
+            return Ok(result);
         }
     }
 }
