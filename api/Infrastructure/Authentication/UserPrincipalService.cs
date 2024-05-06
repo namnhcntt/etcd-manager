@@ -3,15 +3,8 @@ using System.Security.Claims;
 
 namespace EtcdManager.API.Infrastructure.Authentication
 {
-    public class UserPrincipalService : IUserPrincipalService
+    public class UserPrincipalService(IHttpContextAccessor _httpContextAccessor) : IUserPrincipalService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public UserPrincipalService(IHttpContextAccessor httpContextAccessor)
-        {
-            _httpContextAccessor = httpContextAccessor;
-        }
-
         public int Id {
             get
             {

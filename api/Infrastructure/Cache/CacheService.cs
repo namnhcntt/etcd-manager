@@ -2,15 +2,8 @@
 
 namespace EtcdManager.API.Infrastructure.Cache
 {
-    public class CacheService: ICacheService
+    public class CacheService(IMemoryCache _memoryCache) : ICacheService
     {
-        private readonly IMemoryCache _memoryCache;
-
-        public CacheService(IMemoryCache memoryCache)
-        {
-            _memoryCache = memoryCache;
-        }
-
         public Task Set<T>(string key, T value)
         {
             _memoryCache.Set(key, value);

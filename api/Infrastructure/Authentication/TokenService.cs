@@ -7,14 +7,9 @@ using System.Text;
 
 namespace EtcdManager.API.Infrastructure.Authentication
 {
-    public class TokenService : ITokenService
+    public class TokenService(IConfiguration _configuration) : ITokenService
     {
-        private readonly IConfiguration _configuration;
         private const int EXPIRES_IN = 90000;
-        public TokenService(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
 
         public Task<JwtTokenData> GenerateJwtTokenData(int userId, string userName)
         {

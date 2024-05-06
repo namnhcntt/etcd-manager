@@ -6,7 +6,7 @@ namespace EtcdManager.API.Infrastructure.Database
 {
     public class EtcdManagerDataContext : DbContext
     {
-        private readonly string _connectionString;
+        private readonly string _connectionString = "";
 
         public DbSet<EtcdConnection> EtcdConnections { get; set; }
         public DbSet<AppUser> AppUsers { get; set; }

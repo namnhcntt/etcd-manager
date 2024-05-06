@@ -8,17 +8,11 @@ using System.Collections.Concurrent;
 
 namespace EtcdManager.API.Infrastructure.Etcd
 {
-    public class EtcdService : IEtcdService
+    public class EtcdService (
+        ICacheService _cacheService,
+        ILogger<EtcdService> _logger
+        ): IEtcdService
     {
-        private readonly ICacheService _cacheService;
-        private readonly ILogger<EtcdService> _logger;
-
-        public EtcdService(ICacheService cacheService, ILogger<EtcdService> logger)
-        {
-            _cacheService = cacheService;
-            _logger = logger;
-        }
-
         public async Task<bool> TestConnection(string host, string port, string username, string password)
         {
             var client = new EtcdClient($"{host}:{port}");
