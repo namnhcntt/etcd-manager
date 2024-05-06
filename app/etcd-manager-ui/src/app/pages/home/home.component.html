@@ -1,0 +1,12 @@
+<p-splitter styleClass="splitter-home" [style]="{'height': 'calc(100vh - 200px)'}" [panelSizes]="[25,75]">
+  <ng-template pTemplate>
+    <div class="app-key-list">
+      <app-key-list></app-key-list>
+    </div>
+  </ng-template>
+  <ng-template pTemplate>
+    <div class="app-key-detail">
+      <app-key-detail></app-key-detail>
+    </div>
+  </ng-template>
+</p-splitter>

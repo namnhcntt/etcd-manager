@@ -1,0 +1,90 @@
+@if (loaded()) {
+<p-toolbar styleClass="p-custom-toolbar">
+  <div class="p-toolbar-group-left">
+    <div class="left-side">
+      <i aria-hidden="true" class="pi pi-file"></i>
+      @if (keyDetail() && !editing()) {
+      <span class="key-detail-path">
+        {{keyDetail.key()}}
+      </span>
+      }
+    </div>
+    <p-inplace [ngClass]="{'hidden': !editing()}" #renameKeyInplace>
+      <ng-template pTemplate="content">
+        <input placeholder="key name" class="inplace-text" type="text" pAutoFocus [autofocus]="true" pInputText
+          [(ngModel)]="inplaceRenameValue">
+      </ng-template>
+    </p-inplace>
+    @if (editing() && !isNewState()) {
+    <button pButton aria-label="button" type="button" icon="pi pi-save"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="saveRenameKey()" pTooltip="Save rename key"
+      tooltipPosition="top"></button>
+    }
+    @if (editing() && !isNewState()) {
+    <button pButton aria-label="button" type="button" icon="pi pi-times"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="cancelRenameKey(renameKeyInplace)"
+      pTooltip="Cancel rename key" tooltipPosition="top"></button>
+    }
+    @if (!_keyValueService.isRootKey(keyDetail.key()) && !editing() && !isNewState()) {
+    <button pButton aria-label="button" type="button" icon="pi pi-pencil"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="renameKey(renameKeyInplace)"
+      pTooltip="Rename key" tooltipPosition="top"></button>
+    }
+    @if (!_keyValueService.isRootKey(keyDetail.key()) && !isNewState()) {
+    <button pButton aria-label="button" type="button" icon="pi pi-trash"
+      class="p-button-rounded p-button-text p-button-danger p-button-icon-only" (click)="deleteKey($event)"
+      pTooltip="Delete key" tooltipPosition="top"></button>
+    }
+    <!-- <div class="more-info">
+      <span>Last Modifed By: NamNH</span>
+    </div> -->
+    <div class="dropdown-language">
+      <p-dropdown [options]="languages" [style]="{'width': '150px'}" optionLabel="value"
+        (onChange)="changeLanguage($event.value)"></p-dropdown>
+    </div>
+  </div>
+  <div class="p-toolbar-group-right">
+    @if (!isNewState()) {
+    <button pButton aria-label="button" icon="pi pi-refresh button-header"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="refresh()" pTooltip="Refresh"
+      tooltipPosition="top"></button>
+    <button pButton aria-label="button" icon="pi pi-download button-header"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="export()" pTooltip="Export node"
+      tooltipPosition="top"></button>
+    <button pButton aria-label="button" icon="pi pi-upload button-header"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="import()" pTooltip="Import node"
+      tooltipPosition="top"></button>
+    <button pButton aria-label="button" icon="pi pi-book button-header"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="viewAllVersion()" pTooltip="View all version"
+      tooltipPosition="top"></button>
+    }
+    <button pButton aria-label="button" icon="pi pi-save button-header"
+      class="p-button-rounded p-button-text p-button-icon-only" (click)="save()" pTooltip="Save"
+      tooltipPosition="top"></button>
+  </div>
+</p-toolbar>
+@if (editorLoaded()) {
+<ngs-code-editor #codeEditor [theme]="codeEditorConstant.DEFAULT_THEME" [codeModel]="codeModel()"
+  [options]="codeEditorConstant.DEFAULT_OPTIONS" [style]="{'height':'calc(100vh - 270px)','overflow':'auto'}"
+  (valueChanged)="onCodeChanged($event)">
+</ngs-code-editor>
+}
+}
+
+@if (showKeyVersion()) {
+<p-dialog header="Revision of key {{keyDetail.key()}}" [(visible)]="showKeyVersion"
+  [style]="{'min-with': '950px', 'min-height': '650px', width: '950px', height: '650px' }" [closeOnEscape]="true"
+  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="true"
+  [autoZIndex]="true" #dialog>
+  <app-key-version-list #keyVersionList [key]="keyDetail.key()!" [dialog]="dialog"
+    (onUseValue)="useValueFromOldVersion($event)"></app-key-version-list>
+  <ng-template pTemplate="footer">
+    <button pButton aria-label="button" type="button" icon="pi pi-times"
+      class="p-button-raised p-button-secondary p-button-text" label="Close" (click)="closeDialogRevisions()"></button>
+  </ng-template>
+</p-dialog>
+}
+
+<p-fileUpload #fileControl [ngStyle]="{'display': 'none'}" mode="basic" name="file" [url]="''"
+  (onSelect)="handleSelectFile($event)" [accept]="'application/json'">
+</p-fileUpload>

@@ -1,0 +1,12 @@
+@defer (when globalStore.readyRenderPage()) {
+<div class="layout-wrapper" [ngClass]="containerClass">
+  <app-topbar></app-topbar>
+  <div class="layout-main-container">
+    <div class="layout-main">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+  <app-config></app-config>
+  <div class="layout-mask"></div>
+</div>
+}

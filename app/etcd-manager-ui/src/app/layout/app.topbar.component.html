@@ -1,0 +1,68 @@
+<div class="layout-topbar">
+  <a class="layout-topbar-logo" routerLink="">
+    <img src="assets/layout/images/{{layoutService.config().colorScheme === 'light' ? 'logo-dark' : 'logo-white'}}.svg"
+      alt="logo">
+    <span>Etcd Manager</span>
+  </a>
+  @if (globalStore.currentUser.id()) {
+  <p-dropdown styleClass="dropdown-select-connection" [(ngModel)]="selectedConnection" [filter]="true"
+    [options]="globalStore.connections.dataSource()" optionLabel="name" optionValue="id"
+    placeholder="Select connection...">
+  </p-dropdown>
+  }
+  <div class="layout-topbar-menu-left">
+    @if (selectedConnection() && hasManageUserPermission) {
+    <a (click)="globalStore.clickPage('etcdUserManager')" class="p-link layout-topbar-button"
+      pTooltip="Etcd user management" tooltipPosition="bottom">
+      <i aria-hidden="true" class="fa-solid fa-user"></i>
+      <span>Etcd user management</span>
+    </a>
+    <a (click)="globalStore.clickPage('etcdRoleManager')" class="p-link layout-topbar-button"
+      pTooltip="Etcd role management" tooltipPosition="bottom">
+      <i aria-hidden="true" class="fa-solid fa-gears"></i>
+      <span>Etcd role management</span>
+    </a>
+    <a (click)="globalStore.clickPage('etcdSnapshotManager')" class="p-link layout-topbar-button"
+      pTooltip="Snapshot management" tooltipPosition="bottom">
+      <i aria-hidden="true" class="fa-solid fas fa-photo-video"></i>
+      <span>Snapshot management</span>
+    </a>
+    }
+  </div>
+
+  <div class="layout-topbar-menu" [ngClass]="{'layout-topbar-menu-mobile-active':globalStore.topMenuActive()}">
+    @if (hasManageUserPermission) {
+    <a (click)="globalStore.clickPage('connectionManager')" class="p-link layout-topbar-button"
+      pTooltip="Connection management" tooltipPosition="bottom">
+      <i aria-hidden="true" class="pi pi-cog"></i>
+      <span>Connection management</span>
+    </a>
+    }
+    @if (hasManageUserPermission) {
+    <a (click)="globalStore.clickPage('userManager')" class="p-link layout-topbar-button" pTooltip="User management"
+      tooltipPosition="bottom">
+      <i aria-hidden="true" class="pi pi-users"></i>
+      <span>User management</span>
+    </a>
+    }
+    <p-menu #menu [popup]="true" [model]="userMenuItems"></p-menu>
+    @if (authService.hasValidAccessToken()) {
+    <div (click)="menu.toggle($event)" class="user-topbar">
+      <p-avatar icon="pi pi-user" shape="circle"></p-avatar>
+      <span>Hello {{globalStore.currentUser.name()}}</span>
+    </div>
+    }
+  </div>
+</div>
+<p-dialog header="Change my password" [(visible)]="showChangeMyPassword"
+  [style]="{'min-with': '600px', 'min-height': '450px', width: '600px', height: '450px' }" [closeOnEscape]="true"
+  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="true"
+  [autoZIndex]="true" #dialog>
+  <!-- <app-change-my-password [dialog]="dialog" #changeMyPassword></app-change-my-password> -->
+  change my password
+  <ng-template pTemplate="footer">
+    <!-- <button *ngFor="let button of changeMyPassword.buttons" pButton aria-label="button" [class]="button.styleClass"
+      [disabled]="button.disabled" type="button" [icon]="button.icon" (click)="button.command($event)"
+      [label]="button.label"></button> -->
+  </ng-template>
+</p-dialog>

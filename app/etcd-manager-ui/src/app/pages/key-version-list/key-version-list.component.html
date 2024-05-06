@@ -1,0 +1,80 @@
+@if (createRevision() > 0) {
+<div>
+  Create Revision: <p-badge severity="info" [value]="createRevision()"></p-badge>
+  Latest Version: <p-badge severity="info" [value]="currentVersion()"></p-badge>
+</div>
+}
+<p-table #dt1 [value]="versions" dataKey="key" [rows]="10" [loading]="loading" [rowHover]="true"
+  styleClass="p-datatable-gridlines" [paginator]="true" sortField="modRevision" [sortOrder]="-1"
+  [globalFilterFields]="['value', 'modRevision','version']" responsiveLayout="scroll">
+  <ng-template pTemplate="caption">
+    <div class="flex justify-content-between flex-column sm:flex-row">
+      <span class="p-input-icon-left mb-2">
+        <i aria-hidden="true" class="pi pi-search"></i>
+        <input pInputText type="text" #filter (input)="dt1.filterGlobal($event.target, 'contains')"
+          placeholder="Search Keyword" class="w-full" />
+      </span>
+    </div>
+  </ng-template>
+  <ng-template pTemplate="header">
+    <tr>
+      <th scope="col" style="width:10%">
+        <div class="flex justify-content-between align-items-center">
+          Modify Revision
+        </div>
+      </th>
+      <th scope="col" style="width:10%">
+        <div class="flex justify-content-between align-items-center">
+          Version
+        </div>
+      </th>
+      <th scope="col">
+        <div class="flex justify-content-between align-items-center">
+          Value
+        </div>
+      </th>
+      <th scope="col" style="width:15%">
+        Action
+      </th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+    <tr>
+      <td>{{item.modRevision}}</td>
+      <td>{{item.version}}</td>
+      <td>{{item.shortValue}}</td>
+      <td class="text-center">
+        <button pButton aria-label="button" type="button" [icon]="primengIcons.ARROW_UP_RIGHT"
+          class="p-button-rounded p-button-text p-button-icon-only" pTooltip="Use this value for current editing"
+          tooltipPosition="top" (click)="selectThisValue(item)"></button>
+        @if (rowIndex > 0) {
+        <button pButton aria-label="button" type="button" [icon]="primengIcons.ARROW_H"
+          pTooltip="Diff this version with latest" tooltipPosition="top"
+          class="p-button-rounded p-button-text p-button-icon-only" (click)="compareVersion(item)"></button>
+        }
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="7">No revision found.</td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="loadingbody">
+    <tr>
+      <td colspan="7">Loading revision data. Please wait.</td>
+    </tr>
+  </ng-template>
+</p-table>
+@if (showDiffDialog()) {
+<p-dialog header="Diff {{key()}}" [(visible)]="showDiffDialog"
+  [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
+  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="false"
+  [autoZIndex]="true" #dialog>
+  <app-diff-text #diffText [dialog]="dialog" [right]="currentVersionItem" [left]="diffItem"></app-diff-text>
+  <ng-template pTemplate="footer">
+    <button pButton aria-label="button" type="button" icon="pi pi-times"
+      class="p-button-raised p-button-secondary p-button-text" label="Close" (click)="closeDiffDialog()"></button>
+  </ng-template>
+</p-dialog>
+}
