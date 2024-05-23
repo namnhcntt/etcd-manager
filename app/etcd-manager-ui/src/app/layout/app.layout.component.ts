@@ -18,7 +18,6 @@ import { LayoutService } from "./service/app.layout.service";
 export class AppLayoutComponent extends BaseComponent {
 
   profileMenuOutsideClickListener: any;
-
   @ViewChild(AppTopBarComponent) appTopbar!: AppTopBarComponent;
 
   public layoutService = inject(LayoutService);
@@ -27,7 +26,7 @@ export class AppLayoutComponent extends BaseComponent {
 
   constructor() {
     super();
-    this.router.events.pipe(filter(event => event instanceof NavigationEnd))
+    this.router.events.pipe(filter((event: any) => event instanceof NavigationEnd))
       .subscribe(() => {
         this.hideProfileMenu();
       });
