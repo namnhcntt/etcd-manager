@@ -1,6 +1,5 @@
 ﻿using EtcdManager.API.Core.Models;
 using FluentValidation.Results;
-using System.Runtime.Serialization;
 
 namespace EtcdManager.API.Core.Exceptions
 {
@@ -46,7 +45,5 @@ namespace EtcdManager.API.Core.Exceptions
             }
         }
 
-        public DomainListException(SerializationInfo info, StreamingContext context)
-          : base(info, context) { }
     }
 }

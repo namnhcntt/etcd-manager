@@ -1,0 +1,23 @@
+user  nginx;
+worker_processes  1;
+
+pid        /var/run/nginx.pid;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+    sendfile        on;
+    keepalive_timeout  65;
+    server {
+      listen  81;
+        root /usr/share/nginx/html/;
+        location ${BASE_HREF}/ {
+            alias /usr/share/nginx/html/;
+            try_files $uri$args $uri$args/ ${BASE_HREF}/index.html;
+        }
+    }
+}

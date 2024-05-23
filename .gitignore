@@ -112,3 +112,4 @@ api/EtcdManager.API/wwwroot/data/etcd-manager.sqbpro
 
 .vs
 *.csproj.user
+app/etcd-manager-ui/pnpm-lock.yaml
