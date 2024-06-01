@@ -79,9 +79,10 @@ export class ConnectionManagerComponent extends BaseComponent implements OnInit 
     this._etcdConnectionService.testConnection
       (
         this.form.value.server,
+        this.form.value.enableAuthenticated,
+        this.form.value.insecure,
         this.form.value.username,
         this.form.value.password,
-        this.form.value.insecure
       ).then((data: any) => {
         this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Connection successful' });
         this.processing.update(() => false);

@@ -3,29 +3,42 @@ using EtcdManager.API.Domain;
 using EtcdManager.API.Infrastructure.Cache;
 using Etcdserverpb;
 using Google.Protobuf;
+using Google.Protobuf.Collections;
 using Polly;
 using System.Collections.Concurrent;
 
 namespace EtcdManager.API.Infrastructure.Etcd
 {
-    public class EtcdService (
+    public class EtcdService(
         ICacheService _cacheService,
         ILogger<EtcdService> _logger
-        ): IEtcdService
+        ) : IEtcdService
     {
-        public async Task<bool> TestConnection(string host, string port, string username, string password)
+        public async Task<bool> TestConnection(string host, string port, bool enableAuthenticated, string? username, string? password)
         {
             var client = new EtcdClient($"{host}:{port}");
-            var token = string.Empty;
-            var authRes = await client.AuthenticateAsync(new Etcdserverpb.AuthenticateRequest()
+            if (enableAuthenticated)
             {
-                Name = username,
-                Password = password
-            });
-            token = authRes != null ? authRes.Token : null;
-            if (!string.IsNullOrWhiteSpace(token))
+                var token = string.Empty;
+                var authRes = await client.AuthenticateAsync(new Etcdserverpb.AuthenticateRequest()
+                {
+                    Name = username,
+                    Password = password
+                });
+                token = authRes != null ? authRes.Token : null;
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    return true;
+                }
+            }
+            else
             {
-                return true;
+                // test the client is online with authenticate disabled
+                var response = await client.GetAsync("/");
+                if (response != null)
+                {
+                    return true;
+                }
             }
 
             return false;
@@ -33,10 +46,8 @@ namespace EtcdManager.API.Infrastructure.Etcd
 
         public async Task<List<KeyVersion>> GetAll(EtcdConnection etcdConnection)
         {
-            var client = await GetEtcdToken(etcdConnection);
-            var userDetail = await client.Instance.UserGetAsync(new AuthUserGetRequest { Name = etcdConnection.Username }, new Grpc.Core.Metadata() {
-                new Grpc.Core.Metadata.Entry("token",client.Token)
-            });
+            var client = await GetEtcdClientInstance(etcdConnection);
+            var userDetail = await client.Instance.UserGetAsync(new AuthUserGetRequest { Name = etcdConnection.Username }, AddDefaultHeader(client));
             if (userDetail == null)
             {
                 throw new Exception("User not found");
@@ -51,17 +62,13 @@ namespace EtcdManager.API.Infrastructure.Etcd
                 {
                     try
                     {
-                        var roleResult = await client.Instance.RoleGetASync(new AuthRoleGetRequest { Role = role }, new Grpc.Core.Metadata() {
-                            new Grpc.Core.Metadata.Entry("token",client.Token)
-                        });
+                        var roleResult = await client.Instance.RoleGetASync(new AuthRoleGetRequest { Role = role }, AddDefaultHeader(client));
                         if (roleResult != null)
                         {
                             var rolePermissions = roleResult.Perm;
                             foreach (var permission in rolePermissions)
                             {
-                                var keyResult = await client.Instance.GetRangeAsync(permission.Key.ToStringUtf8(), new Grpc.Core.Metadata() {
-                                    new Grpc.Core.Metadata.Entry("token",client.Token)
-                                });
+                                var keyResult = await client.Instance.GetRangeAsync(permission.Key.ToStringUtf8(), AddDefaultHeader(client));
 
                                 if (keyResult != null)
                                 {
@@ -92,9 +99,7 @@ namespace EtcdManager.API.Infrastructure.Etcd
             }
             else
             {
-                var keys = await client.Instance.GetRangeAsync("/", new Grpc.Core.Metadata() {
-                    new Grpc.Core.Metadata.Entry("token",client.Token)
-                });
+                var keys = await client.Instance.GetRangeAsync("/", AddDefaultHeader(client));
 
                 var op = new List<KeyVersion>();
                 foreach (var key in keys.Kvs)
@@ -114,17 +119,20 @@ namespace EtcdManager.API.Infrastructure.Etcd
 
         public async Task<List<string>> GetAllKeys(EtcdConnection etcdConnection)
         {
-            var client = await GetEtcdToken(etcdConnection);
-            var userDetail = await client.Instance.UserGetAsync(new AuthUserGetRequest { Name = etcdConnection.Username }, new Grpc.Core.Metadata() {
-                new Grpc.Core.Metadata.Entry("token",client.Token)
-            });
-            if (userDetail == null)
+            var client = await GetEtcdClientInstance(etcdConnection);
+            bool hasRoot = false;
+            RepeatedField<string> roles = new RepeatedField<string>();
+            if (etcdConnection.EnableAuthenticated)
             {
-                throw new Exception("User not found");
+                var userDetail = await client.Instance.UserGetAsync(new AuthUserGetRequest { Name = etcdConnection.Username }, AddDefaultHeader(client));
+                if (userDetail == null)
+                {
+                    throw new Exception("User not found");
+                }
+                roles = userDetail.Roles;
+                hasRoot = roles.Any(x => x == "root");
             }
-            var roles = userDetail.Roles;
-            var hasRoot = roles.Any(x => x == "root");
-            if (!hasRoot)
+            if (etcdConnection.EnableAuthenticated && !hasRoot)
             {
                 var op = new ConcurrentBag<string>();
                 // var result 
@@ -132,9 +140,7 @@ namespace EtcdManager.API.Infrastructure.Etcd
                 {
                     try
                     {
-                        var roleResult = await client.Instance.RoleGetASync(new AuthRoleGetRequest { Role = role }, new Grpc.Core.Metadata() {
-                            new Grpc.Core.Metadata.Entry("token",client.Token)
-                        });
+                        var roleResult = await client.Instance.RoleGetASync(new AuthRoleGetRequest { Role = role }, AddDefaultHeader(client));
                         if (roleResult != null)
                         {
                             var rolePermissions = roleResult.Perm;
@@ -146,9 +152,7 @@ namespace EtcdManager.API.Infrastructure.Etcd
                                     op.Add(key);
                                 }
 
-                                var keyResult = await client.Instance.GetRangeAsync(key, new Grpc.Core.Metadata() {
-                                    new Grpc.Core.Metadata.Entry("token",client.Token)
-                                });
+                                var keyResult = await client.Instance.GetRangeAsync(key, AddDefaultHeader(client));
                                 if (keyResult != null)
                                 {
                                     var keys = keyResult.Kvs;
@@ -174,9 +178,7 @@ namespace EtcdManager.API.Infrastructure.Etcd
             }
             else
             {
-                var keys = await client.Instance.GetRangeAsync("/", new Grpc.Core.Metadata() {
-                    new Grpc.Core.Metadata.Entry("token",client.Token)
-                });
+                var keys = await client.Instance.GetRangeAsync("/", AddDefaultHeader(client));
 
                 var op = new List<string>();
                 foreach (var key in keys.Kvs)
@@ -188,8 +190,8 @@ namespace EtcdManager.API.Infrastructure.Etcd
         }
         public async Task<KeyVersion> GetByKey(string key, EtcdConnection etcdConnection)
         {
-            var client = await GetEtcdToken(etcdConnection);
-            var keyResult = await client.Instance.GetAsync(key, new Grpc.Core.Metadata() { { "token", client.Token } });
+            var client = await GetEtcdClientInstance(etcdConnection);
+            var keyResult = await client.Instance.GetAsync(key, AddDefaultHeader(client));
             if (keyResult != null)
             {
                 var keys = keyResult.Kvs;
@@ -210,52 +212,38 @@ namespace EtcdManager.API.Infrastructure.Etcd
 
         public async Task Save(KeyValue saveKeyValue, EtcdConnection etcdConnection)
         {
-            var client = await GetEtcdToken(etcdConnection);
+            var client = await GetEtcdClientInstance(etcdConnection);
             if (!saveKeyValue.Key.StartsWith("/"))
             {
                 saveKeyValue.Key = "/" + saveKeyValue.Key;
             }
 
-            await client.Instance.PutAsync(saveKeyValue.Key, saveKeyValue.Value, new Grpc.Core.Metadata() {
-                    new Grpc.Core.Metadata.Entry("token",client.Token)
-                });
+            await client.Instance.PutAsync(saveKeyValue.Key, saveKeyValue.Value, AddDefaultHeader(client));
         }
 
         public async Task Delete(string key, bool deleteRecursive, EtcdConnection etcdConnection)
         {
-            var client = await GetEtcdToken(etcdConnection);
-            await client.Instance.DeleteRangeAsync(key, new Grpc.Core.Metadata() {
-                new Grpc.Core.Metadata.Entry("token",client.Token)
-            });
+            var client = await GetEtcdClientInstance(etcdConnection);
+            await client.Instance.DeleteRangeAsync(key, AddDefaultHeader(client));
 
             if (deleteRecursive)
             {
-                await client.Instance.DeleteRangeAsync($"{key}/", new Grpc.Core.Metadata() {
-                    new Grpc.Core.Metadata.Entry("token",client.Token)
-                });
+                await client.Instance.DeleteRangeAsync($"{key}/", AddDefaultHeader(client));
             }
         }
 
         public async Task RenameKey(string oldKey, string newKey, EtcdConnection etcdConnection)
         {
-            var client = await GetEtcdToken(etcdConnection);
-            var oldKeyValue = await client.Instance.GetValAsync(oldKey, new Grpc.Core.Metadata() {
-                    new Grpc.Core.Metadata.Entry("token",client.Token)
-                });
-            await client.Instance.DeleteAsync(oldKey, new Grpc.Core.Metadata() {
-                    new Grpc.Core.Metadata.Entry("token",client.Token)
-                });
-            await client.Instance.PutAsync(newKey, oldKeyValue, new Grpc.Core.Metadata() {
-                    new Grpc.Core.Metadata.Entry("token",client.Token)
-                });
+            var client = await GetEtcdClientInstance(etcdConnection);
+            var oldKeyValue = await client.Instance.GetValAsync(oldKey, AddDefaultHeader(client));
+            await client.Instance.DeleteAsync(oldKey, AddDefaultHeader(client));
+            await client.Instance.PutAsync(newKey, oldKeyValue, AddDefaultHeader(client));
         }
 
         public async Task<List<KeyVersion>> GetRevisions(string key, EtcdConnection etcdConnection)
         {
-            var client = await GetEtcdToken(etcdConnection);
-            var keyResult = await client.Instance.GetAsync(key, new Grpc.Core.Metadata() {
-                    new Grpc.Core.Metadata.Entry("token",client.Token)
-            });
+            var client = await GetEtcdClientInstance(etcdConnection);
+            var keyResult = await client.Instance.GetAsync(key, AddDefaultHeader(client));
 
             var op = await GetAllRevisions(client, key, keyResult.Kvs[0].Version);
             return op;
@@ -263,10 +251,8 @@ namespace EtcdManager.API.Infrastructure.Etcd
 
         public async Task<KeyVersion?> GetRevision(string key, long revision, EtcdConnection etcdConnection)
         {
-            var client = await GetEtcdToken(etcdConnection);
-            var keyResult = await client.Instance.GetValAsync(key, new Grpc.Core.Metadata() {
-                new Grpc.Core.Metadata.Entry("token",client.Token)
-            });
+            var client = await GetEtcdClientInstance(etcdConnection);
+            var keyResult = await client.Instance.GetValAsync(key, AddDefaultHeader(client));
             KeyVersion? op = null;
             bool done = false;
             var cancelTokenSource = new CancellationTokenSource();
@@ -308,7 +294,7 @@ namespace EtcdManager.API.Infrastructure.Etcd
                         break;
                     }
                 }
-            }, new Grpc.Core.Metadata() { new Grpc.Core.Metadata.Entry("token", client.Token) }, null, cancelTokenSource.Token);
+            }, AddDefaultHeader(client), null, cancelTokenSource.Token);
 
             var policy = Policy.HandleResult<bool>(x => !x).WaitAndRetryAsync(5, retry => TimeSpan.FromSeconds(retry));
             await policy.ExecuteAsync(() =>
@@ -326,10 +312,8 @@ namespace EtcdManager.API.Infrastructure.Etcd
 
         public async Task<List<KeyVersion>> GetByKeyPrefix(string keyPrefix, EtcdConnection etcdConnection)
         {
-            var client = await GetEtcdToken(etcdConnection);
-            var range = client.Instance.GetRange(keyPrefix, new Grpc.Core.Metadata() {
-                new Grpc.Core.Metadata.Entry("token",client.Token)
-            });
+            var client = await GetEtcdClientInstance(etcdConnection);
+            var range = client.Instance.GetRange(keyPrefix, AddDefaultHeader(client));
             var op = new List<KeyVersion>();
             foreach (var key in range.Kvs)
             {
@@ -347,12 +331,10 @@ namespace EtcdManager.API.Infrastructure.Etcd
 
         public async Task ImportNodes(KeyValue[] keyModels, EtcdConnection etcdConnection)
         {
-            var client = await GetEtcdToken(etcdConnection);
+            var client = await GetEtcdClientInstance(etcdConnection);
             foreach (var keyModel in keyModels)
             {
-                await client.Instance.PutAsync(keyModel.Key, keyModel.Value, new Grpc.Core.Metadata() {
-                        new Grpc.Core.Metadata.Entry("token",client.Token)
-                    });
+                await client.Instance.PutAsync(keyModel.Key, keyModel.Value, AddDefaultHeader(client));
             }
         }
 
@@ -397,7 +379,7 @@ namespace EtcdManager.API.Infrastructure.Etcd
                     }
                     done = true;
                 }
-            }, new Grpc.Core.Metadata() { new Grpc.Core.Metadata.Entry("token", client.Token) }, null, cancelTokenSource.Token);
+            }, AddDefaultHeader(client), null, cancelTokenSource.Token);
 
             var policy = Policy.HandleResult<bool>(x => !x).WaitAndRetryAsync(5, retry => TimeSpan.FromSeconds(retry));
             await policy.ExecuteAsync(() =>
@@ -412,18 +394,16 @@ namespace EtcdManager.API.Infrastructure.Etcd
             return op;
         }
 
-        private async Task<EtcdClientInstance> GetEtcdToken(EtcdConnection etcdConnection)
+        private async Task<EtcdClientInstance> GetEtcdClientInstance(EtcdConnection etcdConnection)
         {
             var cacheKey = $"{etcdConnection.OwnerId}_{etcdConnection.Server}";
-            var existToken = await _cacheService.Get<EtcdClientInstance>(cacheKey);
-            if (existToken != null)
+            var existClient = await _cacheService.Get<EtcdClientInstance>(cacheKey);
+            if (existClient != null)
             {
                 // test token, if invalid auth, then re-auth
                 try
                 {
-                    var userDetail = await existToken.Instance.UserGetAsync(new AuthUserGetRequest { Name = etcdConnection.Username }, new Grpc.Core.Metadata() {
-                        new Grpc.Core.Metadata.Entry("token",existToken.Token)
-                    });
+                    var userDetail = await existClient.Instance.UserGetAsync(new AuthUserGetRequest { Name = etcdConnection.Username }, AddDefaultHeader(existClient));
                     if (userDetail == null)
                     {
                         throw new Exception("User not found");
@@ -432,31 +412,60 @@ namespace EtcdManager.API.Infrastructure.Etcd
                 catch (Exception ex)
                 {
                     await _cacheService.Remove(cacheKey);
-                    return await GetEtcdToken(etcdConnection);
+                    return await GetEtcdClientInstance(etcdConnection);
                 }
 
-                return existToken;
+                return existClient;
             }
 
             var client = new EtcdClient($"{etcdConnection.Host}:{etcdConnection.Port}");
-            var token = string.Empty;
-            var authRes = await client.AuthenticateAsync(new Etcdserverpb.AuthenticateRequest()
+            if (etcdConnection.EnableAuthenticated)
             {
-                Name = etcdConnection.Username,
-                Password = etcdConnection.Password
-            });
-            token = authRes != null ? authRes.Token : null;
-            if (!string.IsNullOrWhiteSpace(token))
+                var token = string.Empty;
+                var authRes = await client.AuthenticateAsync(new Etcdserverpb.AuthenticateRequest()
+                {
+                    Name = etcdConnection.Username,
+                    Password = etcdConnection.Password
+                });
+                token = authRes != null ? authRes.Token : null;
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    var etcdClientInstance = new EtcdClientInstance()
+                    {
+                        Instance = client,
+                        Token = token,
+                        EnableAuthenticated = true
+                    };
+                    await _cacheService.Set(cacheKey, etcdClientInstance);
+                    return etcdClientInstance;
+                }
+                throw new Exception($"Cannot get token from etcd server {etcdConnection.Server}");
+            }
+            else
             {
                 var etcdClientInstance = new EtcdClientInstance()
                 {
                     Instance = client,
-                    Token = token
+                    Token = string.Empty,
+                    EnableAuthenticated = false
                 };
                 await _cacheService.Set(cacheKey, etcdClientInstance);
                 return etcdClientInstance;
             }
-            throw new Exception($"Cannot get token from etcd server {etcdConnection.Server}");
+        }
+
+        private Grpc.Core.Metadata? AddDefaultHeader(EtcdClientInstance client)
+        {
+            if (client.EnableAuthenticated)
+            {
+                return new Grpc.Core.Metadata() {
+                new Grpc.Core.Metadata.Entry("token",client.Token)
+            };
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

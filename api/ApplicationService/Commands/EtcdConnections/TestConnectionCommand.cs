@@ -7,8 +7,9 @@ namespace EtcdManager.API.ApplicationService.Commands.EtcdConnections
     public class TestConnectionCommand : IRequest<bool>
     {
         public string Server { get; set; } = null!;
-        public string Username { get; set; } = null!;
-        public string Password { get; set; } = null!;
+        public bool EnableAuthenticated { get; set; }
+        public string? Username { get; set; }
+        public string? Password { get; set; }
         public bool Insecure { get; set; }
         public string Host
         {
@@ -54,7 +55,7 @@ namespace EtcdManager.API.ApplicationService.Commands.EtcdConnections
         {
             public Task<bool> Handle(TestConnectionCommand request, CancellationToken cancellationToken)
             {
-               return  _etcdService.TestConnection(request.Host, request.Port, request.Username, request.Password);
+               return  _etcdService.TestConnection(request.Host, request.Port, request.EnableAuthenticated, request.Username, request.Password);
             }
         }
 
@@ -63,8 +64,9 @@ namespace EtcdManager.API.ApplicationService.Commands.EtcdConnections
             public TestConnectionCommandValidator()
             {
                 RuleFor(x => x.Server).NotEmpty();
-                RuleFor(x => x.Username).NotEmpty();
-                RuleFor(x => x.Password).NotEmpty();
+                // rule for username, password not empty if enableAuthenticated = true
+                RuleFor(x => x.Username).NotEmpty().When(x => x.EnableAuthenticated);
+                RuleFor(x => x.Password).NotEmpty().When(x => x.EnableAuthenticated);
             }
         }
     }
