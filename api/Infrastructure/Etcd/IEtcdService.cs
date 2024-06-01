@@ -15,6 +15,6 @@ namespace EtcdManager.API.Infrastructure.Etcd
         Task ImportNodes(KeyValue[] keyModels, EtcdConnection etcdConnection);
         Task RenameKey(string oldKey, string newKey, EtcdConnection etcdConnection);
         Task Save(KeyValue saveKeyValue, EtcdConnection etcdConnection);
-        Task<bool> TestConnection(string host, string port, string username, string password);
+        Task<bool> TestConnection(string host, string port, bool enableAuthenticated, string? username, string? password);
     }
 }

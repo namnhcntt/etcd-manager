@@ -30,8 +30,8 @@ export class EtcdConnectionService extends BaseService {
     return firstValueFrom(this.httpClient.post(url, item));
   }
 
-  testConnection(server: string, username: string, password: string, insecure: boolean) {
+  testConnection(server: string, enableAuthenticated: boolean, insecure: boolean, username?: string, password?: string) {
     const url = `${environment.apiEndpoint}/${this.ENDPOINT_CONNECTION}/TestConnection`;
-    return firstValueFrom(this.httpClient.post(url, { server, username, password, insecure }));
+    return firstValueFrom(this.httpClient.post(url, { server, username, password, insecure, enableAuthenticated }));
   }
 }
