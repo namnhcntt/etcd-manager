@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Renderer2, ViewChild, inject } from '@angular/core';
+import { Component, Renderer2, ViewChild, inject } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { BaseComponent } from '../base.component';

@@ -1,5 +1,5 @@
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, output, signal } from '@angular/core';
+import { Component, OnInit, inject, output, signal } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Guid } from 'guid-ts';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -58,7 +58,7 @@ export class ConnectionManagerComponent extends BaseComponent implements OnInit 
   loadGrid() {
     this.loading.update(() => true);
     this._etcdConnectionService.getDataSource().then((data: any) => {
-      this.globalStore.setDataSource(data.connections);
+      this.globalStore.setDataSourceConnections(data.connections);
       this.loading.update(() => false);
     });
   }

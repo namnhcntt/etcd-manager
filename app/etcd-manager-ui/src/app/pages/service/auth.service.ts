@@ -4,6 +4,7 @@ import { JwtPayload, jwtDecode } from "jwt-decode";
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { BaseService } from './base.service';
+import { APP_BASE_HREF } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +17,7 @@ export class AuthService extends BaseService {
   ENDPOINT_AUTHEN_LOGIN = 'api/auth/login';
 
   private readonly _router = inject(Router);
+  private readonly _baseHref: string = inject(APP_BASE_HREF);
 
   hasValidAccessToken(): boolean {
     const token = this.getAccessTokenObject();
@@ -55,7 +57,7 @@ export class AuthService extends BaseService {
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USERINFO_KEY);
-    window.location.href = '/login';
+    window.location.href = `${this._baseHref}/login`;
   }
 
   saveToken(accessToken: string, refreshToken: string) {

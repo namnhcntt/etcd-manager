@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewChild, effect, inject, model, signal, untracked } from '@angular/core';
+import { Component, ViewChild, effect, inject, model, signal, untracked } from '@angular/core';
 import { patchState, signalState } from '@ngrx/signals';
 import { CodeEditorComponent, CodeEditorModule, CodeModel } from '@ngstack/code-editor';
 import { ConfirmationService, MessageService } from 'primeng/api';

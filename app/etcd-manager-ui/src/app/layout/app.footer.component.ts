@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { LayoutService } from "./service/app.layout.service";
+import { Component, inject } from '@angular/core';
 import { commonLayoutImport } from './common-layout-import';
+import { LayoutService } from "./service/app.layout.service";
 
 @Component({
   selector: 'app-footer',

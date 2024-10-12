@@ -5,6 +5,7 @@ using EtcdManager.API.Infrastructure.Cache;
 using Etcdserverpb;
 using Google.Protobuf;
 using Google.Protobuf.Collections;
+using Grpc.Core;
 using Polly;
 
 namespace EtcdManager.API.Infrastructure.Etcd;
@@ -15,11 +16,21 @@ public class EtcdService(ICacheService _cacheService, ILogger<EtcdService> _logg
         string host,
         string port,
         bool enableAuthenticated,
+        bool insecure,
         string? username,
         string? password
     )
     {
-        var client = new EtcdClient($"{host}:{port}");
+        var client = new EtcdClient(
+            $"{host}:{port}",
+            configureChannelOptions: channelOptions =>
+            {
+                if (insecure)
+                {
+                    channelOptions.Credentials = ChannelCredentials.Insecure;
+                }
+            }
+        );
         if (enableAuthenticated)
         {
             var token = string.Empty;
@@ -484,7 +495,16 @@ public class EtcdService(ICacheService _cacheService, ILogger<EtcdService> _logg
             return existClient;
         }
 
-        var client = new EtcdClient($"{etcdConnection.Host}:{etcdConnection.Port}");
+        var client = new EtcdClient(
+            $"{etcdConnection.Host}:{etcdConnection.Port}",
+            configureChannelOptions: channelOptions =>
+            {
+                if (etcdConnection.Insecure)
+                {
+                    channelOptions.Credentials = ChannelCredentials.Insecure;
+                }
+            }
+        );
         if (etcdConnection.EnableAuthenticated)
         {
             var token = string.Empty;

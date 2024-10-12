@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, NgZone, ViewChild, inject, input, output } from '@angular/core';
+import { Component, ElementRef, NgZone, ViewChild, inject, input, output } from '@angular/core';
 import { Dialog, DialogModule } from 'primeng/dialog';
 import { BaseComponent } from '../../base.component';
 import { commonLayoutImport } from '../../layout/common-layout-import';

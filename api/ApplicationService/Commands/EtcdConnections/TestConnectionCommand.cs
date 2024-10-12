@@ -61,6 +61,7 @@ public class TestConnectionCommand : IRequest<bool>
                 request.Host,
                 request.Port,
                 request.EnableAuthenticated,
+                request.Insecure,
                 request.Username,
                 request.Password
             );

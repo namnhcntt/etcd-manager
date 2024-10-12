@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { commonLayoutImport } from '../../layout/common-layout-import';
+import { Component, OnInit } from '@angular/core';
 import { BaseComponent } from '../../base.component';
+import { commonLayoutImport } from '../../layout/common-layout-import';
 
 @Component({
   selector: 'app-not-found',

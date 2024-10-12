@@ -123,8 +123,11 @@ export const globalStore = signalStore(
     setCurrentUser(user: CurrentUser): void {
       patchState(store, { currentUser: user });
     },
-    setDataSource(dataSource: any[]): void {
+    setDataSourceConnections(dataSource: any[]): void {
       patchState(store, { connections: { ...store.connections(), dataSource } });
+    },
+    setDataSourceKeys(dataSource: any[]): void {
+      patchState(store, { keyValues: { ...store.keyValues(), dataSource } });
     },
     setReadyRenderPage(ready: boolean): void {
       patchState(store, { readyRenderPage: ready });

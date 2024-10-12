@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, effect, inject } from '@angular/core';
+import { Component, OnInit, effect, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { MessageService, PrimeNGConfig } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -48,14 +48,14 @@ export class AppComponent extends BaseComponent implements OnInit {
 
     effect(() => {
       if (this.globalStore.currentUser().id) {
-        this.loadDataSource();
+        this.loadDataSourceConnections();
       }
     });
   }
 
   ngOnInit(): void {
     if (this.authService.loggedIn()) {
-      this.loadDataSource();
+      this.loadDataSourceConnections();
     }
     this.primengConfig.ripple = true;
     this.globalStore.setReadyRenderPage(true);
@@ -66,9 +66,9 @@ export class AppComponent extends BaseComponent implements OnInit {
     }
   }
 
-  private loadDataSource() {
+  private loadDataSourceConnections() {
     this._etcdConnectionService.getDataSource().then((data: any) => {
-      this.globalStore.setDataSource(data.connections);
+      this.globalStore.setDataSourceConnections(data.connections);
     }).catch((err) => {
       this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
     });

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewChild, effect, inject, model, signal, untracked } from '@angular/core';
+import { Component, ViewChild, effect, inject, model, signal, untracked } from '@angular/core';
 import { ConfirmationService, MenuItem, Message, MessageService, PrimeIcons, TreeNode } from 'primeng/api';
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { DialogModule } from 'primeng/dialog';
@@ -231,7 +231,7 @@ export class KeyListComponent extends BaseComponent {
       });
 
       this.listSelectedItem.update(() => dataSource.find(x => x.key == selectedKey));
-      this.globalStore.setDataSource(dataSource);
+      this.globalStore.setDataSourceKeys(dataSource);
       this.bindDataSourceTree(dataSource, selectedKey);
       this.loaded.update(() => true);
     } catch (err: any) {

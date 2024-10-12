@@ -1,13 +1,14 @@
-import { ChangeDetectionStrategy, Component, OnInit, ViewEncapsulation, inject, model } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, inject, model } from '@angular/core';
 import { Router } from '@angular/router';
 import { Message, MessageService } from 'primeng/api';
+import { InputTextModule } from 'primeng/inputtext';
 import { MessagesModule } from 'primeng/messages';
 import { PasswordModule } from 'primeng/password';
 import { BaseComponent } from '../../base.component';
 import { commonLayoutImport } from '../../layout/common-layout-import';
 import { LayoutService } from '../../layout/service/app.layout.service';
 import { AuthService } from '../service/auth.service';
-import { InputTextModule } from 'primeng/inputtext';
+import { APP_BASE_HREF } from '@angular/common';
 
 @Component({
   selector: 'app-login',
@@ -49,6 +50,7 @@ export class LoginComponent extends BaseComponent implements OnInit {
   public layoutService = inject(LayoutService);
   router = inject(Router);
   authService = inject(AuthService);
+  private readonly _baseHref: string = inject(APP_BASE_HREF);
   private readonly _messageService = inject(MessageService);
 
   ngOnInit() {
@@ -70,7 +72,7 @@ export class LoginComponent extends BaseComponent implements OnInit {
 
     this.authService.login(this.userName(), this.password()).then((res: any) => {
       this.authService.saveToken(res.token, res.refreshToken);
-      window.location.href = '/';
+      window.location.href = this._baseHref;
     }).catch(err => {
       this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error, key: 'login' });
     });

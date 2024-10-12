@@ -18,6 +18,7 @@ public interface IEtcdService
         string host,
         string port,
         bool enableAuthenticated,
+        bool insecure,
         string? username,
         string? password
     );

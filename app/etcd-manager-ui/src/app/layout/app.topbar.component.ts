@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, effect, inject, model, signal, untracked } from '@angular/core';
+import { Component, OnInit, effect, inject, model, signal, untracked } from '@angular/core';
 import { MenuItem, PrimeIcons } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { DialogModule } from 'primeng/dialog';
@@ -82,7 +82,9 @@ export class AppTopBarComponent extends BaseComponent implements OnInit {
 
     effect(() => {
       if (this.globalStore.currentUser().id) {
-        this.loggedIn.set(true);
+        untracked(() => {
+          this.loggedIn.set(true);
+        });
       }
     });
   }
