@@ -1,17 +1,17 @@
 <div class="layout-topbar">
   <a class="layout-topbar-logo" routerLink="">
     <img src="assets/layout/images/{{layoutService.config().colorScheme === 'light' ? 'logo-dark' : 'logo-white'}}.svg"
-      alt="logo">
+      alt="ETCD Manager logo">
     <span>Etcd Manager</span>
   </a>
-  @if (globalStore.currentUser.id()) {
+  @if (loggedIn()) {
   <p-dropdown styleClass="dropdown-select-connection" [(ngModel)]="selectedConnection" [filter]="true"
     [options]="globalStore.connections.dataSource()" optionLabel="name" optionValue="id"
     placeholder="Select connection...">
   </p-dropdown>
   }
   <div class="layout-topbar-menu-left">
-    @if (selectedConnection() && hasManageUserPermission) {
+    @if (selectedConnection() && hasManageUserPermission && authService.loggedIn()) {
     <a (click)="globalStore.clickPage('etcdUserManager')" class="p-link layout-topbar-button"
       pTooltip="Etcd user management" tooltipPosition="bottom">
       <i aria-hidden="true" class="fa-solid fa-user"></i>
@@ -29,7 +29,7 @@
     </a>
     }
   </div>
-
+  @if (loggedIn()) {
   <div class="layout-topbar-menu" [ngClass]="{'layout-topbar-menu-mobile-active':globalStore.topMenuActive()}">
     @if (hasManageUserPermission) {
     <a (click)="globalStore.clickPage('connectionManager')" class="p-link layout-topbar-button"
@@ -53,6 +53,7 @@
     </div>
     }
   </div>
+  }
 </div>
 <p-dialog header="Change my password" [(visible)]="showChangeMyPassword"
   [style]="{'min-with': '600px', 'min-height': '450px', width: '600px', height: '450px' }" [closeOnEscape]="true"

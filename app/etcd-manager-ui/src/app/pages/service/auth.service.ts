@@ -1,10 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { patchState } from '@ngrx/signals';
+import { JwtPayload, jwtDecode } from "jwt-decode";
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { BaseService } from './base.service';
-import { JwtPayload, jwtDecode } from "jwt-decode";
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +15,7 @@ export class AuthService extends BaseService {
   USERINFO_KEY = 'userinfo';
   ENDPOINT_AUTHEN_LOGIN = 'api/auth/login';
 
-  private _router = inject(Router);
+  private readonly _router = inject(Router);
 
   hasValidAccessToken(): boolean {
     const token = this.getAccessTokenObject();
@@ -29,6 +28,10 @@ export class AuthService extends BaseService {
       return false;
     }
     return true;
+  }
+
+  loggedIn(): boolean {
+    return this.getAccessToken() !== null;
   }
 
   getAccessToken(): string | null {
@@ -52,7 +55,7 @@ export class AuthService extends BaseService {
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USERINFO_KEY);
-    this._router.navigateByUrl('/login');
+    window.location.href = '/login';
   }
 
   saveToken(accessToken: string, refreshToken: string) {
@@ -66,7 +69,7 @@ export class AuthService extends BaseService {
     if (item) {
       const nameId: string = (item as any).nameid;
       const userInfo = { id: nameId, name: item.sub! };
-      patchState(this.globalStore, { currentUser: userInfo });
+      this.globalStore.setCurrentUser(userInfo);
     }
   }
 }

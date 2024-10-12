@@ -1,5 +1,4 @@
 import { JsonPipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink, RouterModule } from '@angular/router';
 import { BadgeModule } from 'primeng/badge';
@@ -9,7 +8,6 @@ import { RippleModule } from 'primeng/ripple';
 export const commonLayoutImport = [
   FormsModule,
   ReactiveFormsModule,
-  HttpClientModule,
   BadgeModule,
   ButtonModule,
   RippleModule,

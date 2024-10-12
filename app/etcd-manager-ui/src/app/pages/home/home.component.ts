@@ -24,7 +24,7 @@ import { KeyDetailComponent } from './key-detail/key-detail.component';
   `],
   standalone: true,
   imports: [...commonLayoutImport, SplitterModule, KeyListComponent, KeyDetailComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class HomeComponent extends BaseComponent implements OnInit {
 

@@ -8,7 +8,7 @@ import { BaseComponent } from '../../base.component';
   styles: [``],
   standalone: true,
   imports: [...commonLayoutImport],
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class NotFoundComponent extends BaseComponent implements OnInit {
 

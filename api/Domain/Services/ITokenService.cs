@@ -1,8 +1,7 @@
-﻿namespace EtcdManager.API.Domain.Services
+﻿namespace EtcdManager.API.Domain.Services;
+
+public interface ITokenService
 {
-    public interface ITokenService
-    {
-        Task<JwtTokenData> GenerateJwtTokenData(int userId, string userName);
-        Task<JwtTokenData> RefreshToken(string refreshToken);
-    }
+    Task<JwtTokenData> GenerateJwtTokenData(int userId, string userName);
+    Task<JwtTokenData> RefreshToken(string refreshToken);
 }

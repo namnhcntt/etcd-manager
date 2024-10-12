@@ -1,16 +1,15 @@
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, output, signal } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { patchState } from '@ngrx/signals';
 import { Guid } from 'guid-ts';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { InputTextModule } from 'primeng/inputtext';
 import { MessagesModule } from 'primeng/messages';
 import { TableModule } from 'primeng/table';
 import { BaseComponent } from '../../base.component';
 import { commonLayoutImport } from '../../layout/common-layout-import';
 import { EtcdConnectionService } from '../service/etcd-connection.service';
-import { InputTextModule } from 'primeng/inputtext';
-import { InputSwitchModule } from 'primeng/inputswitch';
 
 @Component({
   selector: 'app-connection-manager',
@@ -19,7 +18,7 @@ import { InputSwitchModule } from 'primeng/inputswitch';
   standalone: true,
   imports: [...commonLayoutImport, MessagesModule, TableModule, DatePipe,
     NgTemplateOutlet, InputTextModule, InputSwitchModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class ConnectionManagerComponent extends BaseComponent implements OnInit {
 
@@ -31,9 +30,9 @@ export class ConnectionManagerComponent extends BaseComponent implements OnInit 
 
   closeForm = output<any>();
 
-  private _confirmationService = inject(ConfirmationService);
-  private _messageService = inject(MessageService);
-  private _etcdConnectionService = inject(EtcdConnectionService);
+  private readonly _confirmationService = inject(ConfirmationService);
+  private readonly _messageService = inject(MessageService);
+  private readonly _etcdConnectionService = inject(EtcdConnectionService);
 
   constructor() {
     super();
@@ -59,7 +58,7 @@ export class ConnectionManagerComponent extends BaseComponent implements OnInit 
   loadGrid() {
     this.loading.update(() => true);
     this._etcdConnectionService.getDataSource().then((data: any) => {
-      patchState(this.globalStore, { connections: { ...this.globalStore.connections(), dataSource: data.connections } });
+      this.globalStore.setDataSource(data.connections);
       this.loading.update(() => false);
     });
   }
@@ -126,7 +125,7 @@ export class ConnectionManagerComponent extends BaseComponent implements OnInit 
   }
 
   onSelectConnection(selectedItem: any) {
-    patchState(this.globalStore, { connections: { ...this.globalStore.connections(), selectedEtcdConnection: selectedItem } });
+    this.globalStore.selectedEtcdConnection(selectedItem);
     this.closeForm.emit(true);
   }
 

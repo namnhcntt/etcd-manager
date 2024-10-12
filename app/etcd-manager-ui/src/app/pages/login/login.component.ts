@@ -1,12 +1,13 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, ViewEncapsulation, inject, model } from '@angular/core';
 import { Router } from '@angular/router';
-import { Message } from 'primeng/api';
+import { Message, MessageService } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
 import { PasswordModule } from 'primeng/password';
 import { BaseComponent } from '../../base.component';
 import { commonLayoutImport } from '../../layout/common-layout-import';
 import { LayoutService } from '../../layout/service/app.layout.service';
 import { AuthService } from '../service/auth.service';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-login',
@@ -28,11 +29,15 @@ import { AuthService } from '../service/auth.service';
       margin-right: 1rem;
       color: var(--primary-color) !important;
     }
+
+    .layout-main {
+      width: 100%;
+    }
   `],
   standalone: true,
-  imports: [...commonLayoutImport, MessagesModule, PasswordModule],
+  imports: [...commonLayoutImport, MessagesModule, PasswordModule, InputTextModule],
   providers: [],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  encapsulation: ViewEncapsulation.None
 })
 export class LoginComponent extends BaseComponent implements OnInit {
 
@@ -44,6 +49,7 @@ export class LoginComponent extends BaseComponent implements OnInit {
   public layoutService = inject(LayoutService);
   router = inject(Router);
   authService = inject(AuthService);
+  private readonly _messageService = inject(MessageService);
 
   ngOnInit() {
     if (this.authService.hasValidAccessToken()) {
@@ -64,9 +70,9 @@ export class LoginComponent extends BaseComponent implements OnInit {
 
     this.authService.login(this.userName(), this.password()).then((res: any) => {
       this.authService.saveToken(res.token, res.refreshToken);
-      this.router.navigateByUrl('/');
+      window.location.href = '/';
     }).catch(err => {
-      this.msgs1 = [{ severity: 'error', summary: 'Error', detail: err.error.error }];
+      this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error, key: 'login' });
     });
   }
 }

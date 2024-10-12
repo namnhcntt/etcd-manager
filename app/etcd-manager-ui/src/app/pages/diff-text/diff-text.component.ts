@@ -11,7 +11,7 @@ declare var monaco: any;
   styles: [``],
   standalone: true,
   imports: [...commonLayoutImport, DialogModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class DiffTextComponent extends BaseComponent {
   dialog = input.required<Dialog>();

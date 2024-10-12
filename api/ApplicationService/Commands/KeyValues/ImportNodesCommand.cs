@@ -6,37 +6,39 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace EtcdManager.API.ApplicationService.Commands.KeyValues
+namespace EtcdManager.API.ApplicationService.Commands.KeyValues;
+
+public class ImportNodesCommand : IRequest<bool>
 {
-    public class ImportNodesCommand: IRequest<bool>
+    public KeyValue[] KeyValues { get; set; } = null!;
+    public int EtcdConnectionId { get; set; }
+
+    public class ImportNodesCommandHandler(
+        IEtcdService _etcdService,
+        EtcdManagerDataContext _dataContext,
+        IUserPrincipalService _userPrincipalService
+    ) : IRequestHandler<ImportNodesCommand, bool>
     {
-        public KeyValue[] KeyValues { get; set; } = null!;
-        public int EtcdConnectionId { get; set; }
-
-
-        public class  ImportNodesCommandHandler(
-            IEtcdService _etcdService,
-            EtcdManagerDataContext _dataContext,
-            IUserPrincipalService _userPrincipalService
-            ): IRequestHandler<ImportNodesCommand, bool>
+        public async Task<bool> Handle(
+            ImportNodesCommand request,
+            CancellationToken cancellationToken
+        )
         {
-            public async Task<bool> Handle(ImportNodesCommand request, CancellationToken cancellationToken)
-            {
-                var currentUserId = _userPrincipalService.Id;
-                var connectionSetting = await _dataContext.EtcdConnections.FirstAsync(x => x.Id == request.EtcdConnectionId && x.OwnerId == currentUserId);
-                await _etcdService.ImportNodes(request.KeyValues, connectionSetting);
-                return true;
-            }
+            var currentUserId = _userPrincipalService.Id;
+            var connectionSetting = await _dataContext.EtcdConnections.FirstAsync(x =>
+                x.Id == request.EtcdConnectionId && x.OwnerId == currentUserId
+            );
+            await _etcdService.ImportNodes(request.KeyValues, connectionSetting);
+            return true;
         }
+    }
 
-        public class ImportNodesCommandValidator: AbstractValidator<ImportNodesCommand>
+    public class ImportNodesCommandValidator : AbstractValidator<ImportNodesCommand>
+    {
+        public ImportNodesCommandValidator()
         {
-            public ImportNodesCommandValidator()
-            {
-                RuleFor(x => x.KeyValues).NotEmpty();
-                RuleFor(x => x.EtcdConnectionId).GreaterThan(0);
-            }
+            RuleFor(x => x.KeyValues).NotEmpty();
+            RuleFor(x => x.EtcdConnectionId).GreaterThan(0);
         }
-
     }
 }

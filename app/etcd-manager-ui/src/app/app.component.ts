@@ -1,17 +1,15 @@
 import { ChangeDetectionStrategy, Component, OnInit, effect, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
-import { patchState } from '@ngrx/signals';
 import { MessageService, PrimeNGConfig } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { SidebarModule } from 'primeng/sidebar';
+import { ToastModule } from 'primeng/toast';
 import { BaseComponent } from './base.component';
 import { ConnectionManagerComponent } from './pages/connection-manager/connection-manager.component';
 import { AuthService } from './pages/service/auth.service';
-import { UserManagerComponent } from './pages/user-manager/user-manager.component';
-import { ConfirmPopupModule } from 'primeng/confirmpopup';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ToastModule } from 'primeng/toast';
 import { EtcdConnectionService } from './pages/service/etcd-connection.service';
-import { LocalCacheService } from './pages/service/local-cache.service';
+import { UserManagerComponent } from './pages/user-manager/user-manager.component';
 
 @Component({
   selector: 'app-root',
@@ -21,16 +19,15 @@ import { LocalCacheService } from './pages/service/local-cache.service';
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class AppComponent extends BaseComponent implements OnInit {
   title = 'etcd-manager-ui';
   primengConfig = inject(PrimeNGConfig);
   authService = inject(AuthService);
   router = inject(Router);
-  private _etcdConnectionService = inject(EtcdConnectionService);
-  private _messageService = inject(MessageService);
-  private _localCacheService = inject(LocalCacheService);
+  private readonly _etcdConnectionService = inject(EtcdConnectionService);
+  private readonly _messageService = inject(MessageService);
 
   dipslaySidebar = false;
 
@@ -49,17 +46,19 @@ export class AppComponent extends BaseComponent implements OnInit {
       }
     });
 
-    this._etcdConnectionService.getDataSource().then((data: any) => {
-      patchState(this.globalStore, { connections: { ...this.globalStore.connections(), dataSource: data.connections } });
-    }).catch((err) => {
-      this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
+    effect(() => {
+      if (this.globalStore.currentUser().id) {
+        this.loadDataSource();
+      }
     });
   }
 
   ngOnInit(): void {
+    if (this.authService.loggedIn()) {
+      this.loadDataSource();
+    }
     this.primengConfig.ripple = true;
-    patchState(this.globalStore, { readyRenderPage: true });
-    // patchState(this.globalStore, { dipslaySidebar: { ...this.globalStore.dipslaySidebar(), connectionManager: true } });
+    this.globalStore.setReadyRenderPage(true);
     if (!this.authService.hasValidAccessToken()) {
       this.router.navigateByUrl('/login');
     } else {
@@ -67,7 +66,11 @@ export class AppComponent extends BaseComponent implements OnInit {
     }
   }
 
-  closeForm(formCode: string) {
-
+  private loadDataSource() {
+    this._etcdConnectionService.getDataSource().then((data: any) => {
+      this.globalStore.setDataSource(data.connections);
+    }).catch((err) => {
+      this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
+    });
   }
 }

@@ -1,7 +1,6 @@
-﻿namespace EtcdManager.API.Controllers.Auths.Post
+﻿namespace EtcdManager.API.Controllers.Auths.Post;
+
+public class RefreshTokenModel
 {
-    public class RefreshTokenModel
-    {
-        public string RefreshToken { get; set; }
-    }
+    public string RefreshToken { get; set; }
 }

@@ -19,7 +19,7 @@ import { LayoutService } from '../service/app.layout.service';
     ButtonModule,
     InputSwitchModule
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class AppConfigComponent {
   minimal = input<boolean>(false);

@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, ViewChild, effect, inject, model, signal, untracked } from '@angular/core';
-import { patchState } from '@ngrx/signals';
+import { ChangeDetectionStrategy, Component, ViewChild, effect, inject, model, signal, untracked } from '@angular/core';
 import { ConfirmationService, MenuItem, Message, MessageService, PrimeIcons, TreeNode } from 'primeng/api';
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { DialogModule } from 'primeng/dialog';
@@ -39,9 +38,9 @@ import { LocalCacheService } from '../../service/local-cache.service';
   imports: [...commonLayoutImport, ContextMenuModule, ToolbarModule, ListboxModule, TreeModule,
     DialogModule, FileUploadModule, ImportNodesComponent
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
-export class KeyListComponent extends BaseComponent implements OnInit {
+export class KeyListComponent extends BaseComponent {
 
   loaded = signal(false);
   viewMode: string = 'tree';
@@ -59,11 +58,11 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   @ViewChild('fileControl') fileControl!: FileUpload;
   @ViewChild('mainList', { static: false }) mainList!: Listbox;
 
-  private _messageService = inject(MessageService);
-  private _keyValueService = inject(KeyValueService);
-  private _localCacheService = inject(LocalCacheService);
-  private _confirmationService = inject(ConfirmationService);
-  private _exportService = inject(ExportService);
+  private readonly _messageService = inject(MessageService);
+  private readonly _keyValueService = inject(KeyValueService);
+  private readonly _localCacheService = inject(LocalCacheService);
+  private readonly _confirmationService = inject(ConfirmationService);
+  private readonly _exportService = inject(ExportService);
 
   constructor() {
     super();
@@ -144,10 +143,6 @@ export class KeyListComponent extends BaseComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
-
-  }
-
   getContextMenu() {
     const menu = [];
 
@@ -219,7 +214,8 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   createChildNode() {
     if (this.treeSelectedItem) {
       const newKey = this.treeSelectedItem().data + '/new_key';
-      patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), isNewState: true, defaultNewKey: newKey } });
+      this.globalStore.setIsNewState(true);
+      this.globalStore.setDefaultNewKey(newKey);
     }
   }
 
@@ -235,7 +231,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
       });
 
       this.listSelectedItem.update(() => dataSource.find(x => x.key == selectedKey));
-      patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), dataSource } });
+      this.globalStore.setDataSource(dataSource);
       this.bindDataSourceTree(dataSource, selectedKey);
       this.loaded.update(() => true);
     } catch (err: any) {
@@ -251,7 +247,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   async refreshList(showMessage: boolean = false, selectExistItem: boolean = true) {
-    patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), treeLoading: true } });
+    this.globalStore.setTreeLoading(true);
     const id = this.globalStore.connections.selectedEtcdConnection.id();
     if (id > 0) {
       const selectedKey = selectExistItem ? this.globalStore.keyValues.selectedKey() : null;
@@ -260,26 +256,23 @@ export class KeyListComponent extends BaseComponent implements OnInit {
       if (showMessage) {
         this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Refresh success' });
       }
-      patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), treeLoading: false } });
+      this.globalStore.setTreeLoading(false);
     }
   }
 
   switchViewMode(viewMode?: string | null) {
-    this.viewMode = viewMode || (this.viewMode == 'tree' ? 'list' : 'tree');
-    if (this.viewMode == 'list') {
-      // list
-      if (this.treeSelectedItem()) {
-        const key = this.treeSelectedItem().data;
-        this.listSelectedItem.update(() => ({ key, data: key }));
-        this.currentSelectRow = this.listSelectedItem();
-      }
-    } else {
-      // tree
-      if (this.listSelectedItem()) {
-        this.treeSelectedItem.update(() => this.listSelectedItem());
-        this.currentSelectRow = this.treeSelectedItem();
-      }
+    const isListView = (this.viewMode = viewMode ?? (this.viewMode === 'tree' ? 'list' : 'tree')) === 'list';
+    const selectedItem = isListView ? this.treeSelectedItem() : this.listSelectedItem();
+
+    if (isListView && selectedItem) {
+      const key = selectedItem.data;
+      this.listSelectedItem.update(() => ({ key, data: key }));
+      this.currentSelectRow = this.listSelectedItem();
+    } else if (!isListView && selectedItem) {
+      this.treeSelectedItem.update(() => selectedItem);
+      this.currentSelectRow = this.treeSelectedItem();
     }
+
     this.contextMenuModel = this.getContextMenu();
     this._localCacheService.set('viewMode', this.viewMode);
   }
@@ -290,27 +283,32 @@ export class KeyListComponent extends BaseComponent implements OnInit {
     for (let path of paths) {
       let pathParts = path.split('/');
       let currentNode = root;
-      for (let part of pathParts) {
-        if (part !== '') {
-          if (!currentNode.children) {
-            currentNode.children = [];
-          }
-          let childNode = currentNode.children.find(node => node.label === part);
-          if (!childNode) {
-            childNode = { label: part, data: pathParts.slice(0, pathParts.indexOf(part) + 1).join('/'), expanded: true, expandedIcon: PrimeIcons.FOLDER_OPEN, icon: PrimeIcons.FOLDER } as TreeNode;
-            childNode.key = childNode.data;
-            // pre-selected node if view mode is tree
-            if (this.viewMode === 'tree' && selectedKey && selectedKey === childNode.data) {
-              this.treeSelectedItem.update(() => childNode);
-            }
-            currentNode.children.push(childNode);
-          }
-          currentNode = childNode;
-        }
-      }
+      currentNode = this.processDatasourcePathPart(pathParts, currentNode, selectedKey);
     }
     const treeDataSource = root.children || [];
-    patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), treeDataSource } });
+    this.globalStore.setTreeDataSource(treeDataSource);
+  }
+
+  private processDatasourcePathPart(pathParts: any, currentNode: TreeNode<string>, selectedKey: string | null | undefined) {
+    for (let part of pathParts) {
+      if (part !== '') {
+        if (!currentNode.children) {
+          currentNode.children = [];
+        }
+        let childNode = currentNode.children.find(node => node.label === part);
+        if (!childNode) {
+          childNode = { label: part, data: pathParts.slice(0, pathParts.indexOf(part) + 1).join('/'), expanded: true, expandedIcon: PrimeIcons.FOLDER_OPEN, icon: PrimeIcons.FOLDER } as TreeNode;
+          childNode.key = childNode.data;
+          // pre-selected node if view mode is tree
+          if (this.viewMode === 'tree' && selectedKey && selectedKey === childNode.data) {
+            this.treeSelectedItem.update(() => childNode);
+          }
+          currentNode.children.push(childNode);
+        }
+        currentNode = childNode;
+      }
+    }
+    return currentNode;
   }
 
   nomarlizePathCombine(path: string) {
@@ -335,7 +333,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   newKey() {
-    patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), isNewState: true } });
+    this.globalStore.setIsNewState(true);
   }
 
   showContextMenuViewModeList(menu: ContextMenu, event: MouseEvent, item: any) {
@@ -362,7 +360,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   onNodeSelect(evt: any) {
-    patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), selectedKey: evt.node.data } });
+    this.globalStore.setSelectedKey(evt.node.data);
     // save to cache
     this._localCacheService.set('selectedKey', evt.node.data);
   }

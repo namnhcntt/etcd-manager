@@ -1,6 +1,5 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, effect, inject, model, untracked } from '@angular/core';
-import { patchState } from '@ngrx/signals';
+import { ChangeDetectionStrategy, Component, OnInit, effect, inject, model, signal, untracked } from '@angular/core';
 import { MenuItem, PrimeIcons } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { DialogModule } from 'primeng/dialog';
@@ -39,36 +38,32 @@ import { LayoutService } from "./service/app.layout.service";
 
     }`],
   imports: [...commonLayoutImport, NgClass, MenuModule, DropdownModule, AvatarModule, DialogModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class AppTopBarComponent extends BaseComponent implements OnInit {
   public layoutService = inject(LayoutService);
   public authService = inject(AuthService);
 
-  private _localCacheService = inject(LocalCacheService);
+  private readonly _localCacheService = inject(LocalCacheService);
 
   selectedConnection = model<any>(-1);
   selfEvent = false;
-
   showChangeMyPassword = false;
   userMenuItems: MenuItem[] = [
-    {
-      label: 'Change Password', icon: PrimeIcons.LOCK,
-      command: this.changePassword.bind(this)
-    },
     {
       label: 'Logout', icon: PrimeIcons.SIGN_OUT,
       command: this.logout.bind(this)
     },
   ];
   hasManageUserPermission = true;
+  loggedIn = signal(this.authService.loggedIn());
 
   constructor() {
     super();
 
     effect(() => {
       const selectedItem = this.globalStore.connections.selectedEtcdConnection();
-      if (selectedItem && selectedItem.id && selectedItem.id > 0) {
+      if (selectedItem?.id > 0) {
         untracked(() => {
           this.selectedConnection.update(() => selectedItem.id);
           // save cache
@@ -81,8 +76,14 @@ export class AppTopBarComponent extends BaseComponent implements OnInit {
       const selectedConnectionChanged = this.selectedConnection();
       const selectedItem = this.globalStore.connections.dataSource().find(x => x.id == selectedConnectionChanged);
       untracked(() => {
-        patchState(this.globalStore, { connections: { ...this.globalStore.connections(), selectedEtcdConnection: selectedItem } });
+        this.globalStore.selectedEtcdConnection(selectedItem);
       });
+    });
+
+    effect(() => {
+      if (this.globalStore.currentUser().id) {
+        this.loggedIn.set(true);
+      }
     });
   }
 

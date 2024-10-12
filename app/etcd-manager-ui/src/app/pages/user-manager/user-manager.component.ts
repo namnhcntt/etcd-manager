@@ -7,7 +7,7 @@ import { BaseComponent } from '../../base.component';
   styles: [``],
   standalone: true,
   imports: [],
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class UserManagerComponent extends BaseComponent implements OnInit {
   closeForm = output<any>();
