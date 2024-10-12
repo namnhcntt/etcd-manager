@@ -13,7 +13,7 @@ import { LayoutService } from "./service/app.layout.service";
   templateUrl: './app.layout.component.html',
   standalone: true,
   imports: [...commonLayoutImport, AppTopBarComponent, AppFooterComponent, AppConfigComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class AppLayoutComponent extends BaseComponent {
 

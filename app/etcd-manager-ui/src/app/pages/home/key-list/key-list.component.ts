@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, ViewChild, effect, inject, model, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild, effect, inject, model, signal, untracked } from '@angular/core';
 import { ConfirmationService, MenuItem, Message, MessageService, PrimeIcons, TreeNode } from 'primeng/api';
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { DialogModule } from 'primeng/dialog';
@@ -38,9 +38,9 @@ import { LocalCacheService } from '../../service/local-cache.service';
   imports: [...commonLayoutImport, ContextMenuModule, ToolbarModule, ListboxModule, TreeModule,
     DialogModule, FileUploadModule, ImportNodesComponent
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
-export class KeyListComponent extends BaseComponent implements OnInit {
+export class KeyListComponent extends BaseComponent {
 
   loaded = signal(false);
   viewMode: string = 'tree';
@@ -141,10 +141,6 @@ export class KeyListComponent extends BaseComponent implements OnInit {
         resolve(false);
       });
     });
-  }
-
-  ngOnInit() {
-
   }
 
   getContextMenu() {
@@ -265,21 +261,18 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   switchViewMode(viewMode?: string | null) {
-    this.viewMode = viewMode || (this.viewMode == 'tree' ? 'list' : 'tree');
-    if (this.viewMode == 'list') {
-      // list
-      if (this.treeSelectedItem()) {
-        const key = this.treeSelectedItem().data;
-        this.listSelectedItem.update(() => ({ key, data: key }));
-        this.currentSelectRow = this.listSelectedItem();
-      }
-    } else {
-      // tree
-      if (this.listSelectedItem()) {
-        this.treeSelectedItem.update(() => this.listSelectedItem());
-        this.currentSelectRow = this.treeSelectedItem();
-      }
+    const isListView = (this.viewMode = viewMode ?? (this.viewMode === 'tree' ? 'list' : 'tree')) === 'list';
+    const selectedItem = isListView ? this.treeSelectedItem() : this.listSelectedItem();
+
+    if (isListView && selectedItem) {
+      const key = selectedItem.data;
+      this.listSelectedItem.update(() => ({ key, data: key }));
+      this.currentSelectRow = this.listSelectedItem();
+    } else if (!isListView && selectedItem) {
+      this.treeSelectedItem.update(() => selectedItem);
+      this.currentSelectRow = this.treeSelectedItem();
     }
+
     this.contextMenuModel = this.getContextMenu();
     this._localCacheService.set('viewMode', this.viewMode);
   }
@@ -290,27 +283,32 @@ export class KeyListComponent extends BaseComponent implements OnInit {
     for (let path of paths) {
       let pathParts = path.split('/');
       let currentNode = root;
-      for (let part of pathParts) {
-        if (part !== '') {
-          if (!currentNode.children) {
-            currentNode.children = [];
-          }
-          let childNode = currentNode.children.find(node => node.label === part);
-          if (!childNode) {
-            childNode = { label: part, data: pathParts.slice(0, pathParts.indexOf(part) + 1).join('/'), expanded: true, expandedIcon: PrimeIcons.FOLDER_OPEN, icon: PrimeIcons.FOLDER } as TreeNode;
-            childNode.key = childNode.data;
-            // pre-selected node if view mode is tree
-            if (this.viewMode === 'tree' && selectedKey && selectedKey === childNode.data) {
-              this.treeSelectedItem.update(() => childNode);
-            }
-            currentNode.children.push(childNode);
-          }
-          currentNode = childNode;
-        }
-      }
+      currentNode = this.processDatasourcePathPart(pathParts, currentNode, selectedKey);
     }
     const treeDataSource = root.children || [];
     this.globalStore.setTreeDataSource(treeDataSource);
+  }
+
+  private processDatasourcePathPart(pathParts: any, currentNode: TreeNode<string>, selectedKey: string | null | undefined) {
+    for (let part of pathParts) {
+      if (part !== '') {
+        if (!currentNode.children) {
+          currentNode.children = [];
+        }
+        let childNode = currentNode.children.find(node => node.label === part);
+        if (!childNode) {
+          childNode = { label: part, data: pathParts.slice(0, pathParts.indexOf(part) + 1).join('/'), expanded: true, expandedIcon: PrimeIcons.FOLDER_OPEN, icon: PrimeIcons.FOLDER } as TreeNode;
+          childNode.key = childNode.data;
+          // pre-selected node if view mode is tree
+          if (this.viewMode === 'tree' && selectedKey && selectedKey === childNode.data) {
+            this.treeSelectedItem.update(() => childNode);
+          }
+          currentNode.children.push(childNode);
+        }
+        currentNode = childNode;
+      }
+    }
+    return currentNode;
   }
 
   nomarlizePathCombine(path: string) {

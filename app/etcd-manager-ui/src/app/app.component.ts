@@ -1,16 +1,15 @@
 import { ChangeDetectionStrategy, Component, OnInit, effect, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { MessageService, PrimeNGConfig } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { SidebarModule } from 'primeng/sidebar';
+import { ToastModule } from 'primeng/toast';
 import { BaseComponent } from './base.component';
 import { ConnectionManagerComponent } from './pages/connection-manager/connection-manager.component';
 import { AuthService } from './pages/service/auth.service';
-import { UserManagerComponent } from './pages/user-manager/user-manager.component';
-import { ConfirmPopupModule } from 'primeng/confirmpopup';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ToastModule } from 'primeng/toast';
 import { EtcdConnectionService } from './pages/service/etcd-connection.service';
-import { LocalCacheService } from './pages/service/local-cache.service';
+import { UserManagerComponent } from './pages/user-manager/user-manager.component';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +19,7 @@ import { LocalCacheService } from './pages/service/local-cache.service';
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class AppComponent extends BaseComponent implements OnInit {
   title = 'etcd-manager-ui';
@@ -29,7 +28,6 @@ export class AppComponent extends BaseComponent implements OnInit {
   router = inject(Router);
   private readonly _etcdConnectionService = inject(EtcdConnectionService);
   private readonly _messageService = inject(MessageService);
-  private readonly _localCacheService = inject(LocalCacheService);
 
   dipslaySidebar = false;
 
@@ -48,10 +46,17 @@ export class AppComponent extends BaseComponent implements OnInit {
       }
     });
 
-    this.loadDataSource();
+    effect(() => {
+      if (this.globalStore.currentUser().id) {
+        this.loadDataSource();
+      }
+    });
   }
 
   ngOnInit(): void {
+    if (this.authService.loggedIn()) {
+      this.loadDataSource();
+    }
     this.primengConfig.ripple = true;
     this.globalStore.setReadyRenderPage(true);
     if (!this.authService.hasValidAccessToken()) {

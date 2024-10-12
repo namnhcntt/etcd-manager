@@ -18,7 +18,7 @@ import { EtcdConnectionService } from '../service/etcd-connection.service';
   standalone: true,
   imports: [...commonLayoutImport, MessagesModule, TableModule, DatePipe,
     NgTemplateOutlet, InputTextModule, InputSwitchModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class ConnectionManagerComponent extends BaseComponent implements OnInit {
 
@@ -30,9 +30,9 @@ export class ConnectionManagerComponent extends BaseComponent implements OnInit 
 
   closeForm = output<any>();
 
-  private _confirmationService = inject(ConfirmationService);
-  private _messageService = inject(MessageService);
-  private _etcdConnectionService = inject(EtcdConnectionService);
+  private readonly _confirmationService = inject(ConfirmationService);
+  private readonly _messageService = inject(MessageService);
+  private readonly _etcdConnectionService = inject(EtcdConnectionService);
 
   constructor() {
     super();

@@ -1,8 +1,7 @@
-﻿namespace EtcdManager.API.Controllers.KeyValues.Post
+﻿namespace EtcdManager.API.Controllers.KeyValues.Post;
+
+public class RenameKeyModel
 {
-    public class RenameKeyModel
-    {
-        public string OldKey { get; set; } = null!;
-        public string NewKey { get; set; } = null!;
-    }
+    public string OldKey { get; set; } = null!;
+    public string NewKey { get; set; } = null!;
 }

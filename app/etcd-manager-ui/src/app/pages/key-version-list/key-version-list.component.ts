@@ -16,7 +16,7 @@ import { KeyValueService } from '../service/key-value.service';
   styles: [``],
   standalone: true,
   imports: [...commonLayoutImport, DialogModule, DiffTextComponent, TableModule, ButtonModule, InputTextModule, TooltipModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class KeyVersionListComponent extends BaseComponent {
 

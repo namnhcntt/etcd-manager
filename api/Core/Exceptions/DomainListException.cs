@@ -1,49 +1,47 @@
 ﻿using EtcdManager.API.Core.Models;
 using FluentValidation.Results;
 
-namespace EtcdManager.API.Core.Exceptions
-{
-    /// <summary>
-    /// Exception for domain list errors
-    /// </summary>
-    [Serializable]
+namespace EtcdManager.API.Core.Exceptions;
+
+/// <summary>
+/// Exception for domain list errors
+/// </summary>
+[Serializable]
 #pragma warning disable S3925 // "ISerializable" should be implemented correctly
-    public class DomainListException : Exception
+public class DomainListException : Exception
 #pragma warning restore S3925 // "ISerializable" should be implemented correctly
+{
+    public Dictionary<(string code, string? message), string?> Errors { get; private set; } =
+        new Dictionary<(string code, string? message), string?>();
+
+    public DomainListException(Dictionary<(string code, string? message), string?> errors)
     {
-        public Dictionary<(string code, string? message), string?> Errors { get; private set; } =
-          new Dictionary<(string code, string? message), string?>();
+        Errors = errors;
+    }
 
-        public DomainListException(Dictionary<(string code, string? message), string?> errors)
+    public DomainListException(IEnumerable<ValidationFailure>? errors)
+    {
+        if (errors is null)
         {
-            Errors = errors;
+            return;
         }
 
-        public DomainListException(IEnumerable<ValidationFailure>? errors)
+        foreach (var error in errors)
         {
-            if (errors is null)
-            {
-                return;
-            }
+            Errors.Add((error.ErrorCode, error.ErrorMessage), error.PropertyName);
+        }
+    }
 
-            foreach (var error in errors)
-            {
-                Errors.Add((error.ErrorCode, error.ErrorMessage), error.PropertyName);
-            }
+    public DomainListException(IEnumerable<ErrorDetail>? errors)
+    {
+        if (errors is null)
+        {
+            return;
         }
 
-        public DomainListException(IEnumerable<ErrorDetail>? errors)
+        foreach (var error in errors)
         {
-            if (errors is null)
-            {
-                return;
-            }
-
-            foreach (var error in errors)
-            {
-                Errors.Add((error.ErrorCode, error.ErrorMessage), error.PropertyName);
-            }
+            Errors.Add((error.ErrorCode, error.ErrorMessage), error.PropertyName);
         }
-
     }
 }

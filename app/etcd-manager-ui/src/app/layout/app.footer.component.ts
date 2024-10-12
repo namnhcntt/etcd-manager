@@ -7,7 +7,7 @@ import { commonLayoutImport } from './common-layout-import';
   templateUrl: './app.footer.component.html',
   standalone: true,
   imports: [...commonLayoutImport],
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class AppFooterComponent {
   public layoutService = inject(LayoutService);

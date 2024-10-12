@@ -41,7 +41,7 @@ import { KeyValueService } from '../../service/key-value.service';
   imports: [...commonLayoutImport, ToolbarModule, DropdownModule, DialogModule,
     FileUploadModule, CodeEditorModule, InplaceModule, TooltipModule,
     InputTextModule, AutoFocusModule, KeyVersionListComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class KeyDetailComponent extends BaseComponent {
   showKeyVersion = model(false);
@@ -136,7 +136,7 @@ export class KeyDetailComponent extends BaseComponent {
           this.loaded.update(() => true);
           this.editorLoaded.update(() => true);
           // title
-          this.renameKey(this.renameKeyInplace!);
+          this.renameKey(this.renameKeyInplace);
         });
       } else {
         untracked(() => {
@@ -224,7 +224,7 @@ export class KeyDetailComponent extends BaseComponent {
 
   handleSelectFile(evt: any) {
     this._exportService.readDataFromFile(evt.currentFiles[0]).then(rs => {
-      if (rs && rs.value) {
+      if (rs?.value) {
         patchState(this.keyDetail, { value: rs.value });
         this.codeModel.update(() => ({ ...this.codeModel(), value: rs.value }));
         this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Imported' });

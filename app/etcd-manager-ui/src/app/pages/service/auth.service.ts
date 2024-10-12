@@ -30,6 +30,10 @@ export class AuthService extends BaseService {
     return true;
   }
 
+  loggedIn(): boolean {
+    return this.getAccessToken() !== null;
+  }
+
   getAccessToken(): string | null {
     return localStorage.getItem(this.ACCESS_TOKEN_KEY);
   }
@@ -51,7 +55,7 @@ export class AuthService extends BaseService {
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USERINFO_KEY);
-    this._router.navigateByUrl('/login');
+    window.location.href = '/login';
   }
 
   saveToken(accessToken: string, refreshToken: string) {
