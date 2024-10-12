@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, OnInit, ViewChild, effect, inject, model, signal, untracked } from '@angular/core';
-import { patchState } from '@ngrx/signals';
 import { ConfirmationService, MenuItem, Message, MessageService, PrimeIcons, TreeNode } from 'primeng/api';
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { DialogModule } from 'primeng/dialog';
@@ -59,11 +58,11 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   @ViewChild('fileControl') fileControl!: FileUpload;
   @ViewChild('mainList', { static: false }) mainList!: Listbox;
 
-  private _messageService = inject(MessageService);
-  private _keyValueService = inject(KeyValueService);
-  private _localCacheService = inject(LocalCacheService);
-  private _confirmationService = inject(ConfirmationService);
-  private _exportService = inject(ExportService);
+  private readonly _messageService = inject(MessageService);
+  private readonly _keyValueService = inject(KeyValueService);
+  private readonly _localCacheService = inject(LocalCacheService);
+  private readonly _confirmationService = inject(ConfirmationService);
+  private readonly _exportService = inject(ExportService);
 
   constructor() {
     super();
@@ -219,7 +218,8 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   createChildNode() {
     if (this.treeSelectedItem) {
       const newKey = this.treeSelectedItem().data + '/new_key';
-      patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), isNewState: true, defaultNewKey: newKey } });
+      this.globalStore.setIsNewState(true);
+      this.globalStore.setDefaultNewKey(newKey);
     }
   }
 
@@ -235,7 +235,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
       });
 
       this.listSelectedItem.update(() => dataSource.find(x => x.key == selectedKey));
-      patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), dataSource } });
+      this.globalStore.setDataSource(dataSource);
       this.bindDataSourceTree(dataSource, selectedKey);
       this.loaded.update(() => true);
     } catch (err: any) {
@@ -251,7 +251,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   async refreshList(showMessage: boolean = false, selectExistItem: boolean = true) {
-    patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), treeLoading: true } });
+    this.globalStore.setTreeLoading(true);
     const id = this.globalStore.connections.selectedEtcdConnection.id();
     if (id > 0) {
       const selectedKey = selectExistItem ? this.globalStore.keyValues.selectedKey() : null;
@@ -260,7 +260,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
       if (showMessage) {
         this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Refresh success' });
       }
-      patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), treeLoading: false } });
+      this.globalStore.setTreeLoading(false);
     }
   }
 
@@ -310,7 +310,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
       }
     }
     const treeDataSource = root.children || [];
-    patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), treeDataSource } });
+    this.globalStore.setTreeDataSource(treeDataSource);
   }
 
   nomarlizePathCombine(path: string) {
@@ -335,7 +335,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   newKey() {
-    patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), isNewState: true } });
+    this.globalStore.setIsNewState(true);
   }
 
   showContextMenuViewModeList(menu: ContextMenu, event: MouseEvent, item: any) {
@@ -362,7 +362,7 @@ export class KeyListComponent extends BaseComponent implements OnInit {
   }
 
   onNodeSelect(evt: any) {
-    patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), selectedKey: evt.node.data } });
+    this.globalStore.setSelectedKey(evt.node.data);
     // save to cache
     this._localCacheService.set('selectedKey', evt.node.data);
   }

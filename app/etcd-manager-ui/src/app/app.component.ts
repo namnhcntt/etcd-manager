@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, effect, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
-import { patchState } from '@ngrx/signals';
 import { MessageService, PrimeNGConfig } from 'primeng/api';
 import { SidebarModule } from 'primeng/sidebar';
 import { BaseComponent } from './base.component';
@@ -28,9 +27,9 @@ export class AppComponent extends BaseComponent implements OnInit {
   primengConfig = inject(PrimeNGConfig);
   authService = inject(AuthService);
   router = inject(Router);
-  private _etcdConnectionService = inject(EtcdConnectionService);
-  private _messageService = inject(MessageService);
-  private _localCacheService = inject(LocalCacheService);
+  private readonly _etcdConnectionService = inject(EtcdConnectionService);
+  private readonly _messageService = inject(MessageService);
+  private readonly _localCacheService = inject(LocalCacheService);
 
   dipslaySidebar = false;
 
@@ -49,17 +48,12 @@ export class AppComponent extends BaseComponent implements OnInit {
       }
     });
 
-    this._etcdConnectionService.getDataSource().then((data: any) => {
-      patchState(this.globalStore, { connections: { ...this.globalStore.connections(), dataSource: data.connections } });
-    }).catch((err) => {
-      this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
-    });
+    this.loadDataSource();
   }
 
   ngOnInit(): void {
     this.primengConfig.ripple = true;
-    patchState(this.globalStore, { readyRenderPage: true });
-    // patchState(this.globalStore, { dipslaySidebar: { ...this.globalStore.dipslaySidebar(), connectionManager: true } });
+    this.globalStore.setReadyRenderPage(true);
     if (!this.authService.hasValidAccessToken()) {
       this.router.navigateByUrl('/login');
     } else {
@@ -67,7 +61,11 @@ export class AppComponent extends BaseComponent implements OnInit {
     }
   }
 
-  closeForm(formCode: string) {
-
+  private loadDataSource() {
+    this._etcdConnectionService.getDataSource().then((data: any) => {
+      this.globalStore.setDataSource(data.connections);
+    }).catch((err) => {
+      this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
+    });
   }
 }

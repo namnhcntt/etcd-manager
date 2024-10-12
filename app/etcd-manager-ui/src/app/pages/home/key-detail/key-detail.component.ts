@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewChild, effect, inject, model, signal, untracked } from '@angular/core';
 import { patchState, signalState } from '@ngrx/signals';
-import { CodeEditorComponent, CodeEditorModule, CodeModel, CodeModelChangedEvent } from '@ngstack/code-editor';
+import { CodeEditorComponent, CodeEditorModule, CodeModel } from '@ngstack/code-editor';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { AutoFocusModule } from 'primeng/autofocus';
 import { DialogModule } from 'primeng/dialog';
@@ -14,8 +14,8 @@ import { BaseComponent } from '../../../base.component';
 import { commonLayoutImport } from '../../../layout/common-layout-import';
 import { CodeEditorConstant } from '../../constants/code-editor.constant';
 import { KeyVersionListComponent } from '../../key-version-list/key-version-list.component';
-import { KeyValueService } from '../../service/key-value.service';
 import { ExportService } from '../../service/export.service';
+import { KeyValueService } from '../../service/key-value.service';
 
 @Component({
   selector: 'app-key-detail',
@@ -68,10 +68,10 @@ export class KeyDetailComponent extends BaseComponent {
   @ViewChild('fileControl') fileControl!: FileUpload;
   @ViewChild('renameKeyInplace') renameKeyInplace!: Inplace;
 
-  public _keyValueService = inject(KeyValueService);
-  private _messageService = inject(MessageService);
-  private _exportService = inject(ExportService);
-  _confirmationService = inject(ConfirmationService);
+  public readonly _keyValueService = inject(KeyValueService);
+  private readonly _messageService = inject(MessageService);
+  private readonly _exportService = inject(ExportService);
+  private readonly _confirmationService = inject(ConfirmationService);
 
   constructor() {
     super();
@@ -93,7 +93,7 @@ export class KeyDetailComponent extends BaseComponent {
       if (this.globalStore.keyValues.newKeySuccessAt()) {
         this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Saved' });
         untracked(() => {
-          patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), isNewState: false } });
+          this.globalStore.setIsNewState(false);
         });
       }
     });
@@ -130,7 +130,7 @@ export class KeyDetailComponent extends BaseComponent {
           // init data
           const defaultNewKeyValue = this.globalStore.keyValues.defaultNewKey() ?? 'key1';
           patchState(this.keyDetail, { key: defaultNewKeyValue, value: null });
-          patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), selectedKey: '' } });
+          this.globalStore.setSelectedKey('');
           this.codeModel.update(() => ({ ...this.codeModel(), value: '' }));
           this.isNewState.update(() => true);
           this.loaded.update(() => true);
@@ -142,7 +142,7 @@ export class KeyDetailComponent extends BaseComponent {
         untracked(() => {
           this.isNewState.update(() => false);
           this.editing.update(() => false);
-          patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), defaultNewKey: null } });
+          this.globalStore.setDefaultNewKey(null);
         });
       }
     });
@@ -153,7 +153,7 @@ export class KeyDetailComponent extends BaseComponent {
       const selectedKeyChanged = this.globalStore.keyValues.selectedKey();
       if (selectedKeyChanged) {
         untracked(async () => {
-          patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), isNewState: false } });
+          this.globalStore.setIsNewState(false);
           await this.getByKey(selectedKeyChanged);
         });
       }
@@ -177,7 +177,8 @@ export class KeyDetailComponent extends BaseComponent {
   saveRenameKey() {
     this._keyValueService.renameKey(this.globalStore.connections.selectedEtcdConnection.id(), this.keyDetail.key()!, this.inplaceRenameValue!)
       .then(() => {
-        patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), selectedKey: this.inplaceRenameValue!, renameKeySuccessAt: new Date() } });
+        this.globalStore.setSelectedKey(this.inplaceRenameValue!);
+        this.globalStore.setRenameKeySuccessAt(new Date());
       })
       .catch((err: any) => {
         this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
@@ -202,7 +203,8 @@ export class KeyDetailComponent extends BaseComponent {
       accept: () => {
         this._keyValueService.deleteKey(this.globalStore.connections.selectedEtcdConnection.id(), this.keyDetail.key()!)
           .then(() => {
-            patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), selectedKey: '', deleteSuccessAt: new Date() } });
+            this.globalStore.setSelectedKey('');
+            this.globalStore.setDeleteSuccessAt(new Date());
           })
           .catch((err: any) => {
             this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
@@ -262,7 +264,8 @@ export class KeyDetailComponent extends BaseComponent {
     const key = this.isNewState() ? this.inplaceRenameValue : this.keyDetail.key();
     this._keyValueService.save(this.globalStore.connections.selectedEtcdConnection.id(), key!, this.codeModel().value)
       .then(() => {
-        patchState(this.globalStore, { keyValues: { ...this.globalStore.keyValues(), selectedKey: key!, newKeySuccessAt: new Date() } });
+        this.globalStore.setSelectedKey(key!);
+        this.globalStore.setNewKeySuccessAt(new Date());
         this.isNewState.update(() => false);
       })
       .catch((err: any) => {
