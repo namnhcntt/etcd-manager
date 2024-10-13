@@ -1,9 +1,8 @@
-<!-- TODO: Curent issue detected:
-- In treeview, when you click on a node that not exit in etcd, the server return 500 error and do nothing
--> Expected: When click on a node that not exit in etcd, handle this error on server, return 404 not found status, and client show a new
-empty node value, If user fill value and save, the new node should be created
-- When switch between treeview and list, missing current selected item
--> Expected: When switch between treeview and list, the current selected item should be kept
+<!-- TODO: Current issues detected:
+- In the tree view, when you click on a node that does not exist in etcd, the server returns a 500 error and does nothing.
+-> Expected: When clicking on a node that does not exist in etcd, handle this error on the server, return a 404 not found status, and the client should show a new empty node value. If the user fills in the value and saves, the new node should be created.
+- When switching between the tree view and list, the current selected item is missing.
+-> Expected: When switching between the tree view and list, the current selected item should be retained.
 -->
 @if (loaded()) {
 <p-toolbar styleClass="p-custom-toolbar">
