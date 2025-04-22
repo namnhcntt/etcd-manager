@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "build-prod": "ng build --configuration production",
-    "build-prod-sourcemap": "ng build --configuration production --source-map=true",
+    "build-prod-sourcemap": "pnpm install && ng build --configuration production --source-map=true",
     "test": "ng test"
   },
   "private": true,
