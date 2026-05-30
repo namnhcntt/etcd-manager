@@ -27,4 +27,10 @@
     <Folder Include="wwwroot\rawdb\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="EtcdManager.API.Tests\**" />
+    <EmbeddedResource Remove="EtcdManager.API.Tests\**" />
+    <None Remove="EtcdManager.API.Tests\**" />
+  </ItemGroup>
+
 </Project>
