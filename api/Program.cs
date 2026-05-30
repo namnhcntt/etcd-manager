@@ -66,7 +66,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidateAudience = false,
+            ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration.GetValue<string>("Jwt:Issuer"),
@@ -82,6 +82,10 @@ builder.Services.AddDbContext<EtcdManagerDataContext>(options =>
 });
 
 
+var allowedOrigins = builder.Configuration
+    .GetSection("AllowedOrigins")
+    .Get<string[]>() ?? Array.Empty<string>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -91,11 +95,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors(builder =>
+app.UseCors(corsBuilder =>
 {
-    builder.AllowAnyOrigin();
-    builder.AllowAnyHeader();
-    builder.AllowAnyMethod();
+    corsBuilder
+        .WithOrigins(allowedOrigins)
+        .AllowAnyHeader()
+        .AllowAnyMethod();
 });
 
 app.UseHttpsRedirection();
