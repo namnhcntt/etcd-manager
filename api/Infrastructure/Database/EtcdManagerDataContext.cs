@@ -51,7 +51,7 @@ public class EtcdManagerDataContext : DbContext
         });
     }
 
-    internal void SeedData(
+    public void SeedData(
         ILogger<EtcdManagerDataContext> logger,
         IWebHostEnvironment webHostEnvironment
     )
@@ -75,17 +75,14 @@ public class EtcdManagerDataContext : DbContext
             logger.LogInformation("User root does not exist, create new...");
             var defaultPassword = Environment.GetEnvironmentVariable("ROOT_ACCOUNT_PASSWORD");
 
-            if (!string.IsNullOrWhiteSpace(defaultPassword))
+            if (string.IsNullOrWhiteSpace(defaultPassword))
             {
-                logger.LogInformation("default root password is defined in ROOT_ACCOUNT_PASSWORD");
-            }
-            else
-            {
-                logger.LogInformation(
-                    "ROOT_ACCOUNT_PASSWORD does not set, use default password 'root'"
+                throw new InvalidOperationException(
+                    "ROOT_ACCOUNT_PASSWORD environment variable must be set before starting the application."
                 );
-                defaultPassword = "root";
             }
+
+            logger.LogInformation("Creating root account from ROOT_ACCOUNT_PASSWORD.");
 
             this.AppUsers.Add(
                 new AppUser()
