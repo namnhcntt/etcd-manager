@@ -113,3 +113,10 @@ api/EtcdManager.API/wwwroot/data/etcd-manager.sqbpro
 .vs
 *.csproj.user
 app/etcd-manager-ui/pnpm-lock.yaml
+
+# Secrets — không commit
+appsettings.Production.json
+appsettings.Staging.json
+appsettings.Development.json
+.env.*
+api/wwwroot/data/
