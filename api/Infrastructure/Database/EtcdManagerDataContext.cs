@@ -91,7 +91,7 @@ public class EtcdManagerDataContext : DbContext
                 new AppUser()
                 {
                     Username = "root",
-                    Password = CommonHelper.SHA256Hash(defaultPassword)
+                    Password = CommonHelper.HashPassword(defaultPassword)
                 }
             );
             this.SaveChanges();

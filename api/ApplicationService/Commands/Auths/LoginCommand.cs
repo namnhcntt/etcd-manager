@@ -30,19 +30,14 @@ public class LoginCommand : IRequest<LoginCommandResult>
                 CancellationToken cancellationToken
             )
             {
-                // validate user
-                // Password hash sha256
-                var hashedPassword = CommonHelper.SHA256Hash(request.Password);
                 var user = await _dataContext.AppUsers.FirstOrDefaultAsync(x =>
-                    x.Username == request.Username && x.Password == hashedPassword
+                    x.Username == request.Username,
+                    cancellationToken
                 );
-                // generate token
-                if (user != null)
+
+                if (user != null && CommonHelper.VerifyPassword(request.Password, user.Password!))
                 {
-                    var tokenData = await _tokenService.GenerateJwtTokenData(
-                        user.Id,
-                        request.Username
-                    );
+                    var tokenData = await _tokenService.GenerateJwtTokenData(user.Id, request.Username);
                     return tokenData.Adapt<LoginCommandResult>();
                 }
 
