@@ -14,7 +14,7 @@ public class TokenService(IConfiguration _configuration) : ITokenService
     public Task<JwtTokenData> GenerateJwtTokenData(int userId, string userName)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(
@@ -73,7 +73,7 @@ public class TokenService(IConfiguration _configuration) : ITokenService
     {
         // decode refresh token jwt
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
         var principal = tokenHandler.ValidateToken(
             refreshToken,
             new TokenValidationParameters
