@@ -5,20 +5,30 @@ using Mapster;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EtcdManager.API.Controllers.Auth;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController(ISender mediator) : CoreController(mediator)
+public class AuthController(ISender mediator, ILogger<AuthController> logger) : CoreController(mediator)
 {
     [HttpPost("Login")]
     [AllowAnonymous]
+    [EnableRateLimiting("login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
-        var command = model.Adapt<LoginCommand>();
-        var token = await _mediator.Send(command);
-        return Ok(token);
+        try
+        {
+            var command = model.Adapt<LoginCommand>();
+            var token = await _mediator.Send(command);
+            return Ok(token);
+        }
+        catch (Exception)
+        {
+            logger.LogWarning("Failed login attempt for username: {Username}", model.Username);
+            throw;
+        }
     }
 
     [HttpPost("Token/Refresh")]

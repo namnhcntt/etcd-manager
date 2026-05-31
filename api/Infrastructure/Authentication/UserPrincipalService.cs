@@ -12,8 +12,11 @@ public class UserPrincipalService(IHttpContextAccessor _httpContextAccessor) : I
             var user = _httpContextAccessor.HttpContext?.User;
             if (user != null)
             {
-                var id = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                return int.Parse(id);
+                var idValue = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (idValue != null && int.TryParse(idValue, out var id))
+                {
+                    return id;
+                }
             }
             return -1;
         }
@@ -26,7 +29,7 @@ public class UserPrincipalService(IHttpContextAccessor _httpContextAccessor) : I
             var user = _httpContextAccessor.HttpContext?.User;
             if (user != null)
             {
-                return user.FindFirst(ClaimTypes.Name)?.Value;
+                return user.FindFirst(ClaimTypes.Name)?.Value ?? string.Empty;
             }
             return string.Empty;
         }
