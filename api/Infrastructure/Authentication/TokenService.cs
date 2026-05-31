@@ -25,6 +25,7 @@ public class TokenService(IConfiguration _configuration) : ITokenService
                     new Claim(JwtRegisteredClaimNames.Sub, userName),
                     new Claim(JwtRegisteredClaimNames.Iss, _configuration["Jwt:Issuer"]),
                     new Claim(JwtRegisteredClaimNames.Aud, _configuration["Jwt:Audience"]),
+                    new Claim("token_type", "access"),
                 }
             ),
             Expires = DateTime.UtcNow.AddSeconds(EXPIRES_IN),
@@ -47,7 +48,7 @@ public class TokenService(IConfiguration _configuration) : ITokenService
                     new Claim(JwtRegisteredClaimNames.Sub, userName),
                     new Claim(JwtRegisteredClaimNames.Iss, _configuration["Jwt:Issuer"]),
                     new Claim(JwtRegisteredClaimNames.Aud, _configuration["Jwt:Audience"]),
-                    new Claim("refresh", "true")
+                    new Claim("token_type", "refresh"),
                 }
             ),
             Expires = DateTime.UtcNow.AddDays(30),
@@ -101,13 +102,9 @@ public class TokenService(IConfiguration _configuration) : ITokenService
             throw new SecurityTokenException("Invalid refresh token");
         }
 
-        // get claim name refresh type boolean, check if true
-        var refreshClaim = principal.Claims.FirstOrDefault(x => x.Type == "refresh");
-        if (
-            refreshClaim == null
-            || !bool.TryParse(refreshClaim.Value, out var isRefresh)
-            || !isRefresh
-        )
+        // validate token_type == "refresh"
+        var tokenTypeClaim = principal.Claims.FirstOrDefault(x => x.Type == "token_type");
+        if (tokenTypeClaim == null || tokenTypeClaim.Value != "refresh")
         {
             throw new SecurityTokenException("Invalid refresh token");
         }

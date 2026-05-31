@@ -22,6 +22,7 @@ public class AuthController(ISender mediator) : CoreController(mediator)
     }
 
     [HttpPost("Token/Refresh")]
+    [AllowAnonymous]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenModel model)
     {
         var command = model.Adapt<RefreshTokenCommand>();
