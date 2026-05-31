@@ -10,7 +10,7 @@ public class CacheService(IMemoryCache _memoryCache) : ICacheService
         return Task.CompletedTask;
     }
 
-    public Task<T> Get<T>(string key)
+    public Task<T?> Get<T>(string key)
     {
         return Task.FromResult(_memoryCache.Get<T>(key));
     }

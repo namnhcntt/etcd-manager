@@ -33,7 +33,7 @@ public class ExceptionHandlingMiddleware
     private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         var code = HttpStatusCode.InternalServerError;
-        var message = exception.Message;
+        string message;
         if (exception is DomainListException)
         {
             message = string.Empty;
@@ -43,6 +43,11 @@ public class ExceptionHandlingMiddleware
             {
                 message += $"{error.Key.message}{Environment.NewLine}";
             }
+        }
+        else
+        {
+            // Do not expose internal exception details to the client
+            message = "An unexpected error occurred. Please try again later.";
         }
         var result = JsonSerializer.Serialize(new { error = message });
         context.Response.ContentType = "application/json";

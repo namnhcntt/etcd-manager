@@ -14,7 +14,10 @@ public class TokenService(IConfiguration _configuration) : ITokenService
     public Task<JwtTokenData> GenerateJwtTokenData(int userId, string userName)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+        var jwtKey = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT key (Jwt:Key) is not configured.");
+        var key = Encoding.UTF8.GetBytes(jwtKey);
+        var jwtIssuer = _configuration["Jwt:Issuer"] ?? string.Empty;
+        var jwtAudience = _configuration["Jwt:Audience"] ?? string.Empty;
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(
@@ -23,8 +26,8 @@ public class TokenService(IConfiguration _configuration) : ITokenService
                     new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                     new Claim(ClaimTypes.Name, userName),
                     new Claim(JwtRegisteredClaimNames.Sub, userName),
-                    new Claim(JwtRegisteredClaimNames.Iss, _configuration["Jwt:Issuer"]),
-                    new Claim(JwtRegisteredClaimNames.Aud, _configuration["Jwt:Audience"]),
+                    new Claim(JwtRegisteredClaimNames.Iss, jwtIssuer),
+                    new Claim(JwtRegisteredClaimNames.Aud, jwtAudience),
                 }
             ),
             Expires = DateTime.UtcNow.AddSeconds(EXPIRES_IN),
@@ -45,8 +48,8 @@ public class TokenService(IConfiguration _configuration) : ITokenService
                     new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                     new Claim(ClaimTypes.Name, userName),
                     new Claim(JwtRegisteredClaimNames.Sub, userName),
-                    new Claim(JwtRegisteredClaimNames.Iss, _configuration["Jwt:Issuer"]),
-                    new Claim(JwtRegisteredClaimNames.Aud, _configuration["Jwt:Audience"]),
+                    new Claim(JwtRegisteredClaimNames.Iss, jwtIssuer),
+                    new Claim(JwtRegisteredClaimNames.Aud, jwtAudience),
                     new Claim("refresh", "true")
                 }
             ),
@@ -73,7 +76,8 @@ public class TokenService(IConfiguration _configuration) : ITokenService
     {
         // decode refresh token jwt
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+        var jwtKey2 = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT key (Jwt:Key) is not configured.");
+        var key = Encoding.UTF8.GetBytes(jwtKey2);
         var principal = tokenHandler.ValidateToken(
             refreshToken,
             new TokenValidationParameters
@@ -83,8 +87,8 @@ public class TokenService(IConfiguration _configuration) : ITokenService
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = true,
-                ValidIssuer = _configuration["Jwt:Issuer"],
-                ValidAudience = _configuration["Jwt:Audience"],
+                ValidIssuer = _configuration["Jwt:Issuer"] ?? string.Empty,
+                ValidAudience = _configuration["Jwt:Audience"] ?? string.Empty,
             },
             out var securityToken
         );
