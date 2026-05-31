@@ -35,9 +35,13 @@ public class ImportNodesCommand : IRequest<bool>
 
     public class ImportNodesCommandValidator : AbstractValidator<ImportNodesCommand>
     {
+        private const int MaxImportBatch = 100;
+
         public ImportNodesCommandValidator()
         {
-            RuleFor(x => x.KeyValues).NotEmpty();
+            RuleFor(x => x.KeyValues).NotEmpty()
+                .Must(kv => kv == null || kv.Length <= MaxImportBatch)
+                .WithMessage($"Import batch must not exceed {MaxImportBatch} keys per request.");
             RuleFor(x => x.EtcdConnectionId).GreaterThan(0);
         }
     }

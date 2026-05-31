@@ -37,7 +37,9 @@ public class DeleteKeyCommand : IRequest<bool>
     {
         public DeleteKeyCommandValidator()
         {
-            RuleFor(x => x.Key).NotEmpty();
+            RuleFor(x => x.Key).NotEmpty()
+                .Must(k => k != "/")
+                .WithMessage("Deleting the root key '/' is not allowed.");
             RuleFor(x => x.EtcdConnectionId).GreaterThan(0);
         }
     }

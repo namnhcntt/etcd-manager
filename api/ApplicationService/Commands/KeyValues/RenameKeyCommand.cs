@@ -35,10 +35,16 @@ public class RenameKeyCommand : IRequest<bool>
 
     public class RenameKeyCommandValidator : AbstractValidator<RenameKeyCommand>
     {
+        private const int MaxKeyLength = 1024;
+
         public RenameKeyCommandValidator()
         {
-            RuleFor(x => x.OldKey).NotEmpty();
-            RuleFor(x => x.NewKey).NotEmpty();
+            RuleFor(x => x.OldKey).NotEmpty()
+                .MaximumLength(MaxKeyLength)
+                .WithMessage($"OldKey must not exceed {MaxKeyLength} characters.");
+            RuleFor(x => x.NewKey).NotEmpty()
+                .MaximumLength(MaxKeyLength)
+                .WithMessage($"NewKey must not exceed {MaxKeyLength} characters.");
             RuleFor(x => x.EtcdConnectionId).GreaterThan(0);
         }
     }
