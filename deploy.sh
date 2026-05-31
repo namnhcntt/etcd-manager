@@ -4,8 +4,8 @@ cd api
 dotnet publish  -c Release -o ./bin/Release/Publish
 cp -r ./bin/Release/Publish/wwwroot/rawdb/* ./bin/Release/Publish/wwwroot/data
 cd ../app/etcd-manager-ui
-# pnpm run build-prod
-pnpm run build-prod-sourcemap
+pnpm run build-prod
+# pnpm run build-prod-sourcemap  # disabled: source maps must not be shipped to production
 cd ../..
 docker build --progress plain -f Dockerfile -t t2nh/etcd-manager:1.0.3 .
 docker push t2nh/etcd-manager:1.0.3
