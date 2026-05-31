@@ -112,7 +112,7 @@ api/EtcdManager.API/wwwroot/data/etcd-manager.sqbpro
 
 .vs
 *.csproj.user
-app/etcd-manager-ui/pnpm-lock.yaml
+# app/etcd-manager-ui/pnpm-lock.yaml  # removed: lockfile should be committed for reproducible builds
 
 # Secrets — không commit
 appsettings.Production.json
