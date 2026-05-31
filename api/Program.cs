@@ -73,6 +73,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration.GetValue<string>("Jwt:Audience"),
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("Jwt:Key")))
         };
+        options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+        {
+            OnTokenValidated = context =>
+            {
+                var tokenTypeClaim = context.Principal?.Claims
+                    .FirstOrDefault(c => c.Type == "token_type");
+                if (tokenTypeClaim == null || tokenTypeClaim.Value != "access")
+                {
+                    context.Fail("Only access tokens are permitted as bearer tokens.");
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 var connectionString = builder.Configuration.GetValue("ConnectionStrings:EtcdManager",
                                                     Path.Combine(builder.Environment.WebRootPath, "data", "etcd-manager.db"));
