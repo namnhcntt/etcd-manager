@@ -34,10 +34,17 @@ public class SaveCommand : IRequest<bool>
 
     public class SaveCommandValidator : AbstractValidator<SaveCommand>
     {
+        private const int MaxKeyLength = 1024;
+        private const int MaxValueLength = 1_048_576; // 1MB
+
         public SaveCommandValidator()
         {
-            RuleFor(x => x.Key).NotEmpty();
-            RuleFor(x => x.Value).NotEmpty();
+            RuleFor(x => x.Key).NotEmpty()
+                .MaximumLength(MaxKeyLength)
+                .WithMessage($"Key must not exceed {MaxKeyLength} characters.");
+            RuleFor(x => x.Value).NotEmpty()
+                .Must(v => v == null || System.Text.Encoding.UTF8.GetByteCount(v) <= MaxValueLength)
+                .WithMessage($"Value must not exceed {MaxValueLength} bytes (1MB).");
             RuleFor(x => x.EtcdConnectionId).GreaterThan(0);
         }
     }
