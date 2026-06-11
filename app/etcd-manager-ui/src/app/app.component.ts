@@ -1,6 +1,6 @@
 import { Component, OnInit, effect, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
-import { MessageService, PrimeNGConfig } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { SidebarModule } from 'primeng/sidebar';
@@ -23,7 +23,6 @@ import { UserManagerComponent } from './pages/user-manager/user-manager.componen
 })
 export class AppComponent extends BaseComponent implements OnInit {
   title = 'etcd-manager-ui';
-  primengConfig = inject(PrimeNGConfig);
   authService = inject(AuthService);
   router = inject(Router);
   private readonly _etcdConnectionService = inject(EtcdConnectionService);
@@ -57,7 +56,6 @@ export class AppComponent extends BaseComponent implements OnInit {
     if (this.authService.loggedIn()) {
       this.loadDataSourceConnections();
     }
-    this.primengConfig.ripple = true;
     this.globalStore.setReadyRenderPage(true);
     if (!this.authService.hasValidAccessToken()) {
       this.router.navigateByUrl('/login');

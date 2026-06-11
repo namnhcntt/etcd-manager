@@ -11,7 +11,7 @@
     </div>
     <p-inplace [ngClass]="{'hidden': !editing()}" #renameKeyInplace>
       <ng-template pTemplate="content">
-        <input placeholder="key name" class="inplace-text" type="text" pAutoFocus [autofocus]="true" pInputText
+        <input placeholder="key name" class="inplace-text" type="text" [pAutoFocus]="true" pInputText
           [(ngModel)]="inplaceRenameValue">
       </ng-template>
     </p-inplace>

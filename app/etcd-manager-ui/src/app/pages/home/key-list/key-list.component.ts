@@ -1,5 +1,5 @@
 import { Component, ViewChild, effect, inject, model, signal, untracked } from '@angular/core';
-import { ConfirmationService, MenuItem, Message, MessageService, PrimeIcons, TreeNode } from 'primeng/api';
+import { ConfirmationService, MenuItem, MessageService, PrimeIcons, ToastMessageOptions, TreeNode } from 'primeng/api';
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { DialogModule } from 'primeng/dialog';
 import { FileUpload, FileUploadModule } from 'primeng/fileupload';
@@ -49,7 +49,7 @@ export class KeyListComponent extends BaseComponent {
   contextMenuSelectedKey?: string;
   treeIsExpandAll = false;
   contextMenuModel: MenuItem[] = this.getContextMenu();
-  msgs: Message[] = [];
+  msgs: ToastMessageOptions[] = [];
   listSelectedItem = model<any>(null);
   treeSelectedItem = model<any>(null);
   firstLoad = true;

@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewEncapsulation, inject, model } from '@angular/core';
 import { Router } from '@angular/router';
-import { Message, MessageService } from 'primeng/api';
+import { MessageService, ToastMessageOptions } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessagesModule } from 'primeng/messages';
 import { PasswordModule } from 'primeng/password';
@@ -45,7 +45,7 @@ export class LoginComponent extends BaseComponent implements OnInit {
   userName = model('');
   password = model('');
 
-  msgs1: Message[] = [];
+  msgs1: ToastMessageOptions[] = [];
 
   public layoutService = inject(LayoutService);
   router = inject(Router);
