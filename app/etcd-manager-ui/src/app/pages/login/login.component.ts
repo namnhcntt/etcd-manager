@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewEncapsulation, inject, model } from '@angular/core';
 import { Router } from '@angular/router';
-import { MessageService, ToastMessageOptions } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessagesModule } from 'primeng/messages';
 import { PasswordModule } from 'primeng/password';
@@ -37,15 +37,13 @@ import { APP_BASE_HREF } from '@angular/common';
   `],
   standalone: true,
   imports: [...commonLayoutImport, MessagesModule, PasswordModule, InputTextModule],
-  providers: [],
+  providers: [MessageService],
   encapsulation: ViewEncapsulation.None
 })
 export class LoginComponent extends BaseComponent implements OnInit {
 
   userName = model('');
   password = model('');
-
-  msgs1: ToastMessageOptions[] = [];
 
   public layoutService = inject(LayoutService);
   router = inject(Router);
@@ -60,13 +58,13 @@ export class LoginComponent extends BaseComponent implements OnInit {
   }
 
   signIn() {
-    this.msgs1.length = 0;
+    this._messageService.clear('login');
     if (!this.userName()) {
-      this.msgs1 = [{ severity: 'error', summary: 'Error', detail: 'Please enter userName' }];
+      this._messageService.add({ severity: 'error', detail: 'Please enter userName', key: 'login' });
       return;
     }
     if (!this.password()) {
-      this.msgs1 = [{ severity: 'error', summary: 'Error', detail: 'Please enter password' }];
+      this._messageService.add({ severity: 'error', detail: 'Please enter password', key: 'login' });
       return;
     }
 
