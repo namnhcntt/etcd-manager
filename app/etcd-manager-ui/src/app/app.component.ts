@@ -29,20 +29,20 @@ export class AppComponent extends BaseComponent implements OnInit {
   private readonly _etcdConnectionService = inject(EtcdConnectionService);
   private readonly _messageService = inject(MessageService);
 
-  dipslaySidebar = false;
+  displaySidebar = false;
 
   constructor() {
     super();
 
     effect(() => {
-      if (this.globalStore.dipslaySidebar.connectionManager()
-        || this.globalStore.dipslaySidebar.userManager()
-        || this.globalStore.dipslaySidebar.etcdUserManager()
-        || this.globalStore.dipslaySidebar.etcdRoleManager()
-        || this.globalStore.dipslaySidebar.etcdSnapshotManager()) {
-        this.dipslaySidebar = true;
+      if (this.globalStore.displaySidebar.connectionManager()
+        || this.globalStore.displaySidebar.userManager()
+        || this.globalStore.displaySidebar.etcdUserManager()
+        || this.globalStore.displaySidebar.etcdRoleManager()
+        || this.globalStore.displaySidebar.etcdSnapshotManager()) {
+        this.displaySidebar = true;
       } else {
-        this.dipslaySidebar = false;
+        this.displaySidebar = false;
       }
     });
 

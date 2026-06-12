@@ -188,7 +188,9 @@ export class KeyListComponent extends BaseComponent {
         message: 'Are you sure that you want to delete this key?',
         accept: () => {
           this._keyValueService.deleteKey(this.globalStore.connections.selectedEtcdConnection.id(), this.currentSelectRow.key).then(rs => {
-            this.refreshList(false, false);
+            // notify via the store so KeyDetailComponent's clear-panel effect fires
+            // (the deleteSuccessAt effect above also triggers refreshList)
+            this.globalStore.setDeleteSuccessAt(new Date());
           }).catch(err => {
             this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
           });
@@ -242,7 +244,6 @@ export class KeyListComponent extends BaseComponent {
   }
 
   onChangeSelectedKey(evt: any) {
-    console.log('select key', evt);
     this.onNodeSelect({ node: { data: evt.value.key } });
   }
 
@@ -290,14 +291,15 @@ export class KeyListComponent extends BaseComponent {
   }
 
   private processDatasourcePathPart(pathParts: any, currentNode: TreeNode<string>, selectedKey: string | null | undefined) {
-    for (let part of pathParts) {
+    for (let index = 0; index < pathParts.length; index++) {
+      const part = pathParts[index];
       if (part !== '') {
         if (!currentNode.children) {
           currentNode.children = [];
         }
         let childNode = currentNode.children.find(node => node.label === part);
         if (!childNode) {
-          childNode = { label: part, data: pathParts.slice(0, pathParts.indexOf(part) + 1).join('/'), expanded: true, expandedIcon: PrimeIcons.FOLDER_OPEN, icon: PrimeIcons.FOLDER } as TreeNode;
+          childNode = { label: part, data: pathParts.slice(0, index + 1).join('/'), expanded: true, expandedIcon: PrimeIcons.FOLDER_OPEN, icon: PrimeIcons.FOLDER } as TreeNode;
           childNode.key = childNode.data;
           // pre-selected node if view mode is tree
           if (this.viewMode === 'tree' && selectedKey && selectedKey === childNode.data) {
@@ -309,13 +311,6 @@ export class KeyListComponent extends BaseComponent {
       }
     }
     return currentNode;
-  }
-
-  nomarlizePathCombine(path: string) {
-    if (path.startsWith('//')) {
-      path = path.substring(1);
-    }
-    return path;
   }
 
   export() {
