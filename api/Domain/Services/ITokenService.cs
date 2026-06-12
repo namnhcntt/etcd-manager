@@ -4,4 +4,5 @@ public interface ITokenService
 {
     Task<JwtTokenData> GenerateJwtTokenData(int userId, string userName);
     Task<JwtTokenData> RefreshToken(string refreshToken);
+    Task RevokeRefreshToken(string refreshToken);
 }

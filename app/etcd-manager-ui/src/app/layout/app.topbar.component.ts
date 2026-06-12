@@ -76,7 +76,11 @@ export class AppTopBarComponent extends BaseComponent implements OnInit {
       const selectedConnectionChanged = this.selectedConnection();
       const selectedItem = this.globalStore.connections.dataSource().find(x => x.id == selectedConnectionChanged);
       untracked(() => {
-        this.globalStore.selectedEtcdConnection(selectedItem);
+        // only write back when the selection actually changed, otherwise the
+        // two effects (store -> selectedConnection -> store) feed each other
+        if (selectedItem && selectedItem.id !== this.globalStore.connections.selectedEtcdConnection()?.id) {
+          this.globalStore.selectedEtcdConnection(selectedItem);
+        }
       });
     });
 

@@ -1,7 +1,8 @@
-user  nginx;
-worker_processes  1;
+worker_processes  auto;
 
-pid        /var/run/nginx.pid;
+# Run as non-root: pid and temp paths must live in a writable location
+pid        /tmp/nginx.pid;
+error_log  /dev/stderr warn;
 
 events {
     worker_connections  1024;
@@ -12,20 +13,65 @@ http {
     default_type  application/octet-stream;
     sendfile        on;
     keepalive_timeout  65;
+    server_tokens   off;
+    access_log      /dev/stdout;
+
+    # Writable temp paths so the nginx master/workers can run as appuser
+    client_body_temp_path /tmp/nginx-client-body;
+    proxy_temp_path       /tmp/nginx-proxy;
+    fastcgi_temp_path     /tmp/nginx-fastcgi;
+    uwsgi_temp_path       /tmp/nginx-uwsgi;
+    scgi_temp_path        /tmp/nginx-scgi;
+
+    # Never cache the runtime-generated entry points (env.js holds deploy-time
+    # config; index.html is rewritten by the entrypoint and is the SPA
+    # fallback). Implemented via `expires` + map instead of add_header in a
+    # location block, because location-level add_header would drop the
+    # server-level security headers (CSP/HSTS/etc.).
+    map $uri $no_cache_expires {
+        default            off;
+        ~(^|/)env\.js$     -1;
+        ~(^|/)index\.html$ -1;
+    }
+
     server {
       listen  81;
         root /usr/share/nginx/html/;
 
         # Security headers
         add_header X-Content-Type-Options "nosniff" always;
-        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Frame-Options "DENY" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-        add_header X-XSS-Protection "1; mode=block" always;
-        # add_header Content-Security-Policy "default-src 'self';" always;  # Configure for your deployment
+        add_header X-XSS-Protection "0" always;
+        expires $no_cache_expires;
+        # HSTS only takes effect when the response is served over HTTPS (TLS is
+        # expected to be terminated upstream); browsers ignore the header over
+        # plain HTTP (RFC 6797 section 8.1), so sending it always is harmless.
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        # CSP notes:
+        # - connect-src ${API_ENDPOINT}: the SPA calls the API on a different
+        #   origin (window.apiEndpoint, injected via env.js by the entrypoint).
+        # - https://cdn.jsdelivr.net: @ngstack/code-editor loads the Monaco
+        #   editor (scripts, css, codicon font) from jsdelivr by default.
+        # - blob: in script-src/worker-src: Monaco web workers are blob: URLs
+        #   that importScripts() from the CDN.
+        # - style-src 'unsafe-inline': required by Angular/PrimeNG/Monaco
+        #   runtime style injection.
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data:; connect-src 'self' ${API_ENDPOINT}; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'" always;
 
+        # Defense-in-depth: never serve anything under /data. The SQLite DB and
+        # Data Protection keys live in /api/wwwroot/data, outside this web root
+        # today — this guards against future root/volume misconfiguration.
+        location /data {
+            deny all;
+            return 404;
+        }
+
+        # BASE_HREF is normalized by docker-entrypoint.sh: bare "/" becomes ""
+        # so this renders "location /" (not "location //") at the root.
         location ${BASE_HREF}/ {
             alias /usr/share/nginx/html/;
-            try_files $uri$args $uri$args/ ${BASE_HREF}/index.html;
+            try_files $uri $uri/ ${BASE_HREF}/index.html;
         }
     }
 }

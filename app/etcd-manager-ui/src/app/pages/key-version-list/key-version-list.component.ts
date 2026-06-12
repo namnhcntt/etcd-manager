@@ -1,5 +1,5 @@
 import { Component, inject, input, model, output, signal } from '@angular/core';
-import { PrimeIcons } from 'primeng/api';
+import { MessageService, PrimeIcons } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { Dialog, DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -33,6 +33,7 @@ export class KeyVersionListComponent extends BaseComponent {
   diffItem: any;
   public primengIcons = PrimeIcons;
   private _keyValueService = inject(KeyValueService);
+  private _messageService = inject(MessageService);
 
   ngOnInit() {
     this._keyValueService.getRevision(this.globalStore.connections.selectedEtcdConnection.id(), this.key()).then(rs => {
@@ -51,6 +52,9 @@ export class KeyVersionListComponent extends BaseComponent {
         }
       }
       this.versions = arr;
+      this.loading = false;
+    }).catch((err: any) => {
+      this._messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.error ?? 'Failed to load key revisions' });
       this.loading = false;
     });
   }

@@ -60,6 +60,9 @@ export class ConnectionManagerComponent extends BaseComponent implements OnInit 
     this._etcdConnectionService.getDataSource().then((data: any) => {
       this.globalStore.setDataSourceConnections(data.connections);
       this.loading.update(() => false);
+    }).catch((err: any) => {
+      this._messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.error ?? 'Failed to load connections' });
+      this.loading.update(() => false);
     });
   }
 

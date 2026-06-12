@@ -152,21 +152,20 @@ export class KeyDetailComponent extends BaseComponent {
     effect(() => {
       const selectedKeyChanged = this.globalStore.keyValues.selectedKey();
       if (selectedKeyChanged) {
-        untracked(async () => {
+        untracked(() => {
           this.globalStore.setIsNewState(false);
-          await this.getByKey(selectedKeyChanged);
+          this.getByKey(selectedKeyChanged).catch((err: any) => {
+            this._messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.error ?? 'Failed to load key' });
+          });
         });
       }
     });
   }
 
   async getByKey(key: string) {
-    let keyDetail: any = { key: key, value: '' };
-    try {
-      keyDetail = await this._keyValueService.getByKey(this.globalStore.connections.selectedEtcdConnection.id(), key);
-    } catch (err: any) {
-      console.warn(err);
-    }
+    // on failure the error propagates to the caller, which shows the toast;
+    // the component state is left untouched (no empty stub pretending success)
+    const keyDetail: any = await this._keyValueService.getByKey(this.globalStore.connections.selectedEtcdConnection.id(), key);
 
     patchState(this.keyDetail, keyDetail);
     this.codeModel.update(() => ({ ...this.codeModel(), value: keyDetail.value }));
@@ -213,13 +212,8 @@ export class KeyDetailComponent extends BaseComponent {
     });
   }
 
-  changeLanguage(evt: any) {
-    this.codeModel.update(() => ({ ...this.codeModel(), language: evt.value }));
-
-  }
-
-  onCodeChanged(evt: any) {
-    console.log('onCodeChanged', evt);
+  changeLanguage(language: string) {
+    this.codeModel.update(() => ({ ...this.codeModel(), language }));
   }
 
   handleSelectFile(evt: any) {
@@ -241,8 +235,13 @@ export class KeyDetailComponent extends BaseComponent {
 
   refresh() {
     if (this.globalStore.keyValues.selectedKey()) {
-      this.getByKey(this.globalStore.keyValues.selectedKey());
-      this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Refreshed' });
+      this.getByKey(this.globalStore.keyValues.selectedKey())
+        .then(() => {
+          this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Refreshed' });
+        })
+        .catch((err: any) => {
+          this._messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.error ?? 'Failed to load key' });
+        });
     }
   }
 

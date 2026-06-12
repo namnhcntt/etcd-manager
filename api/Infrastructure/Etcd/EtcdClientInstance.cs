@@ -7,4 +7,5 @@ public class EtcdClientInstance
     public EtcdClient Instance { get; set; } = null!;
     public bool EnableAuthenticated { get; set; }
     public string Token { get; set; } = null!;
+    public DateTimeOffset LastValidatedAt { get; set; }
 }

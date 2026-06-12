@@ -69,7 +69,8 @@ export class LoginComponent extends BaseComponent implements OnInit {
     }
 
     this.authService.login(this.userName(), this.password()).then((res: any) => {
-      this.authService.saveToken(res.token, res.refreshToken);
+      // refresh token is delivered via HttpOnly cookie, never present in the body
+      this.authService.saveToken(res.token);
       window.location.href = this._baseHref;
     }).catch(err => {
       this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error, key: 'login' });

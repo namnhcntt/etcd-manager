@@ -17,7 +17,7 @@ interface Connections {
   dataSource: any[];
 }
 
-interface DipslaySidebar {
+interface DisplaySidebar {
   connectionManager: boolean;
   userManager: boolean;
   etcdUserManager: boolean;
@@ -42,7 +42,7 @@ interface GlobalStoreState {
   connections: Connections;
   readyRenderPage: boolean;
   topMenuActive: boolean;
-  dipslaySidebar: DipslaySidebar;
+  displaySidebar: DisplaySidebar;
   keyValues: KeyValues;
 }
 
@@ -60,7 +60,7 @@ const initialState: GlobalStoreState = {
   },
   readyRenderPage: false,
   topMenuActive: false,
-  dipslaySidebar: {
+  displaySidebar: {
     connectionManager: false,
     userManager: false,
     etcdUserManager: false,
@@ -90,7 +90,7 @@ export const globalStore = signalStore(
   withMethods((store) => ({
     closeSidebar(): void {
       patchState(store, {
-        dipslaySidebar: {
+        displaySidebar: {
           connectionManager: false,
           userManager: false,
           etcdUserManager: false,
@@ -101,22 +101,22 @@ export const globalStore = signalStore(
     },
     clickPage(page: string): void {
       console.log('click page', page);
-      const sidebar = store.dipslaySidebar();
+      const sidebar = store.displaySidebar();
       switch (page) {
         case 'connectionManager':
-          patchState(store, { dipslaySidebar: { ...sidebar, connectionManager: !sidebar.connectionManager } });
+          patchState(store, { displaySidebar: { ...sidebar, connectionManager: !sidebar.connectionManager } });
           break;
         case 'userManager':
-          patchState(store, { dipslaySidebar: { ...sidebar, userManager: !sidebar.userManager } });
+          patchState(store, { displaySidebar: { ...sidebar, userManager: !sidebar.userManager } });
           break;
         case 'etcdUserManager':
-          patchState(store, { dipslaySidebar: { ...sidebar, etcdUserManager: !sidebar.etcdUserManager } });
+          patchState(store, { displaySidebar: { ...sidebar, etcdUserManager: !sidebar.etcdUserManager } });
           break;
         case 'etcdRoleManager':
-          patchState(store, { dipslaySidebar: { ...sidebar, etcdRoleManager: !sidebar.etcdRoleManager } });
+          patchState(store, { displaySidebar: { ...sidebar, etcdRoleManager: !sidebar.etcdRoleManager } });
           break;
         case 'etcdSnapshotManager':
-          patchState(store, { dipslaySidebar: { ...sidebar, etcdSnapshotManager: !sidebar.etcdSnapshotManager } });
+          patchState(store, { displaySidebar: { ...sidebar, etcdSnapshotManager: !sidebar.etcdSnapshotManager } });
           break;
       }
     },

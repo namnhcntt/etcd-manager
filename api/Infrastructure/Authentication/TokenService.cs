@@ -1,17 +1,22 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using EtcdManager.API.Domain;
 using EtcdManager.API.Domain.Services;
+using EtcdManager.API.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace EtcdManager.API.Infrastructure.Authentication;
 
-public class TokenService(IConfiguration _configuration) : ITokenService
+public class TokenService(IConfiguration _configuration, EtcdManagerDataContext _dataContext)
+    : ITokenService
 {
-    private const int EXPIRES_IN = 90000;
+    private const int ExpiresInSeconds = 90000;
+    private const int RefreshTokenExpiresInDays = 30;
 
-    public Task<JwtTokenData> GenerateJwtTokenData(int userId, string userName)
+    public async Task<JwtTokenData> GenerateJwtTokenData(int userId, string userName)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var jwtKey = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT key (Jwt:Key) is not configured.");
@@ -31,16 +36,17 @@ public class TokenService(IConfiguration _configuration) : ITokenService
                     new Claim("token_type", "access"),
                 }
             ),
-            Expires = DateTime.UtcNow.AddSeconds(EXPIRES_IN),
+            Expires = DateTime.UtcNow.AddSeconds(ExpiresInSeconds),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key),
-                SecurityAlgorithms.HmacSha256Signature
+                SecurityAlgorithms.HmacSha256
             )
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
-        // refresh token is jwt token with 30 days expiry
+        // refresh token is jwt token with limited expiry
+        var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(RefreshTokenExpiresInDays);
         var refreshTokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(
@@ -52,28 +58,43 @@ public class TokenService(IConfiguration _configuration) : ITokenService
                     new Claim(JwtRegisteredClaimNames.Iss, jwtIssuer),
                     new Claim(JwtRegisteredClaimNames.Aud, jwtAudience),
                     new Claim("token_type", "refresh"),
+                    // unique id so every issued refresh token (and its hash) is distinct
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 }
             ),
-            Expires = DateTime.UtcNow.AddDays(30),
+            Expires = refreshTokenExpiresAt,
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key),
-                SecurityAlgorithms.HmacSha256Signature
+                SecurityAlgorithms.HmacSha256
             )
         };
 
-        var refreshToken = tokenHandler.CreateToken(refreshTokenDescriptor);
+        var refreshToken = tokenHandler.WriteToken(
+            tokenHandler.CreateToken(refreshTokenDescriptor)
+        );
 
-        return Task.FromResult(
-            new JwtTokenData
+        // persist hash of the issued refresh token for rotation / reuse detection
+        _dataContext.RefreshTokens.Add(
+            new RefreshToken
             {
-                Token = tokenHandler.WriteToken(token),
-                RefreshToken = tokenHandler.WriteToken(refreshToken),
-                ExpiresIn = EXPIRES_IN,
+                TokenHash = ComputeTokenHash(refreshToken),
+                UserId = userId,
+                ExpiresAt = refreshTokenExpiresAt,
+                CreatedAt = DateTime.UtcNow,
             }
         );
+        await _dataContext.SaveChangesAsync();
+
+        return new JwtTokenData
+        {
+            Token = tokenHandler.WriteToken(token),
+            RefreshToken = refreshToken,
+            ExpiresIn = ExpiresInSeconds,
+            RefreshTokenExpiresAt = refreshTokenExpiresAt,
+        };
     }
 
-    public Task<JwtTokenData> RefreshToken(string refreshToken)
+    public async Task<JwtTokenData> RefreshToken(string refreshToken)
     {
         // decode refresh token jwt
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -122,6 +143,84 @@ public class TokenService(IConfiguration _configuration) : ITokenService
             throw new SecurityTokenException("Invalid refresh token");
         }
 
-        return GenerateJwtTokenData(userId, userName);
+        // rotation / reuse detection: atomically consume the token so two concurrent
+        // refreshes with the same token cannot both succeed (TOCTOU)
+        var tokenHash = ComputeTokenHash(refreshToken);
+        var now = DateTime.UtcNow;
+        var consumed = await TryConsumeToken(tokenHash, now);
+
+        if (!consumed)
+        {
+            var existing = await _dataContext
+                .RefreshTokens.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.TokenHash == tokenHash);
+            if (existing?.ConsumedAt != null)
+            {
+                // reuse of an already-consumed token: assume theft, revoke all tokens for the user
+                await RevokeAllUserTokens(existing.UserId, now);
+            }
+            throw new SecurityTokenException("Invalid refresh token");
+        }
+
+        // GenerateJwtTokenData persists the rotated refresh token and saves changes
+        return await GenerateJwtTokenData(userId, userName);
+    }
+
+    public async Task RevokeRefreshToken(string refreshToken)
+    {
+        // best-effort revocation (logout): consume the stored token so it can no longer
+        // be used for refresh. Lookup is by hash only — an unknown/invalid token is a no-op.
+        await TryConsumeToken(ComputeTokenHash(refreshToken), DateTime.UtcNow);
+    }
+
+    private async Task<bool> TryConsumeToken(string tokenHash, DateTime now)
+    {
+        if (_dataContext.Database.IsRelational())
+        {
+            // single conditional UPDATE: only one concurrent caller can win the row
+            var affected = await _dataContext
+                .RefreshTokens.Where(x =>
+                    x.TokenHash == tokenHash && x.ConsumedAt == null && x.ExpiresAt > now
+                )
+                .ExecuteUpdateAsync(s => s.SetProperty(t => t.ConsumedAt, now));
+            return affected > 0;
+        }
+
+        // EF InMemory provider (tests) does not support ExecuteUpdateAsync
+        var storedToken = await _dataContext.RefreshTokens.FirstOrDefaultAsync(x =>
+            x.TokenHash == tokenHash && x.ConsumedAt == null && x.ExpiresAt > now
+        );
+        if (storedToken == null)
+        {
+            return false;
+        }
+        storedToken.ConsumedAt = now;
+        await _dataContext.SaveChangesAsync();
+        return true;
+    }
+
+    private async Task RevokeAllUserTokens(int userId, DateTime now)
+    {
+        if (_dataContext.Database.IsRelational())
+        {
+            await _dataContext
+                .RefreshTokens.Where(x => x.UserId == userId && x.ConsumedAt == null)
+                .ExecuteUpdateAsync(s => s.SetProperty(t => t.ConsumedAt, now));
+            return;
+        }
+
+        var userTokens = await _dataContext
+            .RefreshTokens.Where(x => x.UserId == userId && x.ConsumedAt == null)
+            .ToListAsync();
+        foreach (var userToken in userTokens)
+        {
+            userToken.ConsumedAt = now;
+        }
+        await _dataContext.SaveChangesAsync();
+    }
+
+    private static string ComputeTokenHash(string token)
+    {
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
     }
 }

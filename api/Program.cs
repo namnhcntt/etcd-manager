@@ -4,6 +4,7 @@ using EtcdManager.API.Core.Exceptions;
 using EtcdManager.API.Infrastructure.Database;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -61,12 +62,13 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Pr
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCors();
+builder.Services.AddHealthChecks().AddDbContextCheck<EtcdManagerDataContext>();
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 // Validate JWT key at startup
 var jwtKey = builder.Configuration.GetValue<string>("Jwt:Key");
-if (string.IsNullOrEmpty(jwtKey))
+if (string.IsNullOrEmpty(jwtKey) || jwtKey.Length < 32)
 {
-    throw new InvalidOperationException("JWT key (Jwt:Key) is not configured. Set it via environment variable or configuration.");
+    throw new InvalidOperationException("Jwt:Key must be configured and at least 32 characters. Use user-secrets or environment variable Jwt__Key.");
 }
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -99,13 +101,35 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter("login", opt =>
-    {
-        opt.Window = TimeSpan.FromMinutes(1);
-        opt.PermitLimit = 5;
-        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        opt.QueueLimit = 0;
-    });
+    // Endpoint-level throttle; per-username lockout is handled in LoginCommandHandler.
+    // Partitioned per remote IP so one client cannot exhaust the budget for everyone.
+    options.AddPolicy("login", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                Window = TimeSpan.FromMinutes(1),
+                PermitLimit = 5,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0,
+            }
+        )
+    );
+
+    // refresh/logout are routine session upkeep (silent refresh on page load, 401 retry,
+    // rotation) — give them more headroom than credential login attempts, still per IP
+    options.AddPolicy("auth-refresh", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                Window = TimeSpan.FromMinutes(1),
+                PermitLimit = 30,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0,
+            }
+        )
+    );
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 var connectionString = builder.Configuration.GetValue("ConnectionStrings:EtcdManager",
@@ -115,6 +139,20 @@ builder.Services.AddDbContext<EtcdManagerDataContext>(options =>
     options.UseSqlite($"DataSource={connectionString};");
 });
 
+
+// Data Protection: encrypts stored etcd connection passwords at rest (see PasswordProtectorService).
+// By default keys are persisted next to the SQLite database because wwwroot/data is the only
+// directory persisted via the docker volume (keys must survive container restarts). The API itself
+// does not serve static files (no UseStaticFiles), so the keys are not web-reachable through the API.
+// NOTE: co-locating keys with the database means a leak of that volume/backup yields both the
+// encrypted passwords and the keys to decrypt them — in production, mount a separate persistent
+// path and point DataProtection:KeysPath at it.
+var dataProtectionKeysPath = builder.Configuration.GetValue<string>("DataProtection:KeysPath")
+    ?? Path.Combine(builder.Environment.WebRootPath, "data", "keys");
+Directory.CreateDirectory(dataProtectionKeysPath);
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath))
+    .SetApplicationName("EtcdManager");
 
 var allowedOrigins = builder.Configuration
     .GetSection("AllowedOrigins")
@@ -133,17 +171,21 @@ app.UseCors(corsBuilder =>
 {
     corsBuilder
         .WithOrigins(allowedOrigins)
-        .AllowAnyHeader()
-        .AllowAnyMethod();
+        .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        .WithHeaders("Authorization", "Content-Type", "PortalAlias")
+        // required for the HttpOnly refresh-token cookie to flow cross-origin;
+        // safe because origins are an explicit allow-list (never AllowAnyOrigin)
+        .AllowCredentials();
 });
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 // seed data
 using (var scope = app.Services.CreateScope())

@@ -2,5 +2,7 @@
 
 public class RefreshTokenModel
 {
-    public string RefreshToken { get; set; }
+    // optional: browsers carry the refresh token in an HttpOnly cookie instead;
+    // the body field remains as a fallback for non-browser clients
+    public string? RefreshToken { get; set; }
 }

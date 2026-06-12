@@ -58,6 +58,8 @@ docker run -d \
   -p 81:81 \
   -e Jwt__Key=<your-secret-key> \
   -e ROOT_ACCOUNT_PASSWORD=<root-password> \
+  -e BASE_HREF=/ \
+  -e API_ENDPOINT=http://localhost:80 \
   t2nh/etcd-manager:1.0.3
 ```
 
@@ -73,7 +75,8 @@ The API is served on port **80** and the Angular SPA on port **81**.
 | `Jwt__Audience` | No | `etcdmanager.internal` | JWT audience claim |
 | `AllowedOrigins` | No | `["http://localhost:4200","http://localhost:80"]` | CORS whitelist |
 | `ConnectionStrings__EtcdManager` | No | `{wwwroot}/data/etcd-manager.db` | SQLite connection string |
-| `BASE_HREF` | No | `/` | Angular app base href (useful behind a reverse proxy) |
+| `BASE_HREF` | Yes | — | Angular app base href; use `/` for the root, or e.g. `/etcd` behind a reverse proxy |
+| `API_ENDPOINT` | Yes | — | API origin the browser calls (e.g. `http://localhost:80`); also added to the CSP `connect-src` |
 
 ## Project Structure
 

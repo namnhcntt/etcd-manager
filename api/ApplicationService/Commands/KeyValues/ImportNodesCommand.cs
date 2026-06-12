@@ -36,12 +36,21 @@ public class ImportNodesCommand : IRequest<bool>
     public class ImportNodesCommandValidator : AbstractValidator<ImportNodesCommand>
     {
         private const int MaxImportBatch = 100;
+        private const int MaxKeyLength = 1024;
+        private const int MaxValueBytes = 1_048_576; // 1MB
 
         public ImportNodesCommandValidator()
         {
             RuleFor(x => x.KeyValues).NotEmpty()
                 .Must(kv => kv == null || kv.Length <= MaxImportBatch)
                 .WithMessage($"Import batch must not exceed {MaxImportBatch} keys per request.");
+            RuleForEach(x => x.KeyValues).ChildRules(item =>
+            {
+                item.RuleFor(x => x.Key).NotEmpty().MaximumLength(MaxKeyLength);
+                item.RuleFor(x => x.Value)
+                    .Must(v => v == null || System.Text.Encoding.UTF8.GetByteCount(v) <= MaxValueBytes)
+                    .WithMessage("Each value must be under 1MB.");
+            });
             RuleFor(x => x.EtcdConnectionId).GreaterThan(0);
         }
     }
