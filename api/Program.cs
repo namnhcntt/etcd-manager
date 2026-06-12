@@ -119,10 +119,14 @@ builder.Services.AddDbContext<EtcdManagerDataContext>(options =>
 
 
 // Data Protection: encrypts stored etcd connection passwords at rest (see PasswordProtectorService).
-// Keys are persisted next to the SQLite database because wwwroot/data is the only directory
-// persisted via the docker volume (keys must survive container restarts). The API itself does
-// not serve static files (no UseStaticFiles), so the keys are not web-reachable through the API.
-var dataProtectionKeysPath = Path.Combine(builder.Environment.WebRootPath, "data", "keys");
+// By default keys are persisted next to the SQLite database because wwwroot/data is the only
+// directory persisted via the docker volume (keys must survive container restarts). The API itself
+// does not serve static files (no UseStaticFiles), so the keys are not web-reachable through the API.
+// NOTE: co-locating keys with the database means a leak of that volume/backup yields both the
+// encrypted passwords and the keys to decrypt them — in production, mount a separate persistent
+// path and point DataProtection:KeysPath at it.
+var dataProtectionKeysPath = builder.Configuration.GetValue<string>("DataProtection:KeysPath")
+    ?? Path.Combine(builder.Environment.WebRootPath, "data", "keys");
 Directory.CreateDirectory(dataProtectionKeysPath);
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath))

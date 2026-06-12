@@ -4,6 +4,7 @@ using EtcdManager.API.Domain.Services;
 using EtcdManager.API.Infrastructure.Authentication;
 using EtcdManager.API.Tests.Helpers;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using static EtcdManager.API.ApplicationService.Commands.EtcdConnections.CreateConnectionCommand;
 using static EtcdManager.API.ApplicationService.Commands.EtcdConnections.UpdateConnectionCommand;
@@ -14,7 +15,10 @@ public class ConnectionPasswordTests
 {
     private static IPasswordProtectorService CreateProtector()
     {
-        return new PasswordProtectorService(new EphemeralDataProtectionProvider());
+        return new PasswordProtectorService(
+            new EphemeralDataProtectionProvider(),
+            NullLogger<PasswordProtectorService>.Instance
+        );
     }
 
     private static Mock<IUserPrincipalService> MockUser(int id = 1)
