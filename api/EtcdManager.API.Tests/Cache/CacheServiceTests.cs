@@ -43,6 +43,23 @@ public class CacheServiceTests
     }
 
     [Fact]
+    public async Task Set_WithEvictionCallback_NotInvokedWhenReplaced()
+    {
+        var service = CreateService(out var memoryCache);
+        string? evictedValue = null;
+
+        await service.Set("key", "old", TimeSpan.FromMinutes(4), v => evictedValue = v);
+        await service.Set("key", "new", TimeSpan.FromMinutes(4), v => evictedValue = v);
+
+        // Eviction callbacks run asynchronously; give them time to fire.
+        await Task.Delay(100);
+
+        // The "old" entry was evicted with reason Replaced -> callback skipped.
+        Assert.Null(evictedValue);
+        Assert.Equal("new", memoryCache.Get<string>("key"));
+    }
+
+    [Fact]
     public async Task Set_WithEvictionCallback_InvokedOnRemove()
     {
         var service = CreateService(out var memoryCache);

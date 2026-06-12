@@ -24,9 +24,12 @@ public class CacheService(IMemoryCache _memoryCache) : ICacheService
         if (onEvicted != null)
         {
             options.RegisterPostEvictionCallback(
-                (_, evictedValue, _, _) =>
+                (_, evictedValue, reason, _) =>
                 {
-                    if (evictedValue is T typedValue)
+                    // Skip Replaced: when a Set overwrites an existing entry, the old
+                    // value may have just been handed out to a concurrent reader and
+                    // must not be cleaned up out from under it.
+                    if (reason != EvictionReason.Replaced && evictedValue is T typedValue)
                     {
                         onEvicted(typedValue);
                     }

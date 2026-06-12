@@ -16,6 +16,16 @@ public class EtcdService(
     IPasswordProtectorService _passwordProtector
 ) : IEtcdService
 {
+    // etcd auth tokens default to a 5-minute TTL; expire cached clients before that.
+    private static readonly TimeSpan ClientCacheTtl = TimeSpan.FromMinutes(4);
+
+    // Must be shorter than ClientCacheTtl, otherwise entries expire before
+    // revalidation ever triggers and the revalidation path is dead code.
+    private static readonly TimeSpan ClientValidationInterval = TimeSpan.FromMinutes(1);
+
+    // How long to wait for a watch event before giving up.
+    private static readonly TimeSpan WatchTimeout = TimeSpan.FromSeconds(15);
+
     public async Task<bool> TestConnection(
         string host,
         string port,
@@ -159,7 +169,7 @@ public class EtcdService(
         var client = await GetEtcdClientInstance(etcdConnection);
         bool hasRoot = false;
         RepeatedField<string> roles = new RepeatedField<string>();
-        if (etcdConnection.EnableAuthenticated)
+        if (etcdConnection.EnableAuthenticated && !string.IsNullOrWhiteSpace(etcdConnection.Username))
         {
             var userDetail = await client.Instance.UserGetAsync(
                 new AuthUserGetRequest { Name = etcdConnection.Username },
@@ -295,15 +305,17 @@ public class EtcdService(
         }
 
         // Atomically put the new key and delete the old key in a single transaction,
-        // guarded by a check that the old key still exists.
+        // guarded by a check that the old key is unchanged since we read it (CAS on
+        // ModRevision), so a concurrent write makes the txn fail instead of
+        // resurrecting a stale value.
         var txnRequest = new TxnRequest();
         txnRequest.Compare.Add(
             new Compare
             {
                 Key = ByteString.CopyFromUtf8(oldKey),
-                Target = Compare.Types.CompareTarget.Create,
-                Result = Compare.Types.CompareResult.Greater,
-                CreateRevision = 0
+                Target = Compare.Types.CompareTarget.Mod,
+                Result = Compare.Types.CompareResult.Equal,
+                ModRevision = oldKeyResult.Kvs[0].ModRevision
             }
         );
         txnRequest.Success.Add(
@@ -331,7 +343,9 @@ public class EtcdService(
         );
         if (!txnResponse.Succeeded)
         {
-            throw new Exception($"Key '{oldKey}' not found in etcd.");
+            throw new Exception(
+                $"Key '{oldKey}' was modified concurrently or no longer exists in etcd; rename aborted."
+            );
         }
     }
 
@@ -374,32 +388,39 @@ public class EtcdService(
             },
             (WatchResponse watchEvent) =>
             {
-                if (!watchEvent.Created)
+                try
                 {
-                    foreach (var evt in watchEvent.Events)
+                    if (!watchEvent.Created)
                     {
-                        var newObj = new KeyVersion();
-                        newObj.Key = evt.Kv.Key.ToStringUtf8();
-                        newObj.CreateRevision = evt.Kv.CreateRevision;
-                        newObj.ModRevision = evt.Kv.ModRevision;
-                        newObj.Version = evt.Kv.Version;
-                        newObj.Value = evt.Kv.Value.ToStringUtf8();
-                        newObj.EventType = evt.Type;
-                        newObj.Prev =
-                            evt.PrevKv == null
-                                ? null
-                                : new KeyVersion()
-                                {
-                                    Key = evt.PrevKv.Key.ToStringUtf8(),
-                                    CreateRevision = evt.PrevKv.CreateRevision,
-                                    ModRevision = evt.PrevKv.ModRevision,
-                                    Version = evt.PrevKv.Version,
-                                    Value = evt.PrevKv.Value.ToStringUtf8(),
-                                };
-                        op = newObj;
-                        done.TrySetResult(true);
-                        break;
+                        foreach (var evt in watchEvent.Events)
+                        {
+                            var newObj = new KeyVersion();
+                            newObj.Key = evt.Kv.Key.ToStringUtf8();
+                            newObj.CreateRevision = evt.Kv.CreateRevision;
+                            newObj.ModRevision = evt.Kv.ModRevision;
+                            newObj.Version = evt.Kv.Version;
+                            newObj.Value = evt.Kv.Value.ToStringUtf8();
+                            newObj.EventType = evt.Type;
+                            newObj.Prev =
+                                evt.PrevKv == null
+                                    ? null
+                                    : new KeyVersion()
+                                    {
+                                        Key = evt.PrevKv.Key.ToStringUtf8(),
+                                        CreateRevision = evt.PrevKv.CreateRevision,
+                                        ModRevision = evt.PrevKv.ModRevision,
+                                        Version = evt.PrevKv.Version,
+                                        Value = evt.PrevKv.Value.ToStringUtf8(),
+                                    };
+                            op = newObj;
+                            done.TrySetResult(true);
+                            break;
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    done.TrySetException(ex);
                 }
             },
             AddDefaultHeader(client),
@@ -409,7 +430,7 @@ public class EtcdService(
 
         try
         {
-            await done.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            await done.Task.WaitAsync(WatchTimeout);
         }
         catch (TimeoutException)
         {
@@ -479,31 +500,38 @@ public class EtcdService(
             },
             (WatchResponse watchEvent) =>
             {
-                if (!watchEvent.Created)
+                try
                 {
-                    foreach (var evt in watchEvent.Events)
+                    if (!watchEvent.Created)
                     {
-                        var newObj = new KeyVersion();
-                        newObj.Key = evt.Kv.Key.ToStringUtf8();
-                        newObj.CreateRevision = evt.Kv.CreateRevision;
-                        newObj.ModRevision = evt.Kv.ModRevision;
-                        newObj.Version = evt.Kv.Version;
-                        newObj.Value = evt.Kv.Value.ToStringUtf8();
-                        newObj.EventType = evt.Type;
-                        newObj.Prev =
-                            evt.PrevKv == null
-                                ? null
-                                : new KeyVersion()
-                                {
-                                    Key = evt.PrevKv.Key.ToStringUtf8(),
-                                    CreateRevision = evt.PrevKv.CreateRevision,
-                                    ModRevision = evt.PrevKv.ModRevision,
-                                    Version = evt.PrevKv.Version,
-                                    Value = evt.PrevKv.Value.ToStringUtf8(),
-                                };
-                        op.Add(newObj);
+                        foreach (var evt in watchEvent.Events)
+                        {
+                            var newObj = new KeyVersion();
+                            newObj.Key = evt.Kv.Key.ToStringUtf8();
+                            newObj.CreateRevision = evt.Kv.CreateRevision;
+                            newObj.ModRevision = evt.Kv.ModRevision;
+                            newObj.Version = evt.Kv.Version;
+                            newObj.Value = evt.Kv.Value.ToStringUtf8();
+                            newObj.EventType = evt.Type;
+                            newObj.Prev =
+                                evt.PrevKv == null
+                                    ? null
+                                    : new KeyVersion()
+                                    {
+                                        Key = evt.PrevKv.Key.ToStringUtf8(),
+                                        CreateRevision = evt.PrevKv.CreateRevision,
+                                        ModRevision = evt.PrevKv.ModRevision,
+                                        Version = evt.PrevKv.Version,
+                                        Value = evt.PrevKv.Value.ToStringUtf8(),
+                                    };
+                            op.Add(newObj);
+                        }
+                        done.TrySetResult(true);
                     }
-                    done.TrySetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    done.TrySetException(ex);
                 }
             },
             AddDefaultHeader(client),
@@ -513,7 +541,7 @@ public class EtcdService(
 
         try
         {
-            await done.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            await done.Task.WaitAsync(WatchTimeout);
         }
         catch (TimeoutException)
         {
@@ -619,12 +647,11 @@ public class EtcdService(
         }
     }
 
-    // etcd auth tokens default to a 5-minute TTL; expire cached clients before that.
-    private static readonly TimeSpan ClientCacheTtl = TimeSpan.FromMinutes(4);
-    private static readonly TimeSpan ClientValidationInterval = TimeSpan.FromMinutes(4);
-
     private Task CacheClientInstance(string cacheKey, EtcdClientInstance etcdClientInstance)
     {
+        // Residual race: a request that obtained the cached client just before
+        // TTL expiry may use it after this callback disposes it. Low probability,
+        // and self-healing: the failed request triggers re-auth on the next call.
         return _cacheService.Set(
             cacheKey,
             etcdClientInstance,
