@@ -11,6 +11,7 @@ public class EtcdManagerDataContext : DbContext
     public DbSet<EtcdConnection> EtcdConnections { get; set; }
     public DbSet<AppUser> AppUsers { get; set; }
     public DbSet<Snapshot> Snapshots { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     public EtcdManagerDataContext(string connectionString)
     {
@@ -49,6 +50,13 @@ public class EtcdManagerDataContext : DbContext
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Id).ValueGeneratedOnAdd();
         });
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.ToTable("RefreshTokens");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).ValueGeneratedOnAdd();
+            entity.HasIndex(x => x.TokenHash);
+        });
     }
 
     public void SeedData(
@@ -68,6 +76,22 @@ public class EtcdManagerDataContext : DbContext
         {
             logger.LogInformation("Default database does not exist, copy from rawdb");
             File.Copy(rawFilePath, filePath, true);
+        }
+        // The schema originates from the pre-built rawdb file, so new tables
+        // must be created explicitly for existing databases.
+        if (this.Database.IsRelational())
+        {
+            this.Database.ExecuteSqlRaw(
+                @"CREATE TABLE IF NOT EXISTS RefreshTokens (
+                    Id INTEGER NOT NULL CONSTRAINT PK_RefreshTokens PRIMARY KEY AUTOINCREMENT,
+                    TokenHash TEXT NOT NULL,
+                    UserId INTEGER NOT NULL,
+                    ExpiresAt TEXT NOT NULL,
+                    ConsumedAt TEXT NULL,
+                    CreatedAt TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS IX_RefreshTokens_TokenHash ON RefreshTokens (TokenHash);"
+            );
         }
         logger.LogInformation("Start seed data");
         if (!this.AppUsers.Any(x => x.Username == "root"))

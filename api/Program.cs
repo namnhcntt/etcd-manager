@@ -64,9 +64,9 @@ builder.Services.AddCors();
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 // Validate JWT key at startup
 var jwtKey = builder.Configuration.GetValue<string>("Jwt:Key");
-if (string.IsNullOrEmpty(jwtKey))
+if (string.IsNullOrEmpty(jwtKey) || jwtKey.Length < 32)
 {
-    throw new InvalidOperationException("JWT key (Jwt:Key) is not configured. Set it via environment variable or configuration.");
+    throw new InvalidOperationException("Jwt:Key must be configured and at least 32 characters. Use user-secrets or environment variable Jwt__Key.");
 }
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -99,6 +99,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddRateLimiter(options =>
 {
+    // Endpoint-level throttle; per-username lockout is handled in LoginCommandHandler.
     options.AddFixedWindowLimiter("login", opt =>
     {
         opt.Window = TimeSpan.FromMinutes(1);

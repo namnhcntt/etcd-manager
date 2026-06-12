@@ -33,6 +33,7 @@ public class AuthController(ISender mediator, ILogger<AuthController> logger) : 
 
     [HttpPost("Token/Refresh")]
     [AllowAnonymous]
+    [EnableRateLimiting("login")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenModel model)
     {
         var command = model.Adapt<RefreshTokenCommand>();
