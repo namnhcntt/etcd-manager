@@ -2,10 +2,10 @@ import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { Component, OnInit, inject, output, signal } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Guid } from 'guid-ts';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { InputSwitchModule } from 'primeng/inputswitch';
+import { ConfirmationService, MessageService, ToastMessageOptions } from 'primeng/api';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { InputTextModule } from 'primeng/inputtext';
-import { MessagesModule } from 'primeng/messages';
+import { MessageModule } from 'primeng/message';
 import { TableModule } from 'primeng/table';
 import { BaseComponent } from '../../base.component';
 import { commonLayoutImport } from '../../layout/common-layout-import';
@@ -16,8 +16,8 @@ import { EtcdConnectionService } from '../service/etcd-connection.service';
   templateUrl: './connection-manager.component.html',
   styles: [``],
   standalone: true,
-  imports: [...commonLayoutImport, MessagesModule, TableModule, DatePipe,
-    NgTemplateOutlet, InputTextModule, InputSwitchModule],
+  imports: [...commonLayoutImport, MessageModule, TableModule, DatePipe,
+    NgTemplateOutlet, InputTextModule, ToggleSwitchModule],
 
 })
 export class ConnectionManagerComponent extends BaseComponent implements OnInit {
@@ -26,7 +26,7 @@ export class ConnectionManagerComponent extends BaseComponent implements OnInit 
   processing = signal(false);
   formState: 'list' | 'new' | 'edit' = 'list';
   form: FormGroup;
-  msgs = [];
+  msgs: ToastMessageOptions[] = [];
 
   closeForm = output<any>();
 

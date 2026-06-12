@@ -61,7 +61,7 @@
 @if (showImportNodes()) {
 <p-dialog header="ImportNodes" [(visible)]="showImportNodes"
   [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
-  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="true"
+  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [maximizable]="true"
   [autoZIndex]="true" #dialogImportNodes>
   <app-import-nodes #importNodes [dialog]="dialogImportNodes" (importSuccess)="importSuccess()"></app-import-nodes>
   <ng-template pTemplate="footer">

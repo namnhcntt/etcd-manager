@@ -5,10 +5,10 @@
     <span>Etcd Manager</span>
   </a>
   @if (loggedIn()) {
-  <p-dropdown styleClass="dropdown-select-connection" [(ngModel)]="selectedConnection" [filter]="true"
+  <p-select styleClass="dropdown-select-connection" [(ngModel)]="selectedConnection" [filter]="true"
     [options]="globalStore.connections.dataSource()" optionLabel="name" optionValue="id"
     placeholder="Select connection...">
-  </p-dropdown>
+  </p-select>
   }
   <div class="layout-topbar-menu-left">
     @if (selectedConnection() && hasManageUserPermission && authService.loggedIn()) {
@@ -57,7 +57,7 @@
 </div>
 <p-dialog header="Change my password" [(visible)]="showChangeMyPassword"
   [style]="{'min-with': '600px', 'min-height': '450px', width: '600px', height: '450px' }" [closeOnEscape]="true"
-  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="true"
+  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [maximizable]="true"
   [autoZIndex]="true" #dialog>
   <!-- <app-change-my-password [dialog]="dialog" #changeMyPassword></app-change-my-password> -->
   change my password

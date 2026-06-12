@@ -2,7 +2,7 @@
   <i class="pi pi-cog"></i>
 </button>
 
-<p-sidebar [(visible)]="visible" position="right" [transitionOptions]="'.3s cubic-bezier(0, 0, 0.2, 1)'"
+<p-drawer [(visible)]="visible" position="right" [transitionOptions]="'.3s cubic-bezier(0, 0, 0.2, 1)'"
   styleClass="layout-config-sidebar w-20rem">
   <h5>Scale</h5>
   <div class="flex align-items-center">
@@ -32,7 +32,7 @@
     </div>
   </div>
   <h5>Ripple Effect</h5>
-  <p-inputSwitch [(ngModel)]="ripple"></p-inputSwitch>
+  <p-toggleSwitch [(ngModel)]="ripple"></p-toggleSwitch>
   }
 
 
@@ -240,4 +240,4 @@
       </button>
     </div>
   </div>
-</p-sidebar>
+</p-drawer>

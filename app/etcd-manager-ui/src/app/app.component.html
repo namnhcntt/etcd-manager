@@ -1,12 +1,12 @@
 <router-outlet></router-outlet>
-<p-sidebar [(visible)]="displaySidebar" styleClass="p-sidebar-lg" position="right"
+<p-drawer [(visible)]="displaySidebar" styleClass="p-sidebar-lg" position="right"
   (onHide)="globalStore.closeSidebar()">
   @if (globalStore.displaySidebar.connectionManager()) {
   <app-connection-manager (closeForm)="globalStore.closeSidebar()"></app-connection-manager>
   } @else if (globalStore.displaySidebar.userManager()) {
   <app-user-manager (closeForm)="globalStore.closeSidebar()"></app-user-manager>
   }
-</p-sidebar>
-<p-confirmPopup #confirmPopup key="main" appendTo="body"></p-confirmPopup>
+</p-drawer>
+<p-confirmpopup #confirmPopup key="main" appendTo="body"></p-confirmpopup>
 <p-confirmDialog header="Confirm" appendTo="body" icon="pi pi-exclamation-triangle"></p-confirmDialog>
 <p-toast appendTo="body" [position]="'bottom-right'"></p-toast>

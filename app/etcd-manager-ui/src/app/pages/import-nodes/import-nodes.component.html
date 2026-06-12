@@ -77,7 +77,7 @@
 @if(showDiffText()) {
 <p-dialog header="Diff text" [(visible)]="showDiffText"
   [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
-  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="true"
+  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [maximizable]="true"
   [autoZIndex]="true" (onHide)="hideDialog()" #dialogDiffText>
   <app-diff-text #importNodes [left]="leftDiffItem()" [right]="rightDiffItem()" [dialog]="dialogDiffText">
   </app-diff-text>

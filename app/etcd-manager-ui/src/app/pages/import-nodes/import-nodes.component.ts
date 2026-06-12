@@ -10,7 +10,6 @@ import { commonLayoutImport } from '../../layout/common-layout-import';
 import { DiffTextComponent } from '../diff-text/diff-text.component';
 import { ExportService } from '../service/export.service';
 import { KeyValueService } from '../service/key-value.service';
-import { ValueDetailComponent } from '../value-detail/value-detail.component';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
@@ -19,7 +18,7 @@ import { ConfirmPopupModule } from 'primeng/confirmpopup';
   templateUrl: './import-nodes.component.html',
   styles: [``],
   standalone: true,
-  imports: [...commonLayoutImport, DialogModule, FileUploadModule, TableModule, InputTextModule, ValueDetailComponent, DiffTextComponent, BadgeModule,
+  imports: [...commonLayoutImport, DialogModule, FileUploadModule, TableModule, InputTextModule, DiffTextComponent, BadgeModule,
     TooltipModule
   ]
 })

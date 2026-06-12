@@ -4,7 +4,7 @@ import { CodeEditorComponent, CodeEditorModule, CodeModel } from '@ngstack/code-
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { AutoFocusModule } from 'primeng/autofocus';
 import { DialogModule } from 'primeng/dialog';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { FileUpload, FileUploadModule } from 'primeng/fileupload';
 import { Inplace, InplaceModule } from 'primeng/inplace';
 import { InputTextModule } from 'primeng/inputtext';
@@ -38,7 +38,7 @@ import { KeyValueService } from '../../service/key-value.service';
 
 `],
   standalone: true,
-  imports: [...commonLayoutImport, ToolbarModule, DropdownModule, DialogModule,
+  imports: [...commonLayoutImport, ToolbarModule, SelectModule, DialogModule,
     FileUploadModule, CodeEditorModule, InplaceModule, TooltipModule,
     InputTextModule, AutoFocusModule, KeyVersionListComponent],
 
