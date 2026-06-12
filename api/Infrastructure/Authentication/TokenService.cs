@@ -142,35 +142,73 @@ public class TokenService(IConfiguration _configuration, EtcdManagerDataContext 
             throw new SecurityTokenException("Invalid refresh token");
         }
 
-        // rotation / reuse detection: the token must be a known, unconsumed, unexpired token
+        // rotation / reuse detection: atomically consume the token so two concurrent
+        // refreshes with the same token cannot both succeed (TOCTOU)
         var tokenHash = ComputeTokenHash(refreshToken);
-        var storedToken = await _dataContext.RefreshTokens.FirstOrDefaultAsync(x =>
-            x.TokenHash == tokenHash
-        );
+        var now = DateTime.UtcNow;
+        var consumed = await TryConsumeToken(tokenHash, now);
 
-        if (storedToken == null || storedToken.ExpiresAt <= DateTime.UtcNow)
+        if (!consumed)
         {
-            throw new SecurityTokenException("Invalid refresh token");
-        }
-
-        if (storedToken.ConsumedAt != null)
-        {
-            // reuse of an already-consumed token: assume theft, revoke all tokens for the user
-            var userTokens = await _dataContext
-                .RefreshTokens.Where(x => x.UserId == storedToken.UserId && x.ConsumedAt == null)
-                .ToListAsync();
-            foreach (var userToken in userTokens)
+            var existing = await _dataContext
+                .RefreshTokens.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.TokenHash == tokenHash);
+            if (existing?.ConsumedAt != null)
             {
-                userToken.ConsumedAt = DateTime.UtcNow;
+                // reuse of an already-consumed token: assume theft, revoke all tokens for the user
+                await RevokeAllUserTokens(existing.UserId, now);
             }
-            await _dataContext.SaveChangesAsync();
             throw new SecurityTokenException("Invalid refresh token");
         }
-
-        storedToken.ConsumedAt = DateTime.UtcNow;
 
         // GenerateJwtTokenData persists the rotated refresh token and saves changes
         return await GenerateJwtTokenData(userId, userName);
+    }
+
+    private async Task<bool> TryConsumeToken(string tokenHash, DateTime now)
+    {
+        if (_dataContext.Database.IsRelational())
+        {
+            // single conditional UPDATE: only one concurrent caller can win the row
+            var affected = await _dataContext
+                .RefreshTokens.Where(x =>
+                    x.TokenHash == tokenHash && x.ConsumedAt == null && x.ExpiresAt > now
+                )
+                .ExecuteUpdateAsync(s => s.SetProperty(t => t.ConsumedAt, now));
+            return affected > 0;
+        }
+
+        // EF InMemory provider (tests) does not support ExecuteUpdateAsync
+        var storedToken = await _dataContext.RefreshTokens.FirstOrDefaultAsync(x =>
+            x.TokenHash == tokenHash && x.ConsumedAt == null && x.ExpiresAt > now
+        );
+        if (storedToken == null)
+        {
+            return false;
+        }
+        storedToken.ConsumedAt = now;
+        await _dataContext.SaveChangesAsync();
+        return true;
+    }
+
+    private async Task RevokeAllUserTokens(int userId, DateTime now)
+    {
+        if (_dataContext.Database.IsRelational())
+        {
+            await _dataContext
+                .RefreshTokens.Where(x => x.UserId == userId && x.ConsumedAt == null)
+                .ExecuteUpdateAsync(s => s.SetProperty(t => t.ConsumedAt, now));
+            return;
+        }
+
+        var userTokens = await _dataContext
+            .RefreshTokens.Where(x => x.UserId == userId && x.ConsumedAt == null)
+            .ToListAsync();
+        foreach (var userToken in userTokens)
+        {
+            userToken.ConsumedAt = now;
+        }
+        await _dataContext.SaveChangesAsync();
     }
 
     private static string ComputeTokenHash(string token)

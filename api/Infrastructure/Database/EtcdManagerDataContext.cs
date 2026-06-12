@@ -55,7 +55,7 @@ public class EtcdManagerDataContext : DbContext
             entity.ToTable("RefreshTokens");
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Id).ValueGeneratedOnAdd();
-            entity.HasIndex(x => x.TokenHash);
+            entity.HasIndex(x => x.TokenHash).IsUnique();
         });
     }
 
@@ -90,7 +90,14 @@ public class EtcdManagerDataContext : DbContext
                     ConsumedAt TEXT NULL,
                     CreatedAt TEXT NOT NULL
                 );
-                CREATE INDEX IF NOT EXISTS IX_RefreshTokens_TokenHash ON RefreshTokens (TokenHash);"
+                CREATE UNIQUE INDEX IF NOT EXISTS IX_RefreshTokens_TokenHash ON RefreshTokens (TokenHash);"
+            );
+
+            // opportunistic purge so the RefreshTokens table does not grow unbounded
+            var now = DateTime.UtcNow;
+            var consumedCutoff = now.AddDays(-7);
+            this.Database.ExecuteSql(
+                $"DELETE FROM RefreshTokens WHERE ExpiresAt < {now} OR (ConsumedAt IS NOT NULL AND ConsumedAt < {consumedCutoff})"
             );
         }
         logger.LogInformation("Start seed data");
