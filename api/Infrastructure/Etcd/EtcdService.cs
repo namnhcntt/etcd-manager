@@ -7,7 +7,6 @@ using Etcdserverpb;
 using Google.Protobuf;
 using Google.Protobuf.Collections;
 using Grpc.Core;
-using Polly;
 
 namespace EtcdManager.API.Infrastructure.Etcd;
 
@@ -26,7 +25,7 @@ public class EtcdService(
         string? password
     )
     {
-        var client = new EtcdClient(
+        using var client = new EtcdClient(
             $"{host}:{port}",
             configureChannelOptions: channelOptions =>
             {
@@ -64,17 +63,22 @@ public class EtcdService(
     public async Task<List<KeyVersion>> GetAll(EtcdConnection etcdConnection)
     {
         var client = await GetEtcdClientInstance(etcdConnection);
-        var userDetail = await client.Instance.UserGetAsync(
-            new AuthUserGetRequest { Name = etcdConnection.Username },
-            AddDefaultHeader(client)
-        );
-        if (userDetail == null)
+        bool hasRoot = false;
+        RepeatedField<string> roles = new RepeatedField<string>();
+        if (etcdConnection.EnableAuthenticated && !string.IsNullOrWhiteSpace(etcdConnection.Username))
         {
-            throw new Exception("User not found");
+            var userDetail = await client.Instance.UserGetAsync(
+                new AuthUserGetRequest { Name = etcdConnection.Username },
+                AddDefaultHeader(client)
+            );
+            if (userDetail == null)
+            {
+                throw new Exception("User not found");
+            }
+            roles = userDetail.Roles;
+            hasRoot = roles.Any(x => x == "root");
         }
-        var roles = userDetail.Roles;
-        var hasRoot = roles.Any(x => x == "root");
-        if (!hasRoot)
+        if (etcdConnection.EnableAuthenticated && !hasRoot)
         {
             var op = new ConcurrentBag<KeyVersion>();
             // var result
@@ -274,26 +278,71 @@ public class EtcdService(
     public async Task Delete(string key, bool deleteRecursive, EtcdConnection etcdConnection)
     {
         var client = await GetEtcdClientInstance(etcdConnection);
-        await client.Instance.DeleteRangeAsync(key, AddDefaultHeader(client));
-
         if (deleteRecursive)
         {
             await client.Instance.DeleteRangeAsync($"{key}/", AddDefaultHeader(client));
         }
+        await client.Instance.DeleteAsync(key, AddDefaultHeader(client));
     }
 
     public async Task RenameKey(string oldKey, string newKey, EtcdConnection etcdConnection)
     {
         var client = await GetEtcdClientInstance(etcdConnection);
-        var oldKeyValue = await client.Instance.GetValAsync(oldKey, AddDefaultHeader(client));
-        await client.Instance.DeleteAsync(oldKey, AddDefaultHeader(client));
-        await client.Instance.PutAsync(newKey, oldKeyValue, AddDefaultHeader(client));
+        var oldKeyResult = await client.Instance.GetAsync(oldKey, AddDefaultHeader(client));
+        if (oldKeyResult == null || oldKeyResult.Kvs.Count == 0)
+        {
+            throw new Exception($"Key '{oldKey}' not found in etcd.");
+        }
+
+        // Atomically put the new key and delete the old key in a single transaction,
+        // guarded by a check that the old key still exists.
+        var txnRequest = new TxnRequest();
+        txnRequest.Compare.Add(
+            new Compare
+            {
+                Key = ByteString.CopyFromUtf8(oldKey),
+                Target = Compare.Types.CompareTarget.Create,
+                Result = Compare.Types.CompareResult.Greater,
+                CreateRevision = 0
+            }
+        );
+        txnRequest.Success.Add(
+            new RequestOp
+            {
+                RequestPut = new PutRequest
+                {
+                    Key = ByteString.CopyFromUtf8(newKey),
+                    Value = oldKeyResult.Kvs[0].Value
+                }
+            }
+        );
+        txnRequest.Success.Add(
+            new RequestOp
+            {
+                RequestDeleteRange = new DeleteRangeRequest
+                {
+                    Key = ByteString.CopyFromUtf8(oldKey)
+                }
+            }
+        );
+        var txnResponse = await client.Instance.TransactionAsync(
+            txnRequest,
+            AddDefaultHeader(client)
+        );
+        if (!txnResponse.Succeeded)
+        {
+            throw new Exception($"Key '{oldKey}' not found in etcd.");
+        }
     }
 
     public async Task<List<KeyVersion>> GetRevisions(string key, EtcdConnection etcdConnection)
     {
         var client = await GetEtcdClientInstance(etcdConnection);
         var keyResult = await client.Instance.GetAsync(key, AddDefaultHeader(client));
+        if (keyResult == null || keyResult.Kvs.Count == 0)
+        {
+            throw new Exception($"Key '{key}' not found in etcd.");
+        }
 
         var op = await GetAllRevisions(client, key, keyResult.Kvs[0].Version);
         return op;
@@ -308,8 +357,10 @@ public class EtcdService(
         var client = await GetEtcdClientInstance(etcdConnection);
         var keyResult = await client.Instance.GetValAsync(key, AddDefaultHeader(client));
         KeyVersion? op = null;
-        bool done = false;
-        var cancelTokenSource = new CancellationTokenSource();
+        var done = new TaskCompletionSource<bool>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        using var cancelTokenSource = new CancellationTokenSource();
 
         // nếu chưa khởi tạo thì khởi tạo 1 lần
         _ = client.Instance.WatchAsync(
@@ -346,7 +397,7 @@ public class EtcdService(
                                     Value = evt.PrevKv.Value.ToStringUtf8(),
                                 };
                         op = newObj;
-                        done = true;
+                        done.TrySetResult(true);
                         break;
                     }
                 }
@@ -356,18 +407,18 @@ public class EtcdService(
             cancelTokenSource.Token
         );
 
-        var policy = Policy
-            .HandleResult<bool>(x => !x)
-            .WaitAndRetryAsync(5, retry => TimeSpan.FromSeconds(retry));
-        await policy.ExecuteAsync(() =>
+        try
         {
-            if (done)
-            {
-                cancelTokenSource.Cancel();
-                return Task.FromResult(true);
-            }
-            return Task.FromResult(false);
-        });
+            await done.Task.WaitAsync(TimeSpan.FromSeconds(15));
+        }
+        catch (TimeoutException)
+        {
+            // no watch event arrived in time; return whatever was collected (null)
+        }
+        finally
+        {
+            cancelTokenSource.Cancel();
+        }
 
         return op;
     }
@@ -378,7 +429,7 @@ public class EtcdService(
     )
     {
         var client = await GetEtcdClientInstance(etcdConnection);
-        var range = client.Instance.GetRange(keyPrefix, AddDefaultHeader(client));
+        var range = await client.Instance.GetRangeAsync(keyPrefix, AddDefaultHeader(client));
         var op = new List<KeyVersion>();
         foreach (var key in range.Kvs)
         {
@@ -412,8 +463,10 @@ public class EtcdService(
     )
     {
         var op = new List<KeyVersion>();
-        bool done = false;
-        var cancelTokenSource = new CancellationTokenSource();
+        var done = new TaskCompletionSource<bool>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        using var cancelTokenSource = new CancellationTokenSource();
         // nếu chưa khởi tạo thì khởi tạo 1 lần
         _ = client.Instance.WatchAsync(
             new WatchRequest()
@@ -450,7 +503,7 @@ public class EtcdService(
                                 };
                         op.Add(newObj);
                     }
-                    done = true;
+                    done.TrySetResult(true);
                 }
             },
             AddDefaultHeader(client),
@@ -458,18 +511,18 @@ public class EtcdService(
             cancelTokenSource.Token
         );
 
-        var policy = Policy
-            .HandleResult<bool>(x => !x)
-            .WaitAndRetryAsync(5, retry => TimeSpan.FromSeconds(retry));
-        await policy.ExecuteAsync(() =>
+        try
         {
-            if (done)
-            {
-                cancelTokenSource.Cancel();
-                return Task.FromResult(true);
-            }
-            return Task.FromResult(false);
-        });
+            await done.Task.WaitAsync(TimeSpan.FromSeconds(15));
+        }
+        catch (TimeoutException)
+        {
+            // no watch event arrived in time; return whatever was collected
+        }
+        finally
+        {
+            cancelTokenSource.Cancel();
+        }
         return op;
     }
 
@@ -479,22 +532,30 @@ public class EtcdService(
         var existClient = await _cacheService.Get<EtcdClientInstance>(cacheKey);
         if (existClient != null)
         {
-            // test token, if invalid auth, then re-auth
-            try
+            // test token, if invalid auth, then re-auth.
+            // Skip the validation round-trip while the last validation is still fresh.
+            var validationNeeded =
+                existClient.EnableAuthenticated
+                && DateTimeOffset.UtcNow - existClient.LastValidatedAt > ClientValidationInterval;
+            if (validationNeeded)
             {
-                var userDetail = await existClient.Instance.UserGetAsync(
-                    new AuthUserGetRequest { Name = etcdConnection.Username },
-                    AddDefaultHeader(existClient)
-                );
-                if (userDetail == null)
+                try
                 {
-                    throw new Exception("User not found");
+                    var userDetail = await existClient.Instance.UserGetAsync(
+                        new AuthUserGetRequest { Name = etcdConnection.Username },
+                        AddDefaultHeader(existClient)
+                    );
+                    if (userDetail == null)
+                    {
+                        throw new Exception("User not found");
+                    }
+                    existClient.LastValidatedAt = DateTimeOffset.UtcNow;
                 }
-            }
-            catch (Exception ex)
-            {
-                await _cacheService.Remove(cacheKey);
-                return await GetEtcdClientInstance(etcdConnection);
+                catch (Exception)
+                {
+                    await _cacheService.Remove(cacheKey);
+                    return await GetEtcdClientInstance(etcdConnection);
+                }
             }
 
             return existClient;
@@ -512,26 +573,36 @@ public class EtcdService(
         );
         if (etcdConnection.EnableAuthenticated)
         {
-            var token = string.Empty;
-            var authRes = await client.AuthenticateAsync(
-                new Etcdserverpb.AuthenticateRequest()
-                {
-                    Name = etcdConnection.Username,
-                    Password = _passwordProtector.Unprotect(etcdConnection.Password)
-                }
-            );
-            token = authRes != null ? authRes.Token : null;
+            string? token;
+            try
+            {
+                var authRes = await client.AuthenticateAsync(
+                    new Etcdserverpb.AuthenticateRequest()
+                    {
+                        Name = etcdConnection.Username,
+                        Password = _passwordProtector.Unprotect(etcdConnection.Password)
+                    }
+                );
+                token = authRes != null ? authRes.Token : null;
+            }
+            catch
+            {
+                client.Dispose();
+                throw;
+            }
             if (!string.IsNullOrWhiteSpace(token))
             {
                 var etcdClientInstance = new EtcdClientInstance()
                 {
                     Instance = client,
                     Token = token,
-                    EnableAuthenticated = true
+                    EnableAuthenticated = true,
+                    LastValidatedAt = DateTimeOffset.UtcNow
                 };
-                await _cacheService.Set(cacheKey, etcdClientInstance);
+                await CacheClientInstance(cacheKey, etcdClientInstance);
                 return etcdClientInstance;
             }
+            client.Dispose();
             throw new Exception($"Cannot get token from etcd server {etcdConnection.Server}");
         }
         else
@@ -540,11 +611,26 @@ public class EtcdService(
             {
                 Instance = client,
                 Token = string.Empty,
-                EnableAuthenticated = false
+                EnableAuthenticated = false,
+                LastValidatedAt = DateTimeOffset.UtcNow
             };
-            await _cacheService.Set(cacheKey, etcdClientInstance);
+            await CacheClientInstance(cacheKey, etcdClientInstance);
             return etcdClientInstance;
         }
+    }
+
+    // etcd auth tokens default to a 5-minute TTL; expire cached clients before that.
+    private static readonly TimeSpan ClientCacheTtl = TimeSpan.FromMinutes(4);
+    private static readonly TimeSpan ClientValidationInterval = TimeSpan.FromMinutes(4);
+
+    private Task CacheClientInstance(string cacheKey, EtcdClientInstance etcdClientInstance)
+    {
+        return _cacheService.Set(
+            cacheKey,
+            etcdClientInstance,
+            ClientCacheTtl,
+            evicted => evicted.Instance?.Dispose()
+        );
     }
 
     private Grpc.Core.Metadata? AddDefaultHeader(EtcdClientInstance client)
