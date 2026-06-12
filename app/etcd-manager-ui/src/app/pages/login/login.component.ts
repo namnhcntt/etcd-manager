@@ -1,8 +1,8 @@
-import { Component, OnInit, ViewEncapsulation, inject, model } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, inject, model, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
+import { ToastMessageOptions } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
-import { MessagesModule } from 'primeng/messages';
+import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
 import { BaseComponent } from '../../base.component';
 import { commonLayoutImport } from '../../layout/common-layout-import';
@@ -36,20 +36,19 @@ import { APP_BASE_HREF } from '@angular/common';
     }
   `],
   standalone: true,
-  imports: [...commonLayoutImport, MessagesModule, PasswordModule, InputTextModule],
-  providers: [MessageService],
+  imports: [...commonLayoutImport, MessageModule, PasswordModule, InputTextModule],
   encapsulation: ViewEncapsulation.None
 })
 export class LoginComponent extends BaseComponent implements OnInit {
 
   userName = model('');
   password = model('');
+  loginMessages = signal<ToastMessageOptions[]>([]);
 
   public layoutService = inject(LayoutService);
   router = inject(Router);
   authService = inject(AuthService);
   private readonly _baseHref: string = inject(APP_BASE_HREF);
-  private readonly _messageService = inject(MessageService);
 
   ngOnInit() {
     if (this.authService.hasValidAccessToken()) {
@@ -58,13 +57,13 @@ export class LoginComponent extends BaseComponent implements OnInit {
   }
 
   signIn() {
-    this._messageService.clear('login');
+    this.loginMessages.set([]);
     if (!this.userName()) {
-      this._messageService.add({ severity: 'error', detail: 'Please enter userName', key: 'login' });
+      this.loginMessages.set([{ severity: 'error', detail: 'Please enter userName' }]);
       return;
     }
     if (!this.password()) {
-      this._messageService.add({ severity: 'error', detail: 'Please enter password', key: 'login' });
+      this.loginMessages.set([{ severity: 'error', detail: 'Please enter password' }]);
       return;
     }
 
@@ -73,7 +72,7 @@ export class LoginComponent extends BaseComponent implements OnInit {
       this.authService.saveToken(res.token);
       window.location.href = this._baseHref;
     }).catch(err => {
-      this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error, key: 'login' });
+      this.loginMessages.set([{ severity: 'error', detail: err.error.error }]);
     });
   }
 }

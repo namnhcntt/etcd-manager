@@ -69,7 +69,7 @@
 @if (showDiffDialog()) {
 <p-dialog header="Diff {{key()}}" [(visible)]="showDiffDialog"
   [style]="{'min-with': '900px', 'min-height': '650px', width: '900px', height: '650px' }" [closeOnEscape]="true"
-  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="false"
+  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [maximizable]="false"
   [autoZIndex]="true" #dialog>
   <app-diff-text #diffText [dialog]="dialog" [right]="currentVersionItem" [left]="diffItem"></app-diff-text>
   <ng-template pTemplate="footer">

@@ -39,8 +39,8 @@
       <span>Last Modifed By: NamNH</span>
     </div> -->
     <div class="dropdown-language">
-      <p-dropdown [options]="languages" [style]="{'width': '150px'}" optionLabel="value" optionValue="value"
-        (onChange)="changeLanguage($event.value)"></p-dropdown>
+      <p-select [options]="languages" [style]="{'width': '150px'}" optionLabel="value" optionValue="value"
+        (onChange)="changeLanguage($event.value)"></p-select>
     </div>
   </div>
   <div class="p-toolbar-group-right">
@@ -73,7 +73,7 @@
 @if (showKeyVersion()) {
 <p-dialog header="Revision of key {{keyDetail.key()}}" [(visible)]="showKeyVersion"
   [style]="{'min-with': '950px', 'min-height': '650px', width: '950px', height: '650px' }" [closeOnEscape]="true"
-  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [responsive]="true" [maximizable]="true"
+  [appendTo]="'body'" [focusOnShow]="false" [focusTrap]="false" [modal]="true" [maximizable]="true"
   [autoZIndex]="true" #dialog>
   <app-key-version-list #keyVersionList [key]="keyDetail.key()!" [dialog]="dialog"
     (onUseValue)="useValueFromOldVersion($event)"></app-key-version-list>

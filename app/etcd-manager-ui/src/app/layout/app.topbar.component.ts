@@ -3,7 +3,7 @@ import { Component, OnInit, effect, inject, model, signal, untracked } from '@an
 import { MenuItem, PrimeIcons } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { DialogModule } from 'primeng/dialog';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { MenuModule } from 'primeng/menu';
 import { BaseComponent } from '../base.component';
 import { AuthService } from '../pages/service/auth.service';
@@ -37,7 +37,7 @@ import { LayoutService } from "./service/app.layout.service";
         margin-left:20px;
 
     }`],
-  imports: [...commonLayoutImport, NgClass, MenuModule, DropdownModule, AvatarModule, DialogModule],
+  imports: [...commonLayoutImport, NgClass, MenuModule, SelectModule, AvatarModule, DialogModule],
 
 })
 export class AppTopBarComponent extends BaseComponent implements OnInit {

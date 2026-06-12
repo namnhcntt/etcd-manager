@@ -1,6 +1,6 @@
-# Digest pinned (mcr.microsoft.com/dotnet/aspnet:8.0 multi-arch index).
-# To re-pin: docker buildx imagetools inspect mcr.microsoft.com/dotnet/aspnet:8.0
-FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:8e7aefa6e35d12dec6301c26bd3ceba514aee4e699562b7b10cc242b2bd48c12
+# Digest pinned (mcr.microsoft.com/dotnet/aspnet:10.0 multi-arch index).
+# To re-pin: docker buildx imagetools inspect mcr.microsoft.com/dotnet/aspnet:10.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:ddcf70ad1ab963a4fcd41fbd722a6b660e404e87567cfbd46fd2809c21b02088
 RUN apt-get update -y && apt-get install --no-install-recommends gettext-base nginx sqlite3 libsqlite3-dev etcd-client -y \
     && rm -rf /var/lib/apt/lists/*
 COPY ./api/bin/Release/Publish /api

@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { InputSwitchModule } from 'primeng/inputswitch';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { RadioButtonModule } from 'primeng/radiobutton';
-import { SidebarModule } from 'primeng/sidebar';
+import { DrawerModule } from 'primeng/drawer';
 import { LayoutService } from '../service/app.layout.service';
 
 @Component({
@@ -14,10 +14,10 @@ import { LayoutService } from '../service/app.layout.service';
   imports: [
     CommonModule,
     FormsModule,
-    SidebarModule,
+    DrawerModule,
     RadioButtonModule,
     ButtonModule,
-    InputSwitchModule
+    ToggleSwitchModule
   ],
 
 })

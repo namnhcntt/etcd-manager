@@ -1,6 +1,6 @@
 # etcd-manager
 
-A web-based management UI for [etcd](https://etcd.io/) — the distributed key-value store used for configuration and service discovery. Built with .NET 8 and Angular, deployable as a single Docker container.
+A web-based management UI for [etcd](https://etcd.io/) — the distributed key-value store used for configuration and service discovery. Built with .NET 10 and Angular, deployable as a single Docker container.
 
 ## Features
 
@@ -15,19 +15,19 @@ A web-based management UI for [etcd](https://etcd.io/) — the distributed key-v
 
 | Layer | Technology |
 |---|---|
-| Backend | ASP.NET Core 8, Entity Framework Core, SQLite |
+| Backend | ASP.NET Core 10, Entity Framework Core, SQLite |
 | Architecture | CQRS with MediatR, FluentValidation, Mapster |
 | Auth | JWT Bearer, BCrypt.Net |
 | etcd client | dotnet-etcd |
-| Frontend | Angular 17+, PrimeNG, RxJS |
+| Frontend | Angular 21, PrimeNG 21, RxJS |
 | Container | Docker (multi-stage), NGINX, etcd-client CLI |
 
 ## Getting Started
 
 ### Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- [Node.js 18+](https://nodejs.org/) and [pnpm](https://pnpm.io/)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [Node.js 20.19+ (or 22.12+/24+)](https://nodejs.org/) and npm
 - A running etcd cluster
 
 ### Run in Development
@@ -82,7 +82,7 @@ The API is served on port **80** and the Angular SPA on port **81**.
 
 ```
 etcd-manager/
-├── api/                        # .NET 8 backend
+├── api/                        # .NET 10 backend
 │   ├── Controllers/            # Auth, EtcdConnections, KeyValues endpoints
 │   ├── Domain/                 # Entities (AppUser, EtcdConnection, KeyValue, Snapshot …)
 │   ├── ApplicationService/     # CQRS Commands & Queries

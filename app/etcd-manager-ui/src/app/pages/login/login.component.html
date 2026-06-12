@@ -14,7 +14,9 @@
           <div class="text-900 text-3xl font-medium mb-3">ETCD Manager</div>
           <span class="text-600 font-medium">Sign in to continue</span>
         </div>
-        <p-messages [key]="'login'"></p-messages>
+        @for (msg of loginMessages(); track $index) {
+        <p-message [severity]="$any(msg.severity)" [text]="msg.detail" styleClass="w-full mb-3"></p-message>
+        }
         <div class="w-full md:w-10 mx-auto">
           <label for="userName" class="block text-900 text-xl font-medium mb-2">Username</label>
           <input id="userName" type="text" placeholder="Username" pInputText class="w-full mb-3" style="padding:1rem;"

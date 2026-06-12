@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
-import { SidebarModule } from 'primeng/sidebar';
+import { DrawerModule } from 'primeng/drawer';
 import { ToastModule } from 'primeng/toast';
 import { BaseComponent } from './base.component';
 import { ConnectionManagerComponent } from './pages/connection-manager/connection-manager.component';
@@ -15,7 +15,7 @@ import { UserManagerComponent } from './pages/user-manager/user-manager.componen
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SidebarModule, ConnectionManagerComponent, UserManagerComponent,
+  imports: [RouterOutlet, DrawerModule, ConnectionManagerComponent, UserManagerComponent,
     ConfirmPopupModule, ConfirmDialogModule, ToastModule
   ],
   templateUrl: './app.component.html',
