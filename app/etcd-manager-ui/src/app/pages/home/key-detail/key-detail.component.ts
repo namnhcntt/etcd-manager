@@ -154,8 +154,8 @@ export class KeyDetailComponent extends BaseComponent {
       if (selectedKeyChanged) {
         untracked(() => {
           this.globalStore.setIsNewState(false);
-          this.getByKey(selectedKeyChanged).catch(() => {
-            this._messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load key' });
+          this.getByKey(selectedKeyChanged).catch((err: any) => {
+            this._messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.error ?? 'Failed to load key' });
           });
         });
       }
@@ -216,9 +216,6 @@ export class KeyDetailComponent extends BaseComponent {
     this.codeModel.update(() => ({ ...this.codeModel(), language }));
   }
 
-  onCodeChanged(evt: any) {
-  }
-
   handleSelectFile(evt: any) {
     this._exportService.readDataFromFile(evt.currentFiles[0]).then(rs => {
       if (rs?.value) {
@@ -242,8 +239,8 @@ export class KeyDetailComponent extends BaseComponent {
         .then(() => {
           this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Refreshed' });
         })
-        .catch(() => {
-          this._messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load key' });
+        .catch((err: any) => {
+          this._messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.error ?? 'Failed to load key' });
         });
     }
   }

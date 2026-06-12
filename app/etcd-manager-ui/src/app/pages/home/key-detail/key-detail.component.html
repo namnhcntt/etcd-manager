@@ -65,8 +65,7 @@
 </p-toolbar>
 @if (editorLoaded()) {
 <ngs-code-editor #codeEditor [theme]="codeEditorConstant.DEFAULT_THEME" [codeModel]="codeModel()"
-  [options]="codeEditorConstant.DEFAULT_OPTIONS" [style]="{'height':'calc(100vh - 270px)','overflow':'auto'}"
-  (valueChanged)="onCodeChanged($event)">
+  [options]="codeEditorConstant.DEFAULT_OPTIONS" [style]="{'height':'calc(100vh - 270px)','overflow':'auto'}">
 </ngs-code-editor>
 }
 }

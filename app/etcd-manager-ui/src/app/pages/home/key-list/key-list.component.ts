@@ -187,9 +187,14 @@ export class KeyListComponent extends BaseComponent {
       this._confirmationService.confirm({
         message: 'Are you sure that you want to delete this key?',
         accept: () => {
-          this._keyValueService.deleteKey(this.globalStore.connections.selectedEtcdConnection.id(), this.currentSelectRow.key).then(rs => {
-            // notify via the store so KeyDetailComponent's clear-panel effect fires
+          const deletedKey = this.currentSelectRow.key;
+          this._keyValueService.deleteKey(this.globalStore.connections.selectedEtcdConnection.id(), deletedKey).then(() => {
+            // mirror KeyDetailComponent.deleteKey: clear a now-stale selection,
+            // then notify via the store so the clear-panel effect fires
             // (the deleteSuccessAt effect above also triggers refreshList)
+            if (this.globalStore.keyValues.selectedKey() === deletedKey) {
+              this.globalStore.setSelectedKey('');
+            }
             this.globalStore.setDeleteSuccessAt(new Date());
           }).catch(err => {
             this._messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
