@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation, inject, model } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, inject, model, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastMessageOptions } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
@@ -43,7 +43,7 @@ export class LoginComponent extends BaseComponent implements OnInit {
 
   userName = model('');
   password = model('');
-  loginMessages: ToastMessageOptions[] = [];
+  loginMessages = signal<ToastMessageOptions[]>([]);
 
   public layoutService = inject(LayoutService);
   router = inject(Router);
@@ -57,13 +57,13 @@ export class LoginComponent extends BaseComponent implements OnInit {
   }
 
   signIn() {
-    this.loginMessages = [];
+    this.loginMessages.set([]);
     if (!this.userName()) {
-      this.loginMessages = [{ severity: 'error', detail: 'Please enter userName' }];
+      this.loginMessages.set([{ severity: 'error', detail: 'Please enter userName' }]);
       return;
     }
     if (!this.password()) {
-      this.loginMessages = [{ severity: 'error', detail: 'Please enter password' }];
+      this.loginMessages.set([{ severity: 'error', detail: 'Please enter password' }]);
       return;
     }
 
@@ -72,7 +72,7 @@ export class LoginComponent extends BaseComponent implements OnInit {
       this.authService.saveToken(res.token);
       window.location.href = this._baseHref;
     }).catch(err => {
-      this.loginMessages = [{ severity: 'error', summary: 'Error', detail: err.error.error }];
+      this.loginMessages.set([{ severity: 'error', detail: err.error.error }]);
     });
   }
 }

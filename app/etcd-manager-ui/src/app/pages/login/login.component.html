@@ -14,7 +14,7 @@
           <div class="text-900 text-3xl font-medium mb-3">ETCD Manager</div>
           <span class="text-600 font-medium">Sign in to continue</span>
         </div>
-        @for (msg of loginMessages; track $index) {
+        @for (msg of loginMessages(); track $index) {
         <p-message [severity]="$any(msg.severity)" [text]="msg.detail" styleClass="w-full mb-3"></p-message>
         }
         <div class="w-full md:w-10 mx-auto">
