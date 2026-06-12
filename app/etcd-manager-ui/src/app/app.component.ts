@@ -55,8 +55,10 @@ export class AppComponent extends BaseComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     // the access token lives in memory only, so a page reload loses it:
-    // attempt a silent refresh via the HttpOnly refresh-token cookie first
-    if (!this.authService.hasValidAccessToken()) {
+    // attempt a silent refresh via the HttpOnly refresh-token cookie — but only when
+    // the session hint says a cookie may exist (avoids a doomed call on every
+    // anonymous page load, which would eat into the auth rate limit)
+    if (!this.authService.hasValidAccessToken() && this.authService.hasSessionHint()) {
       try {
         await firstValueFrom(this.authService.refreshAccessToken());
       } catch {

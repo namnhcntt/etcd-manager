@@ -27,12 +27,15 @@ export const accessTokenInterceptor: HttpInterceptorFn = (req, next) => {
       // Concurrent 401s share the single in-flight refresh inside AuthService.
       if (error instanceof HttpErrorResponse && error.status === 401 && !isAuthEndpoint) {
         return authService.refreshAccessToken().pipe(
-          switchMap((accessToken) => next(withAuthHeaders(req, accessToken))),
+          // catchError BEFORE switchMap: log out only when the refresh itself fails.
+          // Errors from the retried original request below propagate to the caller untouched.
           catchError((refreshError) => {
-            // refresh failed → session is gone: clear state and go to login
-            authService.logout();
+            // fire-and-forget: logout() handles its own errors internally, so nothing
+            // races or swallows the rethrown refresh error
+            void authService.logout();
             return throwError(() => refreshError);
-          })
+          }),
+          switchMap((accessToken) => next(withAuthHeaders(req, accessToken)))
         );
       }
       return throwError(() => error);

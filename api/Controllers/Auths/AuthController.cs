@@ -45,7 +45,7 @@ public class AuthController(ISender mediator, ITokenService tokenService, ILogge
 
     [HttpPost("Token/Refresh")]
     [AllowAnonymous]
-    [EnableRateLimiting("login")]
+    [EnableRateLimiting("auth-refresh")]
     public async Task<IActionResult> RefreshToken(
         [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] RefreshTokenModel? model
     )
@@ -66,9 +66,12 @@ public class AuthController(ISender mediator, ITokenService tokenService, ILogge
 
     // AllowAnonymous: logout must work even when the access token has already expired;
     // the only thing it acts on is the caller's own refresh cookie, which is revoked server-side.
+    // Known accepted risk: with SameSite=None a cross-site page can POST here and force a
+    // logout (nuisance only) — CORS blocks reading the response, and revocation only ever
+    // affects the refresh token carried in the caller's own cookie, so no data is exposed.
     [HttpPost("Logout")]
     [AllowAnonymous]
-    [EnableRateLimiting("login")]
+    [EnableRateLimiting("auth-refresh")]
     public async Task<IActionResult> Logout()
     {
         var refreshToken = Request.Cookies[RefreshTokenCookieName];

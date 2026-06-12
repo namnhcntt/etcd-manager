@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { JwtPayload, jwtDecode } from "jwt-decode";
-import { Observable, firstValueFrom } from 'rxjs';
-import { finalize, map, shareReplay } from 'rxjs/operators';
+import { Observable, firstValueFrom, throwError } from 'rxjs';
+import { catchError, finalize, map, shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { BaseService } from './base.service';
 import { APP_BASE_HREF } from '@angular/common';
@@ -14,6 +14,10 @@ export class AuthService extends BaseService {
   private static readonly ENDPOINT_AUTHEN_LOGIN = 'api/auth/login';
   private static readonly ENDPOINT_AUTHEN_REFRESH = 'api/auth/token/refresh';
   private static readonly ENDPOINT_AUTHEN_LOGOUT = 'api/auth/logout';
+  // non-sensitive marker: the HttpOnly refresh cookie is invisible to JS, so this flag
+  // records "a session probably exists" to avoid pointless silent-refresh calls on
+  // every page load (which would burn the auth rate-limit budget for anonymous visitors)
+  private static readonly HAS_SESSION_KEY = 'has_session';
 
   // F009: access token lives in memory only (never localStorage/sessionStorage) so an
   // XSS payload cannot exfiltrate it from storage. The refresh token never reaches JS
@@ -49,6 +53,11 @@ export class AuthService extends BaseService {
     return this.getAccessToken() !== null;
   }
 
+  /** True when a previous login/refresh suggests the HttpOnly refresh cookie may exist. */
+  hasSessionHint(): boolean {
+    return localStorage.getItem(AuthService.HAS_SESSION_KEY) === '1';
+  }
+
   getAccessToken(): string | null {
     return this.accessToken;
   }
@@ -79,6 +88,11 @@ export class AuthService extends BaseService {
           this.saveToken(res.token);
           return res.token as string;
         }),
+        catchError((err) => {
+          // refresh failed → the cookie is missing/expired/revoked: drop the hint
+          localStorage.removeItem(AuthService.HAS_SESSION_KEY);
+          return throwError(() => err);
+        }),
         finalize(() => {
           this.refreshInFlight$ = null;
         }),
@@ -97,11 +111,13 @@ export class AuthService extends BaseService {
       // best effort — still clear local state
     }
     this.accessToken = null;
+    localStorage.removeItem(AuthService.HAS_SESSION_KEY);
     window.location.href = `${this._baseHref}/login`;
   }
 
   saveToken(accessToken: string) {
     this.accessToken = accessToken;
+    localStorage.setItem(AuthService.HAS_SESSION_KEY, '1');
     this.loadUserStore();
   }
 
