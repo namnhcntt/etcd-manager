@@ -62,6 +62,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Pr
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCors();
+builder.Services.AddHealthChecks().AddDbContextCheck<EtcdManagerDataContext>();
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 // Validate JWT key at startup
 var jwtKey = builder.Configuration.GetValue<string>("Jwt:Key");
@@ -149,17 +150,18 @@ app.UseCors(corsBuilder =>
 {
     corsBuilder
         .WithOrigins(allowedOrigins)
-        .AllowAnyHeader()
-        .AllowAnyMethod();
+        .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        .WithHeaders("Authorization", "Content-Type", "PortalAlias");
 });
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 // seed data
 using (var scope = app.Services.CreateScope())
