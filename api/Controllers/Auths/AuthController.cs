@@ -18,7 +18,10 @@ public class AuthController(ISender mediator, ITokenService tokenService, ILogge
     // F009: the refresh token is delivered to browsers via an HttpOnly cookie so it is
     // unreachable from JavaScript (XSS). Path-scoped to the auth endpoints only.
     private const string RefreshTokenCookieName = "etcd_manager_refresh_token";
-    private const string RefreshTokenCookiePath = "/api/Auth";
+    // lowercase on purpose: RFC 6265 cookie path-matching is case-sensitive in browsers
+    // and the UI calls /api/auth/...; ASP.NET Core routing is case-insensitive so the
+    // server side is unaffected
+    private const string RefreshTokenCookiePath = "/api/auth";
 
     [HttpPost("Login")]
     [AllowAnonymous]
