@@ -99,4 +99,43 @@ public class TokenServiceTests
             service.RefreshToken(tokenData.RefreshToken)
         );
     }
+
+    [Fact]
+    public async Task RevokeRefreshToken_ConsumesToken_RefreshIsRejected()
+    {
+        var config = BuildConfig();
+        var db = TestDbHelper.CreateInMemoryDb("TokenTest_Revoke");
+        var service = new TokenService(config, db);
+
+        var tokenData = await service.GenerateJwtTokenData(1, "testuser");
+        await service.RevokeRefreshToken(tokenData.RefreshToken);
+
+        Assert.Equal(1, db.RefreshTokens.Count(x => x.ConsumedAt != null));
+        await Assert.ThrowsAsync<SecurityTokenException>(() =>
+            service.RefreshToken(tokenData.RefreshToken)
+        );
+    }
+
+    [Fact]
+    public async Task RevokeRefreshToken_UnknownToken_IsNoOp()
+    {
+        var config = BuildConfig();
+        var db = TestDbHelper.CreateInMemoryDb("TokenTest_RevokeUnknown");
+        var service = new TokenService(config, db);
+
+        // must not throw, even for garbage input
+        await service.RevokeRefreshToken("not-a-jwt");
+    }
+
+    [Fact]
+    public async Task GenerateToken_ReturnsRefreshTokenExpiry()
+    {
+        var config = BuildConfig();
+        var db = TestDbHelper.CreateInMemoryDb("TokenTest_RefreshExpiry");
+        var service = new TokenService(config, db);
+
+        var tokenData = await service.GenerateJwtTokenData(1, "testuser");
+        Assert.True(tokenData.RefreshTokenExpiresAt > DateTime.UtcNow.AddDays(29));
+        Assert.True(tokenData.RefreshTokenExpiresAt <= DateTime.UtcNow.AddDays(30));
+    }
 }

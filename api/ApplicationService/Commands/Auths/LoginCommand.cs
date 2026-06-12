@@ -18,8 +18,16 @@ public class LoginCommand : IRequest<LoginCommandResult>
     public class LoginCommandResult
     {
         public string Token { get; set; } = null!;
+
+        // never serialized to the response body: the refresh token is delivered to
+        // browsers exclusively via an HttpOnly cookie set by AuthController (F009)
+        [System.Text.Json.Serialization.JsonIgnore]
         public string RefreshToken { get; set; } = null!;
+
         public int ExpiresIn { get; set; }
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public DateTime RefreshTokenExpiresAt { get; set; }
 
         public class LoginCommandHandler(
             ITokenService _tokenService,

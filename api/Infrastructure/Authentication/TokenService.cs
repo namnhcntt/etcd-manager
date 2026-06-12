@@ -90,6 +90,7 @@ public class TokenService(IConfiguration _configuration, EtcdManagerDataContext 
             Token = tokenHandler.WriteToken(token),
             RefreshToken = refreshToken,
             ExpiresIn = ExpiresInSeconds,
+            RefreshTokenExpiresAt = refreshTokenExpiresAt,
         };
     }
 
@@ -163,6 +164,13 @@ public class TokenService(IConfiguration _configuration, EtcdManagerDataContext 
 
         // GenerateJwtTokenData persists the rotated refresh token and saves changes
         return await GenerateJwtTokenData(userId, userName);
+    }
+
+    public async Task RevokeRefreshToken(string refreshToken)
+    {
+        // best-effort revocation (logout): consume the stored token so it can no longer
+        // be used for refresh. Lookup is by hash only — an unknown/invalid token is a no-op.
+        await TryConsumeToken(ComputeTokenHash(refreshToken), DateTime.UtcNow);
     }
 
     private async Task<bool> TryConsumeToken(string tokenHash, DateTime now)

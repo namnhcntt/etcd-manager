@@ -151,7 +151,10 @@ app.UseCors(corsBuilder =>
     corsBuilder
         .WithOrigins(allowedOrigins)
         .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-        .WithHeaders("Authorization", "Content-Type", "PortalAlias");
+        .WithHeaders("Authorization", "Content-Type", "PortalAlias")
+        // required for the HttpOnly refresh-token cookie to flow cross-origin;
+        // safe because origins are an explicit allow-list (never AllowAnyOrigin)
+        .AllowCredentials();
 });
 
 app.UseHttpsRedirection();

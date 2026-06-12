@@ -1,5 +1,6 @@
 import { Component, OnInit, effect, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
@@ -52,16 +53,22 @@ export class AppComponent extends BaseComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    if (this.authService.loggedIn()) {
-      this.loadDataSourceConnections();
+  async ngOnInit(): Promise<void> {
+    // the access token lives in memory only, so a page reload loses it:
+    // attempt a silent refresh via the HttpOnly refresh-token cookie first
+    if (!this.authService.hasValidAccessToken()) {
+      try {
+        await firstValueFrom(this.authService.refreshAccessToken());
+      } catch {
+        // no valid session — fall through to the login redirect below
+      }
     }
     this.globalStore.setReadyRenderPage(true);
     if (!this.authService.hasValidAccessToken()) {
       this.router.navigateByUrl('/login');
-    } else {
-      this.authService.loadUserStore();
     }
+    // when refresh succeeded, saveToken → loadUserStore → currentUser effect
+    // already triggers loadDataSourceConnections
   }
 
   private loadDataSourceConnections() {
