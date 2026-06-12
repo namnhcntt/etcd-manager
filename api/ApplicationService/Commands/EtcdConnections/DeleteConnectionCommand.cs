@@ -10,7 +10,7 @@ public class DeleteConnectionCommand : IRequest<bool>
 {
     public int Id { get; set; }
 
-    public class DeleteconnectionCommandHandler(
+    public class DeleteConnectionCommandHandler(
         EtcdManagerDataContext _dataContext,
         IUserPrincipalService _userPrincipalService
     ) : IRequestHandler<DeleteConnectionCommand, bool>
@@ -27,7 +27,7 @@ public class DeleteConnectionCommand : IRequest<bool>
             if (connection != null)
             {
                 _dataContext.EtcdConnections.Remove(connection);
-                _dataContext.SaveChanges();
+                await _dataContext.SaveChangesAsync(cancellationToken);
                 return true;
             }
             throw new Exception("Connection not found");

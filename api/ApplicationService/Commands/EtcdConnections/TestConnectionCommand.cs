@@ -1,4 +1,5 @@
-﻿using EtcdManager.API.Infrastructure.Etcd;
+﻿using EtcdManager.API.Core.Helpers;
+using EtcdManager.API.Infrastructure.Etcd;
 using FluentValidation;
 using MediatR;
 
@@ -11,46 +12,9 @@ public class TestConnectionCommand : IRequest<bool>
     public string? Username { get; set; }
     public string? Password { get; set; }
     public bool Insecure { get; set; }
-    public string Host
-    {
-        get
-        {
-            if (string.IsNullOrWhiteSpace(Server))
-                return string.Empty;
+    public string Host => EtcdServerParser.ParseHostAndPort(Server, Insecure).Host;
 
-            var host = Server.Split(':')[0];
-
-            if (!host.StartsWith("https://"))
-            {
-                if (host.StartsWith("http://"))
-                {
-                    host = host.Replace("http://", "https://");
-                }
-                else if (Insecure)
-                {
-                    host = "http://" + host;
-                }
-                else
-                {
-                    host = "https://" + host;
-                }
-            }
-
-            return host;
-        }
-    }
-
-    public string Port
-    {
-        get
-        {
-            if (string.IsNullOrWhiteSpace(Server))
-                return string.Empty;
-
-            var arr = Server.Split(':');
-            return arr.Length > 1 ? arr[1] : "2379";
-        }
-    }
+    public string Port => EtcdServerParser.ParseHostAndPort(Server, Insecure).Port;
 
     public class TestConnectionCommandHandler(IEtcdService _etcdService)
         : IRequestHandler<TestConnectionCommand, bool>
@@ -70,9 +34,13 @@ public class TestConnectionCommand : IRequest<bool>
 
     public class TestConnectionCommandValidator : AbstractValidator<TestConnectionCommand>
     {
-        public TestConnectionCommandValidator()
+        public TestConnectionCommandValidator(IConfiguration configuration)
         {
-            RuleFor(x => x.Server).NotEmpty();
+            var blockPrivateNetworks = configuration.GetValue<bool>("Etcd:BlockPrivateNetworks");
+            RuleFor(x => x.Server)
+                .NotEmpty()
+                .Must(server => EtcdServerAddressValidator.IsAllowed(server, blockPrivateNetworks))
+                .WithMessage("Server address is not allowed.");
             // rule for username, password not empty if enableAuthenticated = true
             RuleFor(x => x.Username).NotEmpty().When(x => x.EnableAuthenticated);
             RuleFor(x => x.Password).NotEmpty().When(x => x.EnableAuthenticated);

@@ -4,6 +4,7 @@ using EtcdManager.API.Core.Exceptions;
 using EtcdManager.API.Infrastructure.Database;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -116,6 +117,16 @@ builder.Services.AddDbContext<EtcdManagerDataContext>(options =>
     options.UseSqlite($"DataSource={connectionString};");
 });
 
+
+// Data Protection: encrypts stored etcd connection passwords at rest (see PasswordProtectorService).
+// Keys are persisted next to the SQLite database because wwwroot/data is the only directory
+// persisted via the docker volume (keys must survive container restarts). The API itself does
+// not serve static files (no UseStaticFiles), so the keys are not web-reachable through the API.
+var dataProtectionKeysPath = Path.Combine(builder.Environment.WebRootPath, "data", "keys");
+Directory.CreateDirectory(dataProtectionKeysPath);
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath))
+    .SetApplicationName("EtcdManager");
 
 var allowedOrigins = builder.Configuration
     .GetSection("AllowedOrigins")

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using dotnet_etcd;
 using EtcdManager.API.Domain;
+using EtcdManager.API.Domain.Services;
 using EtcdManager.API.Infrastructure.Cache;
 using Etcdserverpb;
 using Google.Protobuf;
@@ -10,7 +11,11 @@ using Polly;
 
 namespace EtcdManager.API.Infrastructure.Etcd;
 
-public class EtcdService(ICacheService _cacheService, ILogger<EtcdService> _logger) : IEtcdService
+public class EtcdService(
+    ICacheService _cacheService,
+    ILogger<EtcdService> _logger,
+    IPasswordProtectorService _passwordProtector
+) : IEtcdService
 {
     public async Task<bool> TestConnection(
         string host,
@@ -512,7 +517,7 @@ public class EtcdService(ICacheService _cacheService, ILogger<EtcdService> _logg
                 new Etcdserverpb.AuthenticateRequest()
                 {
                     Name = etcdConnection.Username,
-                    Password = etcdConnection.Password
+                    Password = _passwordProtector.Unprotect(etcdConnection.Password)
                 }
             );
             token = authRes != null ? authRes.Token : null;

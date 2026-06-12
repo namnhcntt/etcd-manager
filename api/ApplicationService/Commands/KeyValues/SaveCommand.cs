@@ -42,8 +42,10 @@ public class SaveCommand : IRequest<bool>
             RuleFor(x => x.Key).NotEmpty()
                 .MaximumLength(MaxKeyLength)
                 .WithMessage($"Key must not exceed {MaxKeyLength} characters.");
-            RuleFor(x => x.Value).NotEmpty()
-                .Must(v => v == null || System.Text.Encoding.UTF8.GetByteCount(v) <= MaxValueLength)
+            RuleFor(x => x.Value)
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty()
+                .Must(v => System.Text.Encoding.UTF8.GetByteCount(v) <= MaxValueLength)
                 .WithMessage($"Value must not exceed {MaxValueLength} bytes (1MB).");
             RuleFor(x => x.EtcdConnectionId).GreaterThan(0);
         }
