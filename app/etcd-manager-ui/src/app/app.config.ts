@@ -1,6 +1,5 @@
 import { ApplicationConfig, importProvidersFrom, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { APP_BASE_HREF, CommonModule } from '@angular/common';
@@ -17,7 +16,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([
       accessTokenInterceptor
     ])),
-    provideAnimationsAsync(),
     importProvidersFrom(CommonModule),
     importProvidersFrom(ToastModule),
     importProvidersFrom(ConfirmPopupModule),
