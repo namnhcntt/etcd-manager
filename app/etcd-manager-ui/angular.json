@@ -33,6 +33,7 @@
               "sass": {
                 "silenceDeprecations": [
                   "global-builtin",
+                  "if-function",
                   "import"
                 ]
               }
