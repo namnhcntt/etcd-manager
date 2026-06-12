@@ -23,6 +23,17 @@ http {
     uwsgi_temp_path       /tmp/nginx-uwsgi;
     scgi_temp_path        /tmp/nginx-scgi;
 
+    # Never cache the runtime-generated entry points (env.js holds deploy-time
+    # config; index.html is rewritten by the entrypoint and is the SPA
+    # fallback). Implemented via `expires` + map instead of add_header in a
+    # location block, because location-level add_header would drop the
+    # server-level security headers (CSP/HSTS/etc.).
+    map $uri $no_cache_expires {
+        default            off;
+        ~(^|/)env\.js$     -1;
+        ~(^|/)index\.html$ -1;
+    }
+
     server {
       listen  81;
         root /usr/share/nginx/html/;
@@ -31,7 +42,8 @@ http {
         add_header X-Content-Type-Options "nosniff" always;
         add_header X-Frame-Options "DENY" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-        add_header X-XSS-Protection "1; mode=block" always;
+        add_header X-XSS-Protection "0" always;
+        expires $no_cache_expires;
         # HSTS only takes effect when the response is served over HTTPS (TLS is
         # expected to be terminated upstream); browsers ignore the header over
         # plain HTTP (RFC 6797 section 8.1), so sending it always is harmless.
@@ -55,9 +67,11 @@ http {
             return 404;
         }
 
+        # BASE_HREF is normalized by docker-entrypoint.sh: bare "/" becomes ""
+        # so this renders "location /" (not "location //") at the root.
         location ${BASE_HREF}/ {
             alias /usr/share/nginx/html/;
-            try_files $uri$args $uri$args/ ${BASE_HREF}/index.html;
+            try_files $uri $uri/ ${BASE_HREF}/index.html;
         }
     }
 }

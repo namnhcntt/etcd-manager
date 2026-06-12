@@ -13,13 +13,17 @@ RUN etcdctl && etcdctl version
 # they write at runtime owned by it:
 # - /api/wwwroot/data: SQLite DB + Data Protection keys (volume)
 # - /etc/nginx/nginx.conf: rendered by docker-entrypoint.sh (envsubst)
-# - /usr/share/nginx/html: entrypoint writes env.js and rewrites index.html
+# - env.js + index.html ONLY in the web root: the entrypoint writes runtime
+#   config through these files; the directory and the JS/CSS bundle stay
+#   root-owned so a compromised runtime process cannot rewrite served assets
+#   (which would undermine the CSP's script-src 'self')
 # - /var/log/nginx: nginx opens its compiled-in default error log at startup
 #   (runtime logs go to stdout/stderr per nginx.conf)
 RUN adduser --disabled-password --gecos '' appuser \
     && mkdir -p /api/wwwroot/data /var/log/nginx \
-    && touch /etc/nginx/nginx.conf \
-    && chown -R appuser:appuser /api/wwwroot/data /usr/share/nginx/html /var/log/nginx /etc/nginx/nginx.conf
+    && touch /etc/nginx/nginx.conf /usr/share/nginx/html/env.js \
+    && chown -R appuser:appuser /api/wwwroot/data /var/log/nginx \
+    && chown appuser:appuser /etc/nginx/nginx.conf /usr/share/nginx/html/env.js /usr/share/nginx/html/index.html
 USER appuser
 # 80: api, 81: # app
 EXPOSE 80 81

@@ -38,8 +38,21 @@ _validate_path_var() {
   esac
 }
 
-_validate_path_var BASE_HREF    "$BASE_HREF"
-_validate_url_var  API_ENDPOINT "$API_ENDPOINT"
+_validate_path_var BASE_HREF    "${BASE_HREF-}"
+_validate_url_var  API_ENDPOINT "${API_ENDPOINT-}"
+
+# env.js exposes the user-facing base href ("/" for root).
+cat >/tmp/env.js <<EOF
+window.baseHref = "${BASE_HREF}";
+window.apiEndpoint = "${API_ENDPOINT}";
+EOF
+
+# Normalize for substitution: a bare "/" means "serve at the root" — use the
+# empty string so the template renders "location /" (not "location //") and
+# the <base> tag stays href="/" (not the protocol-relative href="//").
+if [ "$BASE_HREF" = "/" ]; then
+  BASE_HREF=""
+fi
 
 # Inject environment variables into NGINX configuration
 # List all variables to be substituted to avoid clashing with
@@ -50,23 +63,25 @@ envsubst \
   >/etc/nginx/nginx.conf
 # Removed: cat /etc/nginx/nginx.conf  — avoid leaking config to logs
 
-# Write runtime configuration to an EXTERNAL script (referenced by
+# Publish runtime configuration as an EXTERNAL script (referenced by
 # <script src="env.js"> in index.html) instead of an inline <script>,
 # so the Content-Security-Policy can stay script-src 'self' without
-# 'unsafe-inline'.
-cat >/usr/share/nginx/html/env.js <<EOF
-window.baseHref = "${BASE_HREF}";
-window.apiEndpoint = "${API_ENDPOINT}";
-EOF
+# 'unsafe-inline'. Written through the pre-created, appuser-owned file —
+# the web root directory itself is intentionally NOT writable.
+cat /tmp/env.js >/usr/share/nginx/html/env.js
+rm -f /tmp/env.js
 
 # Set correct HTML base tag, so static resources are fetched
 # from the right path instead of the root path.
 # NOTE: Trailing and leading slashes in base href are important!
 # Using `~` separator to avoid problems with forward slashes
-# (the allowlists above reject `~`, so the value cannot break out)
-sed --in-place \
-  's~<base href="/">~<base href="'$BASE_HREF'/">~' \
-  /usr/share/nginx/html/index.html
+# (the allowlists above reject `~`, so the value cannot break out).
+# Rewrite via /tmp and write THROUGH the existing file (no sed --in-place):
+# the web root dir is root-owned, only index.html itself is appuser-owned.
+sed 's~<base href="/">~<base href="'"$BASE_HREF"'/">~' \
+  /usr/share/nginx/html/index.html >/tmp/index.html
+cat /tmp/index.html >/usr/share/nginx/html/index.html
+rm -f /tmp/index.html
 # Removed: cat /usr/share/nginx/html/index.html  — avoid leaking injected HTML to logs
 
 exec "$@"
